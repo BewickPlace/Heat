@@ -46,7 +46,7 @@ int	send_network_msg(struct in6_addr *dest, int type, time_t node_delay, char *p
 int	find_live_node(struct in6_addr *src);
 int	add_live_node(struct in6_addr *src);
 void	update_my_ip_details();
-void	cancel_reply_timer(struct timer_list *timers);
+void	cancel_reply_timer();
 void	handle_delay_calc(int node, struct timeval t1, struct timeval t2, struct timeval t3, struct timeval t4, time_t remote_delay);
 
 #define HOSTNAME_LEN	14					// Max supported host name length including null
@@ -193,10 +193,10 @@ ENDERROR;
 //
 //	Wait on message or timer, whatever comes first
 //
-void	wait_on_network_timers(struct timer_list *timers) {
+void	wait_on_network_timers() {
     int rc;
     struct timeval *wait;
-    wait = next_timers(timers);
+    wait = next_timers();
     debug(DEBUG_DETAIL, "Wait on read or timeout %llds\n", (long long)wait->tv_sec);
     if (wait->tv_sec > 0L) {					// As long as next timer not expired
 								// attempt read on socket
@@ -314,7 +314,7 @@ int	check_network_msg() {
 //
 //	Handle Network Message
 //
-void	handle_network_msg(struct timer_list *timers, char *payload, int *payload_len) {
+void	handle_network_msg(char *payload, int *payload_len) {
     char full_message[MAX_BUFFER];				// Full buffer
     struct test_msg *message = (struct test_msg*)full_message;	// Our Test Msg mapped over full buffer
     struct iovec iovec;
@@ -352,7 +352,7 @@ void	handle_network_msg(struct timer_list *timers, char *payload, int *payload_l
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
     if (node < 0) {						// if unknown
 	node = add_live_node(&sin6.sin6_addr);			// Add the source as a valid node
-	add_timer(timers, TIMER_PING, 1);			// initiate PINGs
+	add_timer(TIMER_PING, 1);				// initiate PINGs
     }
     ERRORCHECK( node < 0, "Network node unknown\n", EndError);
 
@@ -371,7 +371,7 @@ void	handle_network_msg(struct timer_list *timers, char *payload, int *payload_l
 	    debug(DEBUG_TRACE, "Link UP   to node: %s (%s)\n", message->src_name, ipv4_string);
 	    if (link_up_callback != NULL) link_up_callback();	// run callback if defined
 	}
-	cancel_reply_timer(timers);				// Cancel reply timer if all now received
+	cancel_reply_timer();					// Cancel reply timer if all now received
 	break;
     case MSG_TYPE_PING:
 	debug(DEBUG_DETAIL, "Ping message received\n");
@@ -531,14 +531,14 @@ ENDERROR;
 //
 //	Cancel Reply Timer if all now received
 //
-void	cancel_reply_timer(struct timer_list *timers) {
+void	cancel_reply_timer() {
     int i;
 
-    for(i=0; i < NO_NETWORKS; i++) {			// Check all valid nodes for outstanding reply
+    for(i=0; i < NO_NETWORKS; i++) {				// Check all valid nodes for outstanding reply
 	if ((memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) &&
 	    (other_nodes[i].to == MSG_STATE_SENT)) { goto EndError; } // if we find one - bottle out
     }
-    cancel_timer(timers, TIMER_REPLY);				// None found we can cancel the timer
+    cancel_timer(TIMER_REPLY);					// None found we can cancel the timer
 
 ENDERROR;
 }
