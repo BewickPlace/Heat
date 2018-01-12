@@ -44,6 +44,8 @@ void	expire_live_nodes();
 
 void	display_live_network();
 
+int	find_active_node();
+
 int	check_network_msg();
 
 void	handle_network_msg(struct timer_list *timers, char *payload, int *payload_len);

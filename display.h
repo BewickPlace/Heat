@@ -25,7 +25,7 @@ typedef struct alt_font {
         char    hori;                   // Horizontal size
         char    vert;                   // Vertical size
         char    bpl;                    // bytes per line of font
-        char    font6x8[7][1+9];
+        char    font[4][1+9];
         } alt_font;
 
 #define Init_display()	\
@@ -45,7 +45,7 @@ typedef struct alt_font {
 	   time_t seconds;			\
 	   char Time[10];			\
 		seconds = time(NULL);		\
-		strftime(Time,40,"%H:%M", localtime(&seconds));	\
+		strftime(Time,40,"%H:%M %a", localtime(&seconds));	\
 		Print_text(Time, size, x, y, colour);
 #define	Display_on()	\
 		SSD1331_on()
@@ -53,6 +53,5 @@ typedef struct alt_font {
 		SSD1331_off()
 #define	Display_cls()	\
 		SSD1331_cls()
-
 
 void	display_process();			// Main display process

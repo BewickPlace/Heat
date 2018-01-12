@@ -50,9 +50,8 @@ THE SOFTWARE.
 #include "dht11.h"
 #include "display.h"
 
-#define	OPMODE_MASTER	0				// Node operating modes
-#define	OPMODE_SLAVE	1				//
-static int	operating_mode = OPMODE_MASTER;		// Default operating mode (changed by command line)
+int 		heat_shutdown = 0;				// Shutdown flag
+struct app 	app = {OPMODE_MASTER, -1, 1, 0, 0.0, 0.0};	// Application key data
 
 void usage(char *progname) {
     printf("Usage: %s [options...]\n", progname);
@@ -96,10 +95,10 @@ int parse_options(int argc, char **argv) {
                 usage(argv[0]);
                 exit(1);
             case 'm':
-		operating_mode = OPMODE_MASTER;			// Set Node as Master
+		app.operating_mode = OPMODE_MASTER;			// Set Node as Master
                 break;
             case 's':
-		operating_mode = OPMODE_SLAVE;			// Set Node as Slave
+		app.operating_mode = OPMODE_SLAVE;			// Set Node as Slave
                 break;
             case 'v':
                 debuglev++;
@@ -116,8 +115,6 @@ int parse_options(int argc, char **argv) {
     return optind;
 }
 
-int heat_shutdown = 0;			// Shutdown flag
-
 //
 //
 //	Main procedure
@@ -125,6 +122,7 @@ int heat_shutdown = 0;			// Shutdown flag
 //
 int main(int argc, char **argv) {
     struct timer_list timers;				// Timers
+    int		timer;
     int payload_len;					// length of payload returned
     struct payload_pkt app_data;			// App payload data
     pthread_t display_thread, monitor_thread;		// thread IDs
@@ -132,7 +130,7 @@ int main(int argc, char **argv) {
 
 
     parse_options(argc, argv);				// Parse command line parameters
-    debug(DEBUG_ESSENTIAL, "Mesh starting in mode: %d\n", operating_mode);
+    debug(DEBUG_ESSENTIAL, "Heat starting in mode: %d\n", app.operating_mode);
 
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks
     initialise_timers(&timers);				// and set all timers
@@ -142,13 +140,13 @@ int main(int argc, char **argv) {
     pthread_create(&display_thread, NULL, (void *) display_process, NULL);	// create display thread
     ERRORCHECK( display_thread == 0, "Monitor thread creation failed\n", EndError);
 
-    switch (operating_mode) {
+    switch (app.operating_mode) {
     case OPMODE_MASTER:					// Only Master nodes are responsible for broadcasting
 	add_timer(&timers, TIMER_BROADCAST, 5);		// Set to refresh network in y seconds
 	break;
 
     case OPMODE_SLAVE:
-	add_timer(&timers, TIMER_APPLICATION, 15);		// Set to refresh network in y seconds
+	add_timer(&timers, TIMER_APPLICATION, 15);	// Set to kick application in y seconds
 	break;
     }
 
@@ -159,7 +157,11 @@ int main(int argc, char **argv) {
 	    handle_network_msg(&timers, (char *)&app_data, &payload_len);	// handle the network message
 	    handle_app_msg(&app_data, payload_len);				// handle application specific messages
 	}
-	switch (check_timers(&timers)) {		// check which timer has expired
+	timer = check_timers(&timers);			// check which timer has expired
+	switch (timer) { 				//
+	case TIMER_NONE:				// No expired timers
+	    break;					// Do nothing
+
 	case TIMER_BROADCAST:				// On Broadcast timer
 	    broadcast_network();			// send out broadcast message to contact other nodes
 	    add_timer(&timers, TIMER_BROADCAST, 20);	// and set to broadcast again in y seconds
@@ -173,14 +175,11 @@ int main(int argc, char **argv) {
 	    break;
 
 	case TIMER_REPLY:
-	    expire_live_nodes();			//  Expire other nodes where reply has timed out
-	    break;
-
-	case TIMER_APPLICATION:
-	    handle_app_timer();				// Handle the timer for the App
+	    expire_live_nodes();			// Expire other nodes where reply has timed out
 	    break;
 
 	default:
+	    handle_app_timer(timer);			// ask application to handle all other timers
 	    break;
 	}
 	DEBUG_FUNCTION( DEBUG_DETAIL, display_live_network());

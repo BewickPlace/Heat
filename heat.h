@@ -20,4 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#define	OPMODE_MASTER	0			// Application operating modes
+#define OPMODE_SLAVE	1			// Master (controller)/ Slave (Sensor)
+
+struct app {					// Application key Data
+    int		operating_mode;			// - operating mode
+    int		active_node;			// - active node
+    // Master specific data
+    // - none
+    // Slave specific data
+    int		display;			// - display off/on
+    int 	boost;				// - boost uplift
+    float	setpoint;			// - sensor setpoint
+    float	temp;				// - sensor reading
+    };
+
 extern int heat_shutdown;			// Signal heat shutdown between threads
+extern struct app app;				// Application key data

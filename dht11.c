@@ -36,6 +36,7 @@ THE SOFTWARE.
 #define BUTTON_READ_PIN		5		// Read & Write Pins for illuminated button
 #define BUTTON_WRITE_PIN	7
 #define BUTTON_LONG_PRESS	3000		// 3 sec long press
+#define BUTTON_EXTRALONG_PRESS	10000		// 10 sec extra long press
 
 typedef struct {
 	int last_pin_state;			// last know pin state
@@ -76,10 +77,17 @@ void	Button_interrupt() {
 
     if (Button_pin.new_pin_state == HIGH) {	// if this is the transition back to high
 						// handle the button press
-        if ((Button_pin.edge2 - Button_pin.edge1) > BUTTON_LONG_PRESS) { // Check for LONG press
+        if ((Button_pin.edge2 - Button_pin.edge1) > BUTTON_EXTRALONG_PRESS) { // Check for EXTRA LONG press
+	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
+	    heat_shutdown = 1;			// Signal to shutdown on next wake
+
+	} else if ((Button_pin.edge2 - Button_pin.edge1) > BUTTON_LONG_PRESS) { // Check for LONG press
 	    debug(DEBUG_TRACE, "Button - Long Press\n");
+	    if (app.boost < 2) { app.boost++; }
+
 	} else {
 	    debug(DEBUG_TRACE, "Button - Short Press\n");
+	    app.display = 1;
 	};
     };
     Button_pin.last_pin_state = Button_pin.new_pin_state;  // update last known pin status
@@ -175,7 +183,7 @@ ENDERROR;
 
 void read_dht11() {
     int	i;
-    float	f;
+    float	f = 0.0;
 						// initialise data handling variables
     for ( i = 0; i < MAX_PULSE_TIMINGS; i++ ) { timings[i] = 0; } // record of pulse durations
 
@@ -192,9 +200,12 @@ void read_dht11() {
     }
     ERRORCHECK(i== MAX_DHT_RETRYS, "DHT11 Persistant Read Faulure", EndError);
     f = dht11_data[2] * 9. / 5. + 32;
-    debug(DEBUG_ESSENTIAL, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
+    debug(DEBUG_TRACE, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
+
+    f = (float)dht11_data[2] + ((float)dht11_data[3]/10.0);
 
 ENDERROR;
+    app.temp = f;
     digitalWrite(BUTTON_WRITE_PIN, 0);
 }
 
@@ -205,7 +216,7 @@ ENDERROR;
 void monitor_process()	{
     int	rc = -1;
 
-    printf( "Raspberry Pi wiringPi DHT11 Temperature test program\n" );
+    ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
 
     if ( wiringPiSetupPhys() == -1 )
 	exit( 1 );

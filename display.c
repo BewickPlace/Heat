@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "ssd1331.h"
 #include "display.h"
 #include "heat.h"
+#include "errorcheck.h"
 
 //
 //		Icons defined in the Symbol font
@@ -37,35 +38,46 @@ THE SOFTWARE.
 static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
             {9, 0x00,0x00,0x00,0x00,0x00,0x00, 0x00, 0x00, 0x00 } ,  /*SPC */
             {9, 0x00,0xc0,0x00,0xF0,0x00,0xFc, 0x00, 0xFF, 0x00 } ,  /* !  */
-            {9, 0x04,0x03,0x04,0x03,0x00,0x00, 0x00, 0x00, 0x00 } ,  /* "  */
-            {9, 0x00,0x40,0x21,0xA4,0xAA,0xAA, 0xAA, 0xA4, 0x21 } ,  /* #  */
-            {9, 0x24,0x2A,0x7F,0x2A,0x12,0x00, 0x00, 0x00, 0x00 } ,  /* $  */
-            {9, 0x23,0x13,0x08,0x64,0x62,0x00, 0x00, 0x00, 0x00 } ,  /* %  */
+            {9, 0x81,0x7E,0x81,0x7E,0x81,0x7E, 0x00, 0x3C, 0x00 } ,  /* "  */
             {9, 0x00,0x00,0x00,0x00,0x00,0x00, 0x00, 0x00, 0x00 }    /*null*/
             }
         };
 
 #define WIFI_ICON       "!" 	        	// Wifi icon from Symbol font (Defibed above)
-#define SENSOR_ICON     "\""    	        // Sensor icon
+#define SENSOR_ICON     "\"" 	   	        // Sensor icon
+
+#define CENTRE(len)     (width-(6*len))/2       // Centre stringlength on screen
+#define RIGHT(len)      (width-(6*len))       // Right Align
+#define LEFT(len)       (0)                     // Left align
+
 
 void display_process() {
-    Init_display();				//Initialise the display
+    char	string[10];
 
-    while (!heat_shutdown) {			// eun until requested to shutdown
-	Display_on();
+    Init_display();				//Initialise the display
+    ERRORCHECK( app.operating_mode == OPMODE_MASTER, "Master Mode: no display required", EndError);
+
+    while (!heat_shutdown) {			// run until requested to shutdown
+	if (app.display) { 	Display_on();
+	} else {		Display_off();	}
+
         Display_cls();				// Clear the screen
 
-	Print_icon(WIFI_ICON, 0, 0, Green);
-	Print_icon(SENSOR_ICON, 0, 86, Red);
-	Print_time(normal, 0, 10, White);
-	Print_text("19.6%", wh, 25, 30, White);
-	Print_text("Set: 21%", normal, 56, 20, White);
+	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
+	Print_icon(SENSOR_ICON, RIGHT(2), 0, (app.temp == 0.0)? Red: Green);
+	Print_time(normal, CENTRE(9), 0, White);
 
-        delay(3000);
-	Display_off();
+	if (app.temp != 0.0) { 	sprintf(string, "%.01f", app.temp);
+	} else {		sprintf(string, "n/a");	}
+	Print_text(string, wh, CENTRE(2*strlen(string)), 25, White);
+
+	if (app.setpoint != 0.0) { 	sprintf(string, "Set:%0.1f", app.setpoint);
+	} else {		sprintf(string, "n/a");	}
+	Print_text(string, normal, CENTRE(strlen(string)), 56, White);
+
         delay(5000);
 
     }
+ENDERROR
     Display_off();
-    return;
 }

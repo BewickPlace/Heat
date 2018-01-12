@@ -45,14 +45,27 @@ THE SOFTWARE.
 #include "timers.h"
 #include "networks.h"
 #include "application.h"
+#include "heat.h"
+
+//
+//	Callback on Link Up status change
+//
 
 void	notify_link_up() {
-    printf("UP\n");
+    app.active_node = find_active_node();				// record which node is active
     }
 
+//
+//	Callback on Link Down status change
+//
+
 void	notify_link_down() {
-    printf("DOWN\n");
+    app.active_node = find_active_node();				// record if any is active
     }
+
+//
+//	Handle incomming Application messages
+//
 
 void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 
@@ -61,12 +74,22 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
     debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->data, payload_len);
 }
 
-void	handle_app_timer(int sock) {
+//
+//	Handle application timer expiries
+//
+
+void	handle_app_timer(int timer) {
     struct payload_pkt app_data = {PAYLOAD_TYPE,"ABCDEFGHIJK\0" };
-    int node = 0;
 
     debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
 
-    send_to_node(node, (char *) &app_data, sizeof(app_data));
+    switch (timer) {
+    case TIMER_APPLICATION:
+	send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+	break;
 
+    default:
+	break;
     }
+
+}

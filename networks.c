@@ -483,6 +483,21 @@ ENDERROR;
 }
 
 //
+//	Find any Active nodes & return id
+//
+int	find_active_node() {
+    int node;
+    int found = -1;
+
+    for(node = 0; node < NO_NETWORKS; node++) {			// Look at each network
+	if (other_nodes[node].state == NET_STATE_UP) {		// and check if marked as up
+	    found = node;					// identify active node found
+	    break;
+	}
+    }
+    return( found );
+}
+//
 //	Update local host Name & IPv4 Address
 //
 void	update_my_ip_details() {

@@ -34,4 +34,4 @@ void    notify_link_down();
 
 void	handle_app_msg(struct payload_pkt *packet, int payload_len);
 
-void	handle_app_timer();
+void	handle_app_timer(int timer);
