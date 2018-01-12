@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     struct payload_pkt app_data;			// App payload data
     pthread_t display_thread, monitor_thread;		// thread IDs
 
-
+    app.setpoint = 18.0;				// Start with dummy setpoint
 
     parse_options(argc, argv);				// Parse command line parameters
     debug(DEBUG_ESSENTIAL, "Heat starting in mode: %d\n", app.operating_mode);
@@ -146,6 +146,7 @@ int main(int argc, char **argv) {
 
     case OPMODE_SLAVE:
 	add_timer(TIMER_APPLICATION, 15);		// Set to kick application in y seconds
+	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;
     }
 

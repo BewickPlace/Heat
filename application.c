@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "timers.h"
 #include "networks.h"
 #include "application.h"
+#include "dht11.h"
 #include "heat.h"
 
 //
@@ -81,14 +82,32 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 void	handle_app_timer(int timer) {
     struct payload_pkt app_data = {PAYLOAD_TYPE,{"ABCDEFGHIJK\0"} };
 
-    debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
+    switch (timer) {			// Check application based timers
+    case NO_TIMERS:
+	break;				// No timer, just skip through
 
-    switch (timer) {
+
     case TIMER_APPLICATION:
+        debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
 	send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+
+	break;
+
+    case TIMER_BOOST:			// Noost Timeout
+        debug(DEBUG_ESSENTIAL, "Handle Boost timeout\n");
+
+	boost_stop();			// Stop the boost
+	break;
+
+    case TIMER_DISPLAY:			// Noost Timeout
+        debug(DEBUG_ESSENTIAL, "Handle Screen  timeout\n");
+
+	app.display = 0;		//  Turn display off at next screen refresh
 	break;
 
     default:
+	debug(DEBUG_ESSENTIAL, "Unexpected App timeout (%d)\n", timer);
+
 	break;
     }
 

@@ -20,4 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+void	boost_start();			// Boost Functions
+void	boost_stop();			//
+
 void	monitor_process();		// Main process

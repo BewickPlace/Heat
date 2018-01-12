@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include <wiringPi.h>
 #include "errorcheck.h"
+#include "timers.h"
 #include "heat.h"
 
 //
@@ -66,9 +67,31 @@ static  int timings[MAX_PULSE_TIMINGS]; 	// record of pulse duration
 static int dht11_data[5] = { 0, 0, 0, 0, 0 };
 
 //
+//	Boost Start
+//
+void	boost_start() {
+    app.boost = 1;				// Signal boost
+    pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
+    digitalWrite(BUTTON_WRITE_PIN, 1);
+    add_timer(TIMER_BOOST, 60);			//  Boost timesout after y seconds
+};
+
+//
+//	Boost Stop
+//
+void	boost_stop() {
+
+    app.boost = 0;				// Signal boost no longer active
+    pinMode(BUTTON_WRITE_PIN, OUTPUT );		// &switch off  Illuminated switch
+    digitalWrite(BUTTON_WRITE_PIN, 0);
+    cancel_timer(TIMER_BOOST);			// cancel timer if running
+};
+
+//
 //	Button Interrupot Handler
 //
 void	Button_interrupt() {
+    int	button_press;				// Length of time button has been pressed
 
     piHiPri(DHT_PRIORITY);			// ensure interrupt is given highest priority
     Button_pin.new_pin_state = digitalRead(BUTTON_READ_PIN);// check the new state of the pin
@@ -77,18 +100,24 @@ void	Button_interrupt() {
 
     if (Button_pin.new_pin_state == HIGH) {	// if this is the transition back to high
 						// handle the button press
-        if ((Button_pin.edge2 - Button_pin.edge1) > BUTTON_EXTRALONG_PRESS) { // Check for EXTRA LONG press
-	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
-	    heat_shutdown = 1;			// Signal to shutdown on next wake
+	button_press = Button_pin.edge2 - Button_pin.edge1;	// get lebgth of time pressed
 
-	} else if ((Button_pin.edge2 - Button_pin.edge1) > BUTTON_LONG_PRESS) { // Check for LONG press
-	    debug(DEBUG_TRACE, "Button - Long Press\n");
-	    if (app.boost < 2) { app.boost++; }
-
-	} else {
+        if (button_press < BUTTON_LONG_PRESS) {		// Short press - display
 	    debug(DEBUG_TRACE, "Button - Short Press\n");
-	    app.display = 1;
-	};
+
+	} else if (button_press > BUTTON_EXTRALONG_PRESS) {	// Extra Long press - shutdown
+	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
+	    heat_shutdown = -1;
+
+	} else {				// Long press - boost
+	    if(!app.boost) {			// If not already boosting
+		boost_start();			// Start off the boost
+	    } else {
+		boost_stop();			// Stop the boost
+	    }
+	}
+	app.display = 1;			// In all cases ensure display active
+	add_timer(TIMER_DISPLAY, 30);		// and timeout after y seconds
     };
     Button_pin.last_pin_state = Button_pin.new_pin_state;  // update last known pin status
     Button_pin.edge1 = Button_pin.edge2;
@@ -188,8 +217,6 @@ void read_dht11() {
     for ( i = 0; i < MAX_PULSE_TIMINGS; i++ ) { timings[i] = 0; } // record of pulse durations
 
     piHiPri(DHT_PRIORITY);			// ensure thread is given highest priority
-    pinMode(BUTTON_WRITE_PIN, OUTPUT );
-    digitalWrite(BUTTON_WRITE_PIN, 1);
     dht_signal_read_request();			// Signal to DHT11 read request
     i= 0;
     while ((!dht_interpret_data()) && 		// Interpret the data, check for completeness and CRC
@@ -206,7 +233,6 @@ void read_dht11() {
 
 ENDERROR;
     app.temp = f;
-    digitalWrite(BUTTON_WRITE_PIN, 0);
 }
 
 //
@@ -220,6 +246,8 @@ void monitor_process()	{
 
     if ( wiringPiSetupPhys() == -1 )
 	exit( 1 );
+
+    boost_stop();				// Initialise with no boost
 
     Button_pin.last_pin_state = HIGH;		// last known pin state
     Button_pin.edge1 = millis();		// record starting edge timestamp
