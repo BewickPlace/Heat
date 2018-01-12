@@ -18,21 +18,21 @@ Pin Usage
 
 All pins can be changed in the .h header definitions, however the base setup is as follows:
 
-                   ---------
-                   | 1 | 2 |
-                   | 3 | 4 | +5v
-  Switch Write Pin | 5 | 6 | GRND
-   Switch Read Pin | 7 | 8 | DHT11 Read/Write Data
-             GRND  | 9 |   |
-                   |   |   |
-
-                   |   |   |
-             +3.3v | 17| 18| DC
-          SDA/MOSI | 19|   |
-                   |   | 22| RES/RET
-              SCLK | 23| 24| CS/CEO
-              GRND | 25|   |
-                   |   |   |
+                    ---------
+                    | 1 | 2 |
+                    | 3 | 4 | +5v
+   Switch Write Pin | 5 | 6 | GRND
+    Switch Read Pin | 7 | 8 | DHT11 Read/Write Data
+              GRND  | 9 |   |
+      Zone 1 Write  | 11|   |
+      Zone 2 Write  | 13| 14| GRND
+                    |   |   |
+              +3.3v | 17| 18| DC
+           SDA/MOSI | 19|   |
+                    |   | 22| RES/RET
+               SCLK | 23| 24| CS/CEO
+               GRND | 25|   |
+                    |   |   |
 
 The program uses wiringPi to access the GPIO pins, and utilises Physical pin numbering mode.
 
