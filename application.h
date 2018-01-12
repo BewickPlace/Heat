@@ -21,11 +21,29 @@ THE SOFTWARE.
 */
 
 #define PAYLOAD_TYPE	10			// Add possible payload types here
+#define HEAT_SETPOINT 	11			// New setpoint active
+#define HEAT_CALL	12			// CALL for heat
+#define HEAT_SAT	13			// heat SATisfied
+
 #define PAYLOAD_DATA_LEN 12
+
+struct setpoint_pkt {				// Setpoint data packet
+    int	value;					// Setpoint value
+    };
+
+struct callsat_pkt {				// CALL & SAT  data packet
+    int	value;					// Setpoint value
+    };
+
+union payload_data {				// Union of possible payloads
+    char	data[PAYLOAD_DATA_LEN];
+    struct 	setpoint_pkt 	setpoint;
+    struct	callsat_pkt 	callsat;
+    };
+
 struct payload_pkt {
     int	 type;
-    char data[PAYLOAD_DATA_LEN];
-
+    union payload_data d;
     };						// Expand definition of payload here
 
 void    notify_link_up();

@@ -20,12 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#define NO_TIMERS 4					// Number of Timers
-#define TIMER_NONE -1					// Invalid Timer
+#define NO_TIMERS 	6				// Number of Timers
+#define TIMER_NONE 	-1				// Invalid Timer
 #define TIMER_BROADCAST 0				// Broadcast Refresh Timer
-#define TIMER_PING 1					// Ping timer
-#define TIMER_REPLY 2					// Reply timeout timer
+#define TIMER_PING 	1				// Ping timer
+#define TIMER_REPLY 	2				// Reply timeout timer
 #define TIMER_APPLICATION 3				// Application timeout timer
+#define TIMER_BOOST 	4				// Boost timer
+#define TIMER_DISPLAY 	5				// Display screen timout
 
 struct timer_list {					// Timer datastructure
 		struct timeval timers[NO_TIMERS];	// Array of individual timers

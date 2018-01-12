@@ -71,7 +71,7 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 
     if( payload_len == 0) { return; }		// skip out if nothing to do
 
-    debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->data, payload_len);
+    debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->d.data, payload_len);
 }
 
 //
@@ -79,7 +79,7 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 //
 
 void	handle_app_timer(int timer) {
-    struct payload_pkt app_data = {PAYLOAD_TYPE,"ABCDEFGHIJK\0" };
+    struct payload_pkt app_data = {PAYLOAD_TYPE,{"ABCDEFGHIJK\0"} };
 
     debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
 
