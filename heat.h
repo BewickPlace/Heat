@@ -33,6 +33,7 @@ struct app {					// Application key Data
     int 	boost;				// - boost uplift
     float	setpoint;			// - sensor setpoint
     float	temp;				// - sensor reading
+    float	hysteresis;			// - hysteresis
     };
 
 extern int heat_shutdown;			// Signal heat shutdown between threads

@@ -65,6 +65,32 @@ void	notify_link_down() {
     }
 
 //
+//	Check heating setpoint
+//
+void	check_heating_setpoint() {
+    struct payload_pkt app_data;
+
+    if (app.active_node != -1) {					// As long as we have a controller to talk to
+	if (app.temp  > (app.setpoint + app.boost + app.hysteresis)) {
+	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
+	    app_data.d.callsat.temp  = app.temp;
+	    app_data.d.callsat.setpoint = app.setpoint;
+	    app_data.d.callsat.boost = app.boost;
+	    debug(DEBUG_TRACE, "Heat SATisfied %0.1f:%.01f:%d\n", app.temp, app.setpoint, app.boost);
+	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+
+	} else if (app.temp < (app.setpoint + app.boost - app.hysteresis)) {
+	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
+	    app_data.d.callsat.temp  = app.temp;
+	    app_data.d.callsat.setpoint = app.setpoint;
+	    app_data.d.callsat.boost = app.boost;
+	    debug(DEBUG_TRACE, "CALL for %0.1f:%.01f:%d\n", app.temp, app.setpoint, app.boost);
+	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+	}
+    }
+}
+
+//
 //	Handle incomming Application messages
 //
 
@@ -72,7 +98,30 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 
     if( payload_len == 0) { return; }		// skip out if nothing to do
 
-    debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->d.data, payload_len);
+    switch(payload-> type) {
+    case PAYLOAD_TYPE:
+	debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->d.data, payload_len);
+	break;
+
+    case HEAT_SETPOINT:
+	debug(DEBUG_TRACE, "Heat Setpoint %f\n",payload->d.setpoint.value);
+	break;
+
+    case HEAT_CALL:
+	debug(DEBUG_TRACE, "Heat CALL for heat %.01f:%.01f:%d\n", payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	break;
+
+    case HEAT_SAT:
+	debug(DEBUG_TRACE, "Heat Heat SATisfied %.01f:%0.1f:%d\n",payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	break;
+
+    default:
+	debug(DEBUG_ESSENTIAL, "Unexpected App Msg (%d)\n", payload->type);
+	break;
+
+    }
+
+
 }
 
 //
@@ -80,7 +129,6 @@ void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
 //
 
 void	handle_app_timer(int timer) {
-    struct payload_pkt app_data = {PAYLOAD_TYPE,{"ABCDEFGHIJK\0"} };
 
     switch (timer) {			// Check application based timers
     case NO_TIMERS:
@@ -89,7 +137,8 @@ void	handle_app_timer(int timer) {
 
     case TIMER_APPLICATION:
         debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
-	send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+	check_heating_setpoint();	// Go check temperature against setpoint
+	add_timer(TIMER_APPLICATION, 15); // wait for another go" in y seconds
 
 	break;
 

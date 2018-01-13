@@ -28,11 +28,13 @@ THE SOFTWARE.
 #define PAYLOAD_DATA_LEN 12
 
 struct setpoint_pkt {				// Setpoint data packet
-    int	value;					// Setpoint value
+    float 	value;				// Setpoint value
     };
 
 struct callsat_pkt {				// CALL & SAT  data packet
-    int	value;					// Setpoint value
+    float	temp;				// Current Temperature
+    float 	setpoint;			// Setpoint value
+    int 	boost;				// Boost status
     };
 
 union payload_data {				// Union of possible payloads
