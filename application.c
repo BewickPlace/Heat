@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "networks.h"
 #include "application.h"
 #include "dht11.h"
+#include "config.h"
 #include "heat.h"
 
 //
@@ -134,12 +135,24 @@ void	handle_app_timer(int timer) {
     case NO_TIMERS:
 	break;				// No timer, just skip through
 
-
     case TIMER_APPLICATION:
         debug(DEBUG_ESSENTIAL, "Handle App timeout\n");
-	check_heating_setpoint();	// Go check temperature against setpoint
-	add_timer(TIMER_APPLICATION, 15); // wait for another go" in y seconds
+	break;
 
+    case TIMER_CONTROL:
+        debug(DEBUG_ESSENTIAL, "Handle Control timeout\n");
+	if (app.operating_mode == OPMODE_MASTER) {
+	    load_configuration_data();
+	} else {
+		// no actions yet"
+	}
+	add_timer(TIMER_CONTROL, 20); // wait for another go" in y seconds
+	break;
+
+    case TIMER_SETPOINT:
+        debug(DEBUG_ESSENTIAL, "Handle Setpoint timeout\n");
+	check_heating_setpoint();	// Go check temperature against setpoint
+	add_timer(TIMER_SETPOINT, 15);	// wait for another go" in y seconds
 	break;
 
     case TIMER_BOOST:			// Noost Timeout

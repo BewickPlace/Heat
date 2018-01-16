@@ -145,10 +145,12 @@ int main(int argc, char **argv) {
 	break;
 
     case OPMODE_SLAVE:
-	add_timer(TIMER_APPLICATION, 15);		// Set to kick application in y seconds
+//	dd_timer(TIMER_APPLICATION, 15);		// Set to kick application in y seconds
+	add_timer(TIMER_SETPOINT, 15);			// Set to refresh setpoint in y seconds
 	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;
     }
+    add_timer(TIMER_CONTROL, 1);			// Set to rperform Master & slabe control actions in y seconds
 
     while (!heat_shutdown) {					// While NOT shutdown
 	wait_on_network_timers(); 			// Wait for message or timer expiory
