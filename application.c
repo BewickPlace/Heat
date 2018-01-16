@@ -101,26 +101,25 @@ void	check_heating_setpoint() {
 void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_len) {
 
     if( payload_len == 0) { return; }		// skip out if nothing to do
-    printf("Node: %s\n", node_name);
     switch(payload-> type) {
     case PAYLOAD_TYPE:
-	debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->d.data, payload_len);
+	debug(DEBUG_ESSENTIAL, "Payload Received from %s of type %d %s, len %d\n", node_name, payload->type, payload->d.data, payload_len);
 	break;
 
     case HEAT_SETPOINT:
-	debug(DEBUG_TRACE, "Heat Setpoint %f\n",payload->d.setpoint.value);
+	debug(DEBUG_TRACE, "Heat @ %s Setpoint %f\n", node_name, payload->d.setpoint.value);
 	break;
 
     case HEAT_CALL:
-	debug(DEBUG_TRACE, "Heat CALL for heat %.01f:%.01f:%d\n", payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	debug(DEBUG_TRACE, "CALL from %s for heat %.01f:%.01f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
 	break;
 
     case HEAT_SAT:
-	debug(DEBUG_TRACE, "Heat Heat SATisfied %.01f:%0.1f:%d\n",payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	debug(DEBUG_TRACE, "Heat @ %s SATisfied %.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
 	break;
 
     default:
-	debug(DEBUG_ESSENTIAL, "Unexpected App Msg (%d)\n", payload->type);
+	debug(DEBUG_ESSENTIAL, "Unexpected App Msg (%d) from node: %s\n", payload->type, node_name);
 	break;
 
     }
