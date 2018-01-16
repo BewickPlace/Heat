@@ -48,4 +48,6 @@ int	check_timers();
 
 void	display_timers();
 
+int	dayoftheweek();
 
+int	timeto15min();

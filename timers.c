@@ -134,3 +134,30 @@ void	display_timers() {
 	    }
 	}
 }
+
+//
+//	get the day of the week (0..6) aligned Mon-Sunt
+//	note this matches the profiles index
+//
+
+int	dayoftheweek() {
+    time_t	seconds;
+    struct tm	*info;
+
+    seconds = time(NULL);		// get the time
+    info = localtime(&seconds);		// convert into strctured time
+    return((info->tm_wday+1)%7);	// return the day of the week, aligned Mon to Sun
+}
+
+#define	MIN15	(15*60)
+//
+//	get the time (in secs) to next 15 minute bouldry
+//
+int	timeto15min() {
+    time_t	seconds = time(NULL);;  // get the time
+
+    seconds = seconds % MIN15;		// get the remauinder of 15 minutes
+    seconds = MIN15 - seconds;		// and establish the to go until the next boundry
+    return((int)seconds);		// return this figure
+}
+
