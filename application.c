@@ -53,8 +53,7 @@ THE SOFTWARE.
 //
 
 void	notify_link_up() {
-    app.active_node = find_active_node();				// record which node is active
-	printf("Active node: %d\n", app.active_node);
+	app.active_node = find_active_node();				// record which node is active
 
 	add_timer(TIMER_CONTROL, 1);					// trigger a review of control actions
     }
@@ -65,7 +64,6 @@ void	notify_link_up() {
 
 void	notify_link_down() {
     app.active_node = find_active_node();				// record if any is active
-	printf("Active node: %d\n", app.active_node);
     }
 
 //
