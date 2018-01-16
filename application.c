@@ -108,8 +108,8 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 
     case HEAT_SETPOINT:
 	debug(DEBUG_TRACE, "Heat @ %s Setpoint %0.1f:%0.1f\n", node_name, payload->d.setpoint.value, payload->d.setpoint.hysteresis);
-	app.setpoint = payload->d.callsat.setpoint;		// Set new values
-	app.hysteresis = payload->d.callsat.hysteresis;		// to be picked up at next check
+	app.setpoint = payload->d.setpoint.value;		// Set new values
+	app.hysteresis = payload->d.setpoint.hysteresis;	// to be picked up at next check
 	break;
 
     case HEAT_CALL:
