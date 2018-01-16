@@ -307,7 +307,7 @@ void	display_live_network() {
 //
 int	check_network_msg() {
 
-	return(FD_ISSET(netsock, &readfds));
+ 	return(FD_ISSET(netsock, &readfds));
 }
 
 //
@@ -331,6 +331,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     msg.msg_iovlen = 1;
 
     rc = recvmsg(netsock, &msg, 0);
+    if (rc < EAGAIN) { goto EndError; }				//  If EAGAIN, skip to end without Warning message
     ERRORCHECK( rc < 0, "Read message failed", ReadError);
 
     ERRORCHECK( rc < 2, "Truncated packet", EndError);
