@@ -46,7 +46,6 @@ THE SOFTWARE.
 #include "networks.h"
 #include "application.h"
 #include "dht11.h"
-#include "config.h"
 #include "heat.h"
 
 //

@@ -86,9 +86,8 @@ struct payload_pkt {
     };						// Expand definition of payload here
 
 void    notify_link_up();
-
 void    notify_link_down();
-
 void	handle_app_msg(char *node_name, struct payload_pkt *packet, int payload_len);
-
 void	handle_app_timer(int timer);
+
+void    load_configuration_data();              // Main process
