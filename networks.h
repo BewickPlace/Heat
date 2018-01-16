@@ -21,6 +21,8 @@ THE SOFTWARE.
 */
 
 #define	NO_NETWORKS 10
+#define HOSTNAME_LEN    14                                      // Max supported host name length including null
+
 
 #define NET_STATE_UNKNOWN 0
 #define NET_STATE_DOWN 	1
@@ -50,6 +52,6 @@ int	find_active_node();
 
 int	check_network_msg();
 
-void	handle_network_msg(char *payload, int *payload_len);
+void	handle_network_msg(char *node_name, char *payload, int *payload_len);
 
 int	send_to_node(int node, char *payload, int payload_len);

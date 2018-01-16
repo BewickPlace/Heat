@@ -125,6 +125,7 @@ int main(int argc, char **argv) {
     int payload_len;					// length of payload returned
     struct payload_pkt app_data;			// App payload data
     pthread_t display_thread, monitor_thread;		// thread IDs
+    char 	node_name[HOSTNAME_LEN];			// Node name
 
     app.setpoint = 18.0;				// Start with dummy setpoint
 
@@ -150,14 +151,14 @@ int main(int argc, char **argv) {
 	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;
     }
-    add_timer(TIMER_CONTROL, 1);			// Set to rperform Master & slabe control actions in y seconds
+    add_timer(TIMER_CONTROL, 1);			// Set to perform Master & slabe control actions in y seconds
 
     while (!heat_shutdown) {					// While NOT shutdown
 	wait_on_network_timers(); 			// Wait for message or timer expiory
 
 	if (check_network_msg()) {			// If a message is available
-	    handle_network_msg((char *)&app_data, &payload_len); // handle the network message
-	    handle_app_msg(&app_data, payload_len);	// handle application specific messages
+	    handle_network_msg(&node_name[0],(char *)&app_data, &payload_len); // handle the network message
+	    handle_app_msg(node_name, &app_data, payload_len);	// handle application specific messages
 	}
 	timer = check_timers();				// check which timer has expired
 	switch (timer) { 				//

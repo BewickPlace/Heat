@@ -55,6 +55,9 @@ THE SOFTWARE.
 
 void	notify_link_up() {
     app.active_node = find_active_node();				// record which node is active
+	printf("Active node: %d\n", app.active_node);
+
+	add_timer(TIMER_CONTROL, 1);					// trigger a review of control actions
     }
 
 //
@@ -63,6 +66,7 @@ void	notify_link_up() {
 
 void	notify_link_down() {
     app.active_node = find_active_node();				// record if any is active
+	printf("Active node: %d\n", app.active_node);
     }
 
 //
@@ -95,10 +99,10 @@ void	check_heating_setpoint() {
 //	Handle incomming Application messages
 //
 
-void	handle_app_msg(struct payload_pkt *payload, int payload_len) {
+void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_len) {
 
     if( payload_len == 0) { return; }		// skip out if nothing to do
-
+    printf("Node: %s\n", node_name);
     switch(payload-> type) {
     case PAYLOAD_TYPE:
 	debug(DEBUG_ESSENTIAL, "Payload Received of type %d %s, len %d\n", payload->type, payload->d.data, payload_len);
@@ -146,7 +150,7 @@ void	handle_app_timer(int timer) {
 	} else {
 		// no actions yet"
 	}
-	add_timer(TIMER_CONTROL, 20); // wait for another go" in y seconds
+	add_timer(TIMER_CONTROL, timeto15min()); // wait for the next 15 minute boundry
 	break;
 
     case TIMER_SETPOINT:

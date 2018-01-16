@@ -49,7 +49,6 @@ void	update_my_ip_details();
 void	cancel_reply_timer();
 void	handle_delay_calc(int node, struct timeval t1, struct timeval t2, struct timeval t3, struct timeval t4, time_t remote_delay);
 
-#define HOSTNAME_LEN	14					// Max supported host name length including null
 #define	MAX_BUFFER 200						// Maximum  network buffer size
 
 struct net {							// Network descriptior
@@ -314,7 +313,7 @@ int	check_network_msg() {
 //
 //	Handle Network Message
 //
-void	handle_network_msg(char *payload, int *payload_len) {
+void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     char full_message[MAX_BUFFER];				// Full buffer
     struct test_msg *message = (struct test_msg*)full_message;	// Our Test Msg mapped over full buffer
     struct iovec iovec;
@@ -341,6 +340,7 @@ void	handle_network_msg(char *payload, int *payload_len) {
     if ((message->type == MSG_TYPE_PAYLOAD) &&			// if this is a payload packet
 	(*payload_len != 0)) {
 	memcpy(payload, &full_message[sizeof(struct test_msg)], *payload_len);	// copy it back to the users byffer
+	memcpy(node_name, message->src_name, HOSTNAME_LEN);	// Return Hostname
 	return;							// and return
     }
 
