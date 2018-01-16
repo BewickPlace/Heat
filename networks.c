@@ -485,19 +485,29 @@ ENDERROR;
 }
 
 //
-//	Find any Active nodes & return id
+//	Get the Active nodes id from the name
+//	find any node if name blank
 //
-int	find_active_node() {
+int	get_active_node(char *name) {
     int node;
     int found = -1;
 
     for(node = 0; node < NO_NETWORKS; node++) {			// Look at each network
 	if (other_nodes[node].state == NET_STATE_UP) {		// and check if marked as up
-	    found = node;					// identify active node found
-	    break;
+	    if ((strcmp(name, "") == 0) |			// If looing for any
+		(strcmp(name, other_nodes[node].name) == 0)) {	// or looking for specific
+		found = node;					// identify active node found
+	    	break;
+	    }
 	}
     }
     return( found );
+}
+//
+//	Find any Active nodes & return id
+//
+int	find_active_node() {
+    return( get_active_node(""));
 }
 //
 //	Update local host Name & IPv4 Address

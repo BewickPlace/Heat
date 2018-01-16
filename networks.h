@@ -44,6 +44,8 @@ void	expire_live_nodes();
 
 void	display_live_network();
 
+int	get_active_node(char *name);
+
 int	find_active_node();
 
 int	check_network_msg();
