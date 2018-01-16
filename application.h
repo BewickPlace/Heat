@@ -38,7 +38,7 @@ struct profile {				// Daily profile of Timeblock changes
 
 struct node {					// Node information including  daily profiles
     char	name[NAMELEN];
-    int		network_id;
+//    int		network_id;
     float	hysteresis;
     };
 

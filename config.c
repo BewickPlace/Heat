@@ -261,14 +261,8 @@ ENDERROR;
 //
 
 void	initialise_configuration() {
-    int	zone, node = 0;;
 
     memset(&network,0, sizeof(network));		// Seroise internal configuration data
-
-    for(zone = 0; zone < NUM_ZONES; zone++) {
-    for(node = 0; node < NUM_NODES_IN_ZONE; node++) {
-	network.zones[zone].nodes[node].network_id = -1;
-    }}
 }
 
 #define MAX_CONFIG_DATA 500
