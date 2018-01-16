@@ -183,7 +183,7 @@ int	dht_interpret_data() {
 ERRORBLOCK(ReadError);
     char	string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
 
-    debug(DEBUG_TRACE, "DHT11 Incomplete Read data\n");
+    debug(DEBUG_DETAIL, "DHT11 Incomplete Read data\n");
     sprintf(string, "Timings:   Low - ");
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     sprintf(string, "%s\n", string);
