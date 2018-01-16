@@ -6,9 +6,9 @@ DEFINES = $(PLATFORM_DEFINES)
 
 CFLAGS = $(CDEBUGFLAGS) $(DEFINES) $(EXTRA_DEFINES)
 
-SRCS = heat.c timers.c networks.c errorcheck.c application.c dht11.c display.c
+SRCS = heat.c timers.c networks.c errorcheck.c application.c dht11.c display.c config.c
 
-OBJS = heat.o timers.o networks.o errorcheck.o application.o dht11.o display.o
+OBJS = heat.o timers.o networks.o errorcheck.o application.o dht11.o display.o config.o
 
 LDLIBS = -lrt -lwiringPi -lpthread
 

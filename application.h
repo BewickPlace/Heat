@@ -20,6 +20,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#define	NAMELEN		14			// Length of names allowed
+#define MAX_TIME_BLOCKS 10			// time change blocks in a profile
+#define MAX_PROFILES	10			// total number of profiles
+#define NUM_NODES_IN_ZONE 2			// Max nodes per zone
+#define NUM_ZONES	2			// Max zones supported
+
+struct	timeblock {				// Setpoint  Change Time  Block
+    time_t	time;
+    float	setpoint;
+    };
+
+struct profile {				// Daily profile of Timeblock changes
+    char	name[NAMELEN];
+    struct timeblock block[MAX_TIME_BLOCKS];
+    };
+
+struct node {					// Node information including  daily profiles
+    char	name[NAMELEN];
+    int		network_id;
+    float	hysteresis;
+    };
+
+struct zone {					// Zonal information
+    char	name[NAMELEN];
+    struct node nodes[NUM_NODES_IN_ZONE];
+    struct profile *profile[7];
+    };
+
+struct network {				// Overall Network data
+    char	name[NAMELEN];
+    struct zone zones[NUM_ZONES];
+    };
+
+struct network 	network;			// Network data (held on Master node)
+struct profile	profiles[MAX_PROFILES];	// Profile data (held on Master node)
+
+
 #define PAYLOAD_TYPE	10			// Add possible payload types here
 #define HEAT_SETPOINT 	11			// New setpoint active
 #define HEAT_CALL	12			// CALL for heat
