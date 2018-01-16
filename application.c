@@ -163,13 +163,13 @@ void	handle_app_timer(int timer) {
 	break;
 
     case TIMER_BOOST:			// Noost Timeout
-        debug(DEBUG_TRACE, "Handle Boost timeout\n");
+        debug(DEBUG_INFO, "Handle Boost timeout\n");
 
 	boost_stop();			// Stop the boost
 	break;
 
     case TIMER_DISPLAY:			// Noost Timeout
-        debug(DEBUG_TRACE, "Handle Screen  timeout\n");
+        debug(DEBUG_INFO, "Handle Screen  timeout\n");
 
 	app.display = 0;		//  Turn display off at next screen refresh
 	break;
