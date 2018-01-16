@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
     app.setpoint = 18.0;				// Start with dummy setpoint
 
     parse_options(argc, argv);				// Parse command line parameters
-    debug(DEBUG_ESSENTIAL, "Heat starting in mode: %d\n", app.operating_mode);
+    debug(DEBUG_ESSENTIAL, "Heat starting in %s mode\n", (app.operating_mode ? "SLAVE": "MASTER"));
 
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks
     initialise_timers();				// and set all timers
