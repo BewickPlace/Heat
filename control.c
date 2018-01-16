@@ -86,7 +86,7 @@ void 	manage_SAT(char *node_name) {
 	node = match_node(node_name, zone);
 	if (node != -1) break;
     }
-    ERRORCHECK(node < 1, "Live node mismatch with configuration", NodeError);
+    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
