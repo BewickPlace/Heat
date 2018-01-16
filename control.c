@@ -66,7 +66,7 @@ void 	manage_CALL(char *node_name) {
     if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
 
     network.zones[zone].nodes[node].callsat = 1;			// Mark as CALLing
-    debug(DEBUG_TRACE,"Call for heat @ %s (%d:%d)\n",node_name, zone, node);
+    debug(DEBUG_ESSENTIAL, "Call for heat @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 1);					    	// interface with DHT11 module to action
 
@@ -94,7 +94,7 @@ void 	manage_SAT(char *node_name) {
     for(node = 0; node < NUM_NODES_IN_ZONE; node++) {			// Check if Zone fully satisfied
 	if (network.zones[zone].nodes[node].callsat) { goto EndError; } // Skip if CALL still required anywhere in zone
     }
-    debug(DEBUG_TRACE,"Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
+    debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 0);					    	// interface with DHT11 module to action
 
