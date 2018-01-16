@@ -23,4 +23,6 @@ THE SOFTWARE.
 void	boost_start();			// Boost Functions
 void	boost_stop();			//
 
+void	callsat(int zone, int callsat); // CALL / SAT zone heat
+
 void	monitor_process();		// Main process

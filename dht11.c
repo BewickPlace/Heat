@@ -49,6 +49,10 @@ typedef struct {
 static volatile pin Button_pin;			// Button related pin details
 
 //
+//	CALL?SAT  Heating Control Output Pin Mapping
+//
+static int zone_pin_map[2] = { 11, 13};		// Pin mapping maximum 2 zones
+//
 //	DHT11 device variables
 //
 
@@ -126,6 +130,16 @@ ENDERROR;
 }
 
 //
+//	CALL/SAT Zone Control Outputs
+//
+void	callsat(int zone, int callsat) {
+   int	pin = zone_pin_map[zone];			// Obtain the GPIO Pin for this zone
+
+    pinMode( pin, OUTPUT );				// Signal to DHT11 read request
+    digitalWrite( pin, callsat );			// Write CALL (HIGH) or SAT (LOW)
+}
+
+//
 //	DHT Signal Read Request
 //
 
@@ -183,7 +197,7 @@ int	dht_interpret_data() {
 ERRORBLOCK(ReadError);
     char	string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
 
-    debug(DEBUG_DETAIL, "DHT11 Incomplete Read data\n");
+    debug(DEBUG_INFO, "DHT11 Incomplete Read data\n");
     sprintf(string, "Timings:   Low - ");
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     sprintf(string, "%s\n", string);
@@ -227,7 +241,7 @@ void read_dht11() {
     }
     ERRORCHECK(i== MAX_DHT_RETRYS, "DHT11 Persistant Read Faulure", EndError);
     f = dht11_data[2] * 9. / 5. + 32;
-    debug(DEBUG_TRACE, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
+    debug(DEBUG_INFO, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
 
     f = (float)dht11_data[2] + ((float)dht11_data[3]/10.0);
 

@@ -43,6 +43,7 @@ THE SOFTWARE.
 //#include <net/if.h>
 
 #include "errorcheck.h"
+#include "dht11.h"
 #include "application.h"
 
 //
@@ -186,7 +187,7 @@ int	parse_zone(char **haystack) {
 
 	for (i = 0; i < 7; i++) {		// find the daily profiles
 	    p = find_key(p, "profile", &name[0], block_end); // get the name of profiles in this block
-	    network.zones[zone].profile[i] = match_profile(name);
+	    network.zones[zone].profiles[i] = match_profile(name);
 	}
 	zone++;
     }
@@ -243,7 +244,7 @@ int	parse_profile(char **haystack) {
 	p = find_key(p, "name", &profiles[profile].name[0],block_end); // get the name within this block
 
 	for (i = 0; i < MAX_TIME_BLOCKS; i++) {	// find the change blocks
-	    p = find_change( p, "change", &profiles[profile].block[i].time, &profiles[profile].block[i].setpoint, block_end); // get the time & setpoint
+	    p = find_change( p, "change", &profiles[profile].blocks[i].time, &profiles[profile].blocks[i].setpoint, block_end); // get the time & setpoint
 	    if (p == NULL) { break; }
 	}
 	*haystack = block_end;			// Adjust pointer
@@ -261,8 +262,12 @@ ENDERROR;
 //
 
 void	initialise_configuration() {
+    int	i;
 
     memset(&network,0, sizeof(network));		// Seroise internal configuration data
+    for( i=0; i < NUM_ZONES; i++) {			// For each zone
+	callsat(i, 0);					// Ensure output is off
+    }
 }
 
 #define MAX_CONFIG_DATA 500

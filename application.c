@@ -79,16 +79,18 @@ void	check_heating_setpoint() {
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
 	    app_data.d.callsat.temp  = app.temp;
 	    app_data.d.callsat.setpoint = app.setpoint;
+	    app_data.d.callsat.hysteresis = app.hysteresis;
 	    app_data.d.callsat.boost = app.boost;
-	    debug(DEBUG_TRACE, "Heat SATisfied %0.1f:%.01f:%d\n", app.temp, app.setpoint, app.boost);
+	    debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
 
 	} else if (app.temp < (app.setpoint + app.boost - app.hysteresis)) {
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;
 	    app_data.d.callsat.setpoint = app.setpoint;
+	    app_data.d.callsat.hysteresis = app.hysteresis;
 	    app_data.d.callsat.boost = app.boost;
-	    debug(DEBUG_TRACE, "CALL for %0.1f:%.01f:%d\n", app.temp, app.setpoint, app.boost);
+	    debug(DEBUG_INFO, "CALL for %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
 	}
     }
@@ -107,15 +109,20 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 	break;
 
     case HEAT_SETPOINT:
-	debug(DEBUG_TRACE, "Heat @ %s Setpoint %f\n", node_name, payload->d.setpoint.value);
+	debug(DEBUG_TRACE, "Heat @ %s Setpoint %0.1f:%0.1f\n", node_name, payload->d.setpoint.value, payload->d.setpoint.hysteresis);
+	app.setpoint = payload->d.callsat.setpoint;		// Set new values
+	app.hysteresis = payload->d.callsat.hysteresis;		// to be picked up at next check
 	break;
 
     case HEAT_CALL:
-	debug(DEBUG_TRACE, "CALL from %s for heat %.01f:%.01f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	debug(DEBUG_INFO, "CALL from %s for heat %.01f:%.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
+
+	manage_CALL(node_name);
 	break;
 
     case HEAT_SAT:
-	debug(DEBUG_TRACE, "Heat @ %s SATisfied %.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.boost);
+	debug(DEBUG_INFO, "Heat @ %s SATisfied %.01f:%0.1f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
+	manage_SAT(node_name);
 	break;
 
     default:
@@ -123,8 +130,6 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 	break;
 
     }
-
-
 }
 
 //
@@ -142,9 +147,11 @@ void	handle_app_timer(int timer) {
 	break;
 
     case TIMER_CONTROL:
-        debug(DEBUG_ESSENTIAL, "Handle Control timeout\n");
+        debug(DEBUG_INFO, "Handle Control timeout\n");
 	if (app.operating_mode == OPMODE_MASTER) {
 	    load_configuration_data();
+
+	    setpoint_control_process();
 	} else {
 		// no actions yet"
 	}
@@ -152,19 +159,19 @@ void	handle_app_timer(int timer) {
 	break;
 
     case TIMER_SETPOINT:
-        debug(DEBUG_ESSENTIAL, "Handle Setpoint timeout\n");
+        debug(DEBUG_INFO, "Handle Setpoint timeout\n");
 	check_heating_setpoint();	// Go check temperature against setpoint
 	add_timer(TIMER_SETPOINT, 15);	// wait for another go" in y seconds
 	break;
 
     case TIMER_BOOST:			// Noost Timeout
-        debug(DEBUG_ESSENTIAL, "Handle Boost timeout\n");
+        debug(DEBUG_TRACE, "Handle Boost timeout\n");
 
 	boost_stop();			// Stop the boost
 	break;
 
     case TIMER_DISPLAY:			// Noost Timeout
-        debug(DEBUG_ESSENTIAL, "Handle Screen  timeout\n");
+        debug(DEBUG_TRACE, "Handle Screen  timeout\n");
 
 	app.display = 0;		//  Turn display off at next screen refresh
 	break;

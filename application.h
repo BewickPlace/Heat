@@ -33,19 +33,20 @@ struct	timeblock {				// Setpoint  Change Time  Block
 
 struct profile {				// Daily profile of Timeblock changes
     char	name[NAMELEN];
-    struct timeblock block[MAX_TIME_BLOCKS];
+    struct timeblock blocks[MAX_TIME_BLOCKS];
     };
 
 struct node {					// Node information including  daily profiles
     char	name[NAMELEN];
 //    int		network_id;
     float	hysteresis;
+    int		callsat;
     };
 
 struct zone {					// Zonal information
     char	name[NAMELEN];
     struct node nodes[NUM_NODES_IN_ZONE];
-    struct profile *profile[7];
+    struct profile *profiles[7];
     };
 
 struct network {				// Overall Network data
@@ -66,11 +67,13 @@ struct profile	profiles[MAX_PROFILES];	// Profile data (held on Master node)
 
 struct setpoint_pkt {				// Setpoint data packet
     float 	value;				// Setpoint value
+    float	hysteresis;			// Hysteresis
     };
 
 struct callsat_pkt {				// CALL & SAT  data packet
     float	temp;				// Current Temperature
     float 	setpoint;			// Setpoint value
+    float	hysteresis;			// Hysteresis
     int 	boost;				// Boost status
     };
 
@@ -91,3 +94,8 @@ void	handle_app_msg(char *node_name, struct payload_pkt *packet, int payload_len
 void	handle_app_timer(int timer);
 
 void    load_configuration_data();              // Main process
+int	match_node(char *name, int zone);
+
+void	setpoint_control_process();
+void	manage_CALL(char *node_name);
+void	manage_SAT(char *node_name);
