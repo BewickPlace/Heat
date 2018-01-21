@@ -32,6 +32,10 @@ THE SOFTWARE.
 //#include <signal.h>
 //#include <assert.h>
 //#include <fcntl.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <signal.h>
 //#include <sys/time.h>
 //#include <time.h>
 //#include <sys/types.h>
@@ -51,7 +55,7 @@ THE SOFTWARE.
 #include "display.h"
 
 int 		heat_shutdown = 0;				// Shutdown flag
-struct app 	app = {OPMODE_MASTER, -1, 1, 0, 0.0, 0.0, 0.25};// Application key data
+struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 1, 0, 0.0, 0.0, 0.25};// Application key data
 
 void usage(char *progname) {
     printf("Usage: %s [options...]\n", progname);
@@ -65,10 +69,9 @@ void usage(char *progname) {
     printf("    -m, --master        Master operating mode\n");
     printf("    -s, --slave         Slave operating mode\n");
 
-    printf("    -l, --log=FILE      redirect shairport's standard output to FILE\n");
-    printf("                        If --error is not specified, it also redirects\n");
-    printf("                        error output to FILE\n");
-    printf("    -e, --error=FILE    redirect shairport's standard error output to FILE\n");
+    printf("    -c, --config=DIR    Network Configuration file directory\n");
+    printf("    -l, --log=FILE      redirect shairport's error output to FILE\n");
+    printf("    -t, --track=DIR     specify Directory for tracking file (.csv)\n");
 
     printf("\n");
 }
@@ -80,14 +83,15 @@ int parse_options(int argc, char **argv) {
         {"master",  no_argument,        NULL, 'm'},
         {"slave",   no_argument,        NULL, 's'},
 
+        {"config",  required_argument,  NULL, 'c'},
         {"log",     required_argument,  NULL, 'l'},
-        {"error",   required_argument,  NULL, 'e'},
+        {"track",   required_argument,  NULL, 't'},
         {NULL, 0, NULL, 0}
     };
     int opt;
 
     while ((opt = getopt_long(argc, argv,
-                              "+hmsvl:e:",
+                              "+hmsvc:l:t:",
                               long_options, NULL)) > 0) {
         switch (opt) {
             default:
@@ -103,16 +107,95 @@ int parse_options(int argc, char **argv) {
             case 'v':
                 debuglev++;
                 break;
-
-            case 'l':
-//                config.logfile = optarg;
+            case 'c':
+		app.confdir = optarg;
                 break;
-            case 'e':
-//                config.errfile = optarg;
+            case 'l':
+		app.logfile = optarg;
+                break;
+            case 't':
+		app.trackdir = optarg;
                 break;
         }
     }
     return optind;
+}
+
+//
+//	Open Correct Logfile
+//
+
+void	open_logfile() {
+
+    if (app.logfile) {					// Logfile is specified on command line
+        int log_fd = open(app.logfile,			// Open appropriately
+                O_WRONLY | O_CREAT | O_APPEND,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+							// Warn and continue if can't open
+	ERRORCHECK( log_fd < 0, "Could not open logfile", EndError);
+
+        dup2(log_fd, STDERR_FILENO);
+        setvbuf (stderr, NULL, _IOLBF, BUFSIZ);
+    }
+ENDERROR;
+}
+
+//
+//	Signal support functions
+//
+static void sig_ignore(int foo, siginfo_t *bar, void *baz) {
+}
+static void sig_shutdown(int foo, siginfo_t *bar, void *baz) {
+    heat_shutdown = 1;
+}
+
+//static void sig_child(int foo, siginfo_t *bar, void *baz) {
+//    pid_t pid;
+//    while ((pid = waitpid((pid_t)-1, 0, WNOHANG)) > 0) {
+//        if (pid == mdns_pid && !shutting_down) {
+//            die("MDNS child process died unexpectedly!");
+//        }
+//    }
+//}
+
+static void sig_logrotate(int foo, siginfo_t *bar, void *baz) {
+    open_logfile();
+}
+
+
+//
+//	Signal Setup
+//
+void signal_setup(void) {
+    // mask off all signals before creating threads.
+    // this way we control which thread gets which signals.
+    // for now, we don't care which thread gets the following.
+    sigset_t set;
+    sigfillset(&set);
+    sigdelset(&set, SIGINT);
+    sigdelset(&set, SIGTERM);
+    sigdelset(&set, SIGHUP);
+    sigdelset(&set, SIGSTOP);
+    sigdelset(&set, SIGCHLD);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
+
+    // setting this to SIG_IGN would prevent signalling any threads.
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = &sig_ignore;
+    sigaction(SIGUSR1, &sa, NULL);
+
+    sa.sa_flags = SA_SIGINFO | SA_RESTART;
+    sa.sa_sigaction = &sig_shutdown;
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+
+    sa.sa_sigaction = &sig_logrotate;
+    sigaction(SIGHUP, &sa, NULL);
+
+    sa.sa_sigaction = &sig_ignore;
+    sigaction(SIGCHLD, &sa, NULL);
 }
 
 //
@@ -126,10 +209,12 @@ int main(int argc, char **argv) {
     struct payload_pkt app_data;			// App payload data
     pthread_t display_thread, monitor_thread;		// thread IDs
     char 	node_name[HOSTNAME_LEN];			// Node name
+    signal_setup();					// Set up signal handling
 
     app.setpoint = 18.0;				// Start with dummy setpoint
 
     parse_options(argc, argv);				// Parse command line parameters
+    open_logfile();					// Open correct logfile
     debug(DEBUG_ESSENTIAL, "Heat starting in %s mode\n", (app.operating_mode ? "SLAVE": "MASTER"));
 
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks

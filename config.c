@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "errorcheck.h"
 #include "dht11.h"
 #include "application.h"
+#include "heat.h"
 
 //
 //	Local impleentation of Strpos
@@ -284,9 +285,11 @@ void load_configuration_data() {
     char	*unprocessed_data;			// pointer to unprocessed element of data
     size_t	size;					// size in bytes of data read
     int		rc;					// return code
+    char	conf_file[40];				// full path and file name
 
-    fp = fopen("heating.conf", "r");			// Open config file read only
-    ERRORCHECK(fp==NULL, "Configuration Open Error", EndError);
+    sprintf(conf_file, "%s%s", app.confdir, "heating.conf");
+    fp = fopen(conf_file, "r");				// Open config file read only
+    ERRORCHECK(fp==NULL, "Configuration Open Error", OpenError);
 
     rc = fstat(fileno(fp), &file_info);				// check the file details
     ERRORCHECK(rc < 0, "Configuration File Stat error", StatEnd);
@@ -318,6 +321,9 @@ void load_configuration_data() {
 
     debug(DEBUG_ESSENTIAL, "Load Configuration Complete\n");
     fclose(fp);
+
+ERRORBLOCK(OpenError);
+    debug(DEBUG_ESSENTIAL, "File: %s\n", conf_file);
 
 ERRORBLOCK(StatEnd);
     fclose(fp);

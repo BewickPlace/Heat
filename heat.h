@@ -26,6 +26,9 @@ THE SOFTWARE.
 struct app {					// Application key Data
     int		operating_mode;			// - operating mode
     int		active_node;			// - active node
+    char	*logfile;			// Debug log file
+    char	*confdir;			// Directory for Heating Network conf file
+    char	*trackdir;			// Directory for tracking (csv) file
     // Master specific data
     // - none
     // Slave specific data
