@@ -329,6 +329,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     msg.msg_namelen = sizeof(sin6);				// ??
     msg.msg_iov = &iovec;
     msg.msg_iovlen = 1;
+    *payload_len = 0;						// No payload yet
 
     rc = recvmsg(netsock, &msg, 0);
     if (rc < EAGAIN) { goto EndError; }				//  If EAGAIN, skip to end without Warning message
