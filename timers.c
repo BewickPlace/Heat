@@ -149,15 +149,17 @@ int	dayoftheweek() {
     return((info->tm_wday+1)%7);	// return the day of the week, aligned Mon to Sun
 }
 
-#define	MIN15	(15*60)
 //
-//	get the time (in secs) to next 15 minute bouldry
+//	get the time (in secs) to next X minute bouldry
 //
-int	timeto15min() {
+int timetoXmin(int X) {
     time_t	seconds = time(NULL);;  // get the time
 
-    seconds = seconds % MIN15;		// get the remauinder of 15 minutes
-    seconds = MIN15 - seconds;		// and establish the to go until the next boundry
+    seconds = seconds % (X * 60);	// get the remauinder of X minutes
+    seconds = (X * 60) - seconds;		// and establish the to go until the next boundry
     return((int)seconds);		// return this figure
 }
+
+int	timeto15min() { return(timetoXmin(15)); }
+int	timeto5min()  { return(timetoXmin(5)); }
 

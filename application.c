@@ -31,8 +31,8 @@ THE SOFTWARE.
 //#include <signal.h>
 //#include <assert.h>
 //#include <fcntl.h>
-//#include <sys/time.h>
-//#include <time.h>
+#include <sys/time.h>
+#include <time.h>
 //#include <sys/types.h>
 //#include <sys/socket.h>
 //#include <sys/uio.h>
@@ -67,7 +67,7 @@ void	notify_link_down() {
     }
 
 //
-//	Check heating setpoint
+//	Check heating setpoint (SLAVE)
 //
 void	check_heating_setpoint() {
     struct payload_pkt app_data;
@@ -92,6 +92,37 @@ void	check_heating_setpoint() {
 	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
 	}
     }
+}
+
+//
+//	Perform Temperature Logging (SLAVE)
+//
+void	perform_logging() {
+    char 	logfile[40];			// Log file
+    time_t	seconds;
+    struct tm	*info;
+    FILE	*log;
+    int	exists = 0;
+
+    if (app.trackdir == NULL) { goto EndError; }	// Do NOT log is directory not specified
+    seconds = time(NULL);				// get the time
+    info = localtime(&seconds);				// convert into strctured time
+    sprintf(logfile,"%s%s_%04d-%02d-%02d.csv", app.trackdir, "heat", info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
+
+    log = fopen(logfile, "r");				// Open  the file
+    if (log != NULL) {					// if file exists
+	exists = 1;
+	fclose(log);
+    }
+    log = fopen(logfile, "a"); 				// open Tracking file for Append
+    ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
+    if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
+    fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
+
+    fclose(log);
+ERRORBLOCK(OpenError);
+    debug(DEBUG_ESSENTIAL, "Logfile %s Append errno: %d\n2", logfile, errno);
+ENDERROR;
 }
 
 //
@@ -172,6 +203,12 @@ void	handle_app_timer(int timer) {
         debug(DEBUG_INFO, "Handle Screen  timeout\n");
 
 	app.display = 0;		//  Turn display off at next screen refresh
+	break;
+
+    case TIMER_LOGGING:
+        debug(DEBUG_INFO, "Handle Logging timeout\n");
+	perform_logging();		// Perform temperature logging (SLAVE)
+	add_timer(TIMER_LOGGING, timeto5min());// wait for next 5 minute boundty
 	break;
 
     default:

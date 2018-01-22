@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#define NO_TIMERS 	8				// Number of Timers
+#define NO_TIMERS 	9				// Number of Timers
 #define TIMER_NONE 	-1				// Invalid Timer
 #define TIMER_BROADCAST 0				// Broadcast Refresh Timer
 #define TIMER_PING 	1				// Ping timer
@@ -30,6 +30,7 @@ THE SOFTWARE.
 #define TIMER_SETPOINT 	5				// Boost timer
 #define TIMER_BOOST 	6				// Boost timer
 #define TIMER_DISPLAY 	7				// Display screen timout
+#define TIMER_LOGGING 	8				// Logging timeout
 
 struct timer_list {					// Timer datastructure
 		struct timeval timers[NO_TIMERS];	// Array of individual timers
@@ -51,3 +52,4 @@ void	display_timers();
 int	dayoftheweek();
 
 int	timeto15min();
+int	timeto5min();

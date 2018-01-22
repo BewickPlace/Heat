@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include "heat.h"
 
 //
-//		Manage Call for heat
+//		Manage Call for heat (MASTER)
 //
 
 void 	manage_CALL(char *node_name) {
@@ -75,7 +75,7 @@ ERRORBLOCK(NodeError);
 ENDERROR;
 }
 //
-//		Manage SAT heat
+//		Manage SAT heat (MASTER)
 //
 
 void 	manage_SAT(char *node_name) {
@@ -103,7 +103,7 @@ ERRORBLOCK(NodeError);
 ENDERROR;
 }
 //
-//		Manage Call for heat
+//		Perform Setpoint control (MASTER)
 //
 #define	HOURS24	(24*60*60)
 
