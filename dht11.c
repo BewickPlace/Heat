@@ -37,6 +37,7 @@ THE SOFTWARE.
 #define BUTTON_READ_PIN		5		// Read & Write Pins for illuminated button
 #define BUTTON_WRITE_PIN	7
 #define BUTTON_LONG_PRESS	3000		// 3 sec long press
+#define BUTTON_LONGER_PRESS	5000		// 5 sec long press
 #define BUTTON_EXTRALONG_PRESS	10000		// 10 sec extra long press
 
 typedef struct {
@@ -112,6 +113,10 @@ void	Button_interrupt() {
 	} else if (button_press > BUTTON_EXTRALONG_PRESS) {	// Extra Long press - shutdown
 	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
 	    heat_shutdown = -1;
+
+	} else if ((button_press > BUTTON_LONGER_PRESS) &&	// Longer press - extra boost
+		   (app.boost)) {			// when already boosting
+	    app.boost++;
 
 	} else {				// Long press - boost
 	    if(!app.boost) {			// If not already boosting
