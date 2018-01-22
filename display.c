@@ -69,7 +69,7 @@ void display_process() {
 	Print_time(normal, CENTRE(9), 0, White);
 
 	if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
-	} else {		sprintf(string, "n/a");	}
+	} else {		sprintf(string, " n/a " );	}
 	Print_text(string, wh, CENTRE(2*strlen(string)), 25, Cyan);
 
 	if (app.setpoint == 0.0) {		// If no target yet set display n/a
