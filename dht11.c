@@ -281,6 +281,7 @@ void monitor_process()	{
 	read_dht11();
 	delay( 10000 );
     }
+    boost_stop();				// Tidy up with no boost
 
 ENDERROR;
     return;
