@@ -85,6 +85,13 @@ void display_process() {
         delay(5000);
 
     }
+    Display_cls();
+    Print_text("Shutting", high, CENTRE(8), 20, Cyan);
+    Print_text("Down...", high, CENTRE(7), 40, Cyan);
+    Display_on();
+    delay(2000);
+
+
 ENDERROR
     Display_off();
 }
