@@ -65,10 +65,10 @@ void display_process() {
 	// should clear their space
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
-	Print_icon(SENSOR_ICON, RIGHT(2), 0, (app.temp == 0.0)? Red: Green);
+	Print_icon(SENSOR_ICON, RIGHT(2), 0, (app.temp <= 0.0)? Red: Green);
 	Print_time(normal, CENTRE(9), 0, White);
 
-	if (app.temp != 0.0) { 	sprintf(string, "%.01f", app.temp);
+	if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
 	} else {		sprintf(string, "n/a");	}
 	Print_text(string, wh, CENTRE(2*strlen(string)), 25, Cyan);
 
