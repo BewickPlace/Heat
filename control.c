@@ -81,6 +81,7 @@ ENDERROR;
 void 	manage_SAT(char *node_name) {
     int	zone;
     int node;
+    int i;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -91,8 +92,8 @@ void 	manage_SAT(char *node_name) {
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
-    for(node = 0; node < NUM_NODES_IN_ZONE; node++) {			// Check if Zone fully satisfied
-	if (network.zones[zone].nodes[node].callsat) { goto EndError; } // Skip if CALL still required anywhere in zone
+    for(i = 0; i < NUM_NODES_IN_ZONE; i++) {			// Check if Zone fully satisfied
+	if (network.zones[zone].nodes[i].callsat) { goto EndError; } // Skip if CALL still required anywhere in zone
     }
     debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
 
