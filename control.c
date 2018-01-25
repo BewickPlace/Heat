@@ -129,13 +129,14 @@ void 	setpoint_control_process(){
 
 	    debug(DEBUG_DETAIL, "Selecting Profile for Zone %s: %s\n", network.zones[zone].name, profile_ptr->name);
 
-	    for(change = MAX_TIME_BLOCKS-1; change > 0; change--) {// Seach through the timeblocks from top to bottom
+	    for(change = MAX_TIME_BLOCKS-1; change >= 0; change--) {// Seach through the timeblocks from top to bottom
 		timeblock_ptr = &profile_ptr->blocks[change];
 		if ((timeblock_ptr->setpoint != 0.0) &&		//Check Valid blocks until we reach
 		    (timeblock_ptr->time <= time24)) {		// we find one that is currently active
 		    debug(DEBUG_DETAIL, "Time block %d [%ld:%0.1f]\n", change, timeblock_ptr->time, timeblock_ptr->setpoint);
 		    break;
 		}
+		timeblock_ptr = NULL;				// This timeblock not active;
 	    }
 	    //	We have the valid timeblock for this Zone
 	    //  now apply it to each Zone
