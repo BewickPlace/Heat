@@ -112,7 +112,8 @@ void	Button_interrupt() {
 
 	} else if (button_press > BUTTON_EXTRALONG_PRESS) {	// Extra Long press - shutdown
 	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
-	    heat_shutdown = -1;
+	    heat_shutdown = 1;
+	    system("shutdown -h now");
 
 	} else if ((button_press > BUTTON_LONGER_PRESS) &&	// Longer press - extra boost
 		   (app.boost)) {			// when already boosting
