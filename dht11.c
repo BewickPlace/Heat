@@ -246,7 +246,7 @@ void read_dht11() {
 	dht_signal_read_request();		// and retry Read request
     }
     if ((i== MAX_DHT_RETRYS) &&  (app.temp < 0.0)) { goto ReadError; } // Fail but without (re-)reporting the error
-    ERRORCHECK(i== MAX_DHT_RETRYS, "DHT11 Persistant Read Faulure", ReadError);  // Fail
+    ERRORCHECK(i== MAX_DHT_RETRYS, "DHT11 Persistant Read Failure", ReadError);  // Fail
     f = dht11_data[2] * 9. / 5. + 32;
     debug(DEBUG_INFO, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
 
