@@ -45,7 +45,7 @@ bdaddr_t	zero_bdaddr;			// Zero address
 #define BLUE_ADDRESS	19			// Address length
 
 #define OVERALL_TIMER	60			// Overall cycle of actions
-#define IDENTIFY_TIMER	60			// Identify potential candidates
+#define IDENTIFY_TIMER	30			// Identify potential candidates
 #define MAINT_TIMER	5			// Maintain visibility checks
 #define VISIBLE_PERIOD	7			// Num of maintenance period
 #define VISIBLE_CHECK	4			// How often to check
@@ -90,9 +90,8 @@ void	identify_possible_candidates(int timer) {
     char	addr[BLUE_ADDRESS];
 
     if (heat_shutdown) return;
-
     if ((timer % IDENTIFY_TIMER)==0) {
-	debug(DEBUG_ESSENTIAL, "Identify possible candidates (%d)\n", timer);
+	debug(DEBUG_TRACE, "Bluetooth At Home status: %d\n", app.at_home);
 
 	// Obtain the list of visible Bluetooth Devices
 	responses = hci_inquiry(bluetooth_dev_id, HCI_LEN, HCI_RSP, NULL, &pinfo, IREQ_CACHE_FLUSH);
@@ -124,30 +123,38 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
     int i, rc;
     char	name[BLUE_NAME];
     char	addr[BLUE_ADDRESS];
+    int		found =0;
 
     if (heat_shutdown) return;
 
     if ((timer % MAINT_TIMER)==0) {
-	debug(DEBUG_ESSENTIAL, "Maintain candidates (%d)\n", timer);
-
     for (i=0; i < BLUETOOTH_CANDIDATES; i++) {				// check all valid (non-zero) candidates
 	if (heat_shutdown) return;
-	if ((memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0) &&
-	    (list[i].timer > 0)) {					// and timer hasn't expired
+	if (memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0) {
 	    if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
 		(list[i].timer < VISIBLE_CHECK)) {			// or every interval if mising!
 		rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
-	    	if (rc > -1) list[i].timer = VISIBLE_PERIOD+1;		// if identified reset visibility timer
+	    	if (rc > -1) {						// if identified ...
+		    if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "Bluetooth At Home: %s %s\n", name, addr);
+		    list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
+		}
 	    }
-	    list[i].timer--;						// Decrement visibity timer
+	    if (list[i].timer > 0) list[i].timer--;			// Decrement visibity timer
 	}
-	if (((list[i].timer == 0) && del) && 				// if timer has expired and delete is true
+	if ((list[i].timer == 0) && 					// if timer has expired 
 	    (memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0)) {
 	    ba2str(&list[i].bdaddr, addr);
-	    debug(DEBUG_ESSENTIAL, "Bluetooth visibility lost:  %s\n", addr);
-	    memcpy(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t));	// Mark address invalid for entry
+	    if (del) {							// Delete from potential list
+		debug(DEBUG_ESSENTIAL, "Bluetooth visibility lost for:  %s\n", addr);
+		memcpy(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t));// Mark address invalid for entry
+	    } else {
+		debug(DEBUG_ESSENTIAL, "Bluetooth no longer At Home:  %s\n", addr);
+		list[i].timer = -1;
+	    }
 	}
+	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
     }
+    if (!del) app.at_home = found;					// Update applicatio at home status
     }
 }
 
@@ -169,8 +176,7 @@ void proximity_process()	{
 	identify_possible_candidates(cycle_timer);	// Identify list of other potential candidates
 
 	maintain_candidates(cycle_timer, bluetooth.candidates, 0); // Maintain list of visible candidates
-	maintain_candidates(cycle_timer, bluetooth.possible_candidates, 1); // Maintain list of visible candidates
-
+	maintain_candidates(cycle_timer, bluetooth.possible_candidates, 1); // Maintain list of visible possible candidates
         cycle_timer = ((cycle_timer+1) % 60);
     }
     close(bluetooth_sock);

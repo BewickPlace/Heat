@@ -258,6 +258,30 @@ ENDERROR;
     return(0);
 }
 
+//	Parse Bluetooth
+int	parse_bluetooth(char **haystack) {
+    char	*p, *block_end = NULL;;
+    int		i;
+    char	addr[19];		// Bluetooth address string
+
+    p = find_block(*haystack, "bluetooth {");
+    ERRORCHECK( p == NULL, "Bluetooth Block not found", EndError);
+    block_end = find_block(*haystack, "}");
+    ERRORCHECK( block_end == NULL, "Bluetooth Block end not found", EndError);
+
+    for (i = 0; i < BLUETOOTH_CANDIDATES; i++) { 	// find as many devices as defined
+	p = find_key(p, "device", addr, block_end);	// extract devic addres string
+	if (p == NULL) { break; }
+	str2ba(addr, &bluetooth.candidates[i].bdaddr);	// and save as bluetooth address
+	bluetooth.candidates[i].timer = -1;		// and default timer
+    }
+    *haystack = block_end;			// Adjust pointer
+    return(1);
+
+ENDERROR;
+    return(0);
+}
+
 //
 //	Initialise Internal Configuration Data
 //
@@ -318,6 +342,9 @@ void load_configuration_data() {
 
     rc = parse_node(&unprocessed_data);			// Parse the node block
     ERRORCHECK(rc == 0, "Error parsing Node config", ParseError);
+
+    rc = parse_bluetooth(&unprocessed_data);		// Parse the bluetooth proximity block
+    ERRORCHECK(rc == 0, "Error parsing Bluetooth config", ParseError);
 
     debug(DEBUG_ESSENTIAL, "Load Configuration Complete\n");
     fclose(fp);
