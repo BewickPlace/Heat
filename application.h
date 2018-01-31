@@ -99,3 +99,5 @@ int	match_node(char *name, int zone);
 void	setpoint_control_process();
 void	manage_CALL(char *node_name);
 void	manage_SAT(char *node_name);
+
+void	proximity_process();			// Bluetooth proximity process

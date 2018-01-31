@@ -6,13 +6,13 @@ DEFINES = $(PLATFORM_DEFINES)
 
 CFLAGS = $(CDEBUGFLAGS) $(DEFINES) $(EXTRA_DEFINES)
 
-SRCS = heat.c timers.c networks.c errorcheck.c application.c dht11.c display.c config.c control.c
+SRCS = heat.c timers.c networks.c errorcheck.c application.c dht11.c display.c config.c control.c proximity.c
 
-OBJS = heat.o timers.o networks.o errorcheck.o application.o dht11.o display.o config.o control.o
+OBJS = heat.o timers.o networks.o errorcheck.o application.o dht11.o display.o config.o control.o proximity.o
 
 DEPS = heat.h timers.h networks.h errorcheck.h application.h dht11.h display.h
 
-LDLIBS = -lrt -lwiringPi -lpthread
+LDLIBS = -lrt -lwiringPi -lpthread -lbluetooth
 
 all: heat
 

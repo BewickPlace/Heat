@@ -19,10 +19,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#ifndef __BLUETOOTH_H
+#include <bluetooth/bluetooth.h>
+#endif
 
 #define	OPMODE_MASTER	0			// Application operating modes
 #define OPMODE_SLAVE	1			// Master (controller)/ Slave (Sensor)
 
+#define BLUETOOTH_CANDIDATES 8			// Number of bluetooth devices for proximity checking
 struct app {					// Application key Data
     int		operating_mode;			// - operating mode
     int		active_node;			// - active node
@@ -39,5 +43,16 @@ struct app {					// Application key Data
     float	hysteresis;			// - hysteresis
     };
 
+struct	proximity_block {
+    bdaddr_t	bdaddr;
+    int		timer;
+    };
+
+struct  bluetooth {				// Bluetooth specific data
+    struct proximity_block candidates[BLUETOOTH_CANDIDATES];
+    struct proximity_block possible_candidates[BLUETOOTH_CANDIDATES];
+    };
+
 extern int heat_shutdown;			// Signal heat shutdown between threads
 extern struct app app;				// Application key data
+extern struct bluetooth bluetooth;		// Bluetooth proximity data

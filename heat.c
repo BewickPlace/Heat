@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include <errno.h>
 #include <getopt.h>
 #include <pthread.h>
-
+#include <bluetooth/bluetooth.h>
 //#include <unistd.h>
 //#include <signal.h>
 //#include <assert.h>
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
     int		timer;					// timer index
     int payload_len;					// length of payload returned
     struct payload_pkt app_data;			// App payload data
-    pthread_t display_thread, monitor_thread;		// thread IDs
+    pthread_t display_thread, monitor_thread, proximity_thread;	// thread IDs
     char 	node_name[HOSTNAME_LEN];			// Node name
     signal_setup();					// Set up signal handling
 
@@ -223,7 +223,9 @@ int main(int argc, char **argv) {
     pthread_create(&monitor_thread, NULL, (void *) monitor_process, NULL);	// create Monitor thread
     ERRORCHECK( monitor_thread == 0, "Monitor thread creation failed\n", EndError);
     pthread_create(&display_thread, NULL, (void *) display_process, NULL);	// create display thread
-    ERRORCHECK( display_thread == 0, "Monitor thread creation failed\n", EndError);
+    ERRORCHECK( display_thread == 0, "Display thread creation failed\n", EndError);
+    pthread_create(&proximity_thread, NULL, (void *) proximity_process, NULL);	// create proximity thread
+    ERRORCHECK( proximity_thread == 0, "Proximity thread creation failed\n", EndError);
 
     switch (app.operating_mode) {
     case OPMODE_MASTER:					// Only Master nodes are responsible for broadcasting
@@ -275,6 +277,7 @@ int main(int argc, char **argv) {
 	DEBUG_FUNCTION( DEBUG_DETAIL, display_timers());
     }
     debug(DEBUG_ESSENTIAL, "Heat node starting shut down\n");
+	pthread_join(proximity_thread, NULL);
 	pthread_join(display_thread, NULL);
 	pthread_join(monitor_thread, NULL);
 
