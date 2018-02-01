@@ -275,7 +275,7 @@ void	expire_live_nodes() {
 	    (other_nodes[i].to == MSG_STATE_SENT)) {		// and awaiting outstanding reply
 	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
 	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // Re-Ping failed node
-	    debug(DEBUG_TRACE, "Link to %s failed, retry ping\n", other_nodes[i].name);
+	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
 	}
     }
 }
@@ -568,7 +568,10 @@ int	send_to_node(int node, char *payload, int payload_len) {
     ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down\n", EndError);	// Check Link UP
 
     rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, 0, payload, payload_len); // send out a specific message to this node
-    ERRORCHECK( rc < 0, "Network send error\n", EndError);
+    ERRORCHECK( rc < 0, "Network send error\n", SendError);
+
+ERRORBLOCK(SendError);
+    warn("Send error: Node %d, send error %d errno(%d)", node, rc, errno);
 
 ENDERROR;
     return(rc);
