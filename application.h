@@ -65,6 +65,10 @@ struct profile	profiles[MAX_PROFILES];	// Profile data (held on Master node)
 
 #define PAYLOAD_DATA_LEN 12
 
+#define SIZE_SETPOINT	(sizeof(struct setpoint_pkt)+sizeof(int))
+#define SIZE_CALL	(sizeof(struct callsat_pkt)+sizeof(int))
+#define SIZE_SAT	(sizeof(struct callsat_pkt)+sizeof(int))
+
 struct setpoint_pkt {				// Setpoint data packet
     float 	value;				// Setpoint value
     float	hysteresis;			// Hysteresis
