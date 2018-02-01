@@ -25,7 +25,7 @@ typedef struct alt_font {
         char    hori;                   // Horizontal size
         char    vert;                   // Vertical size
         char    bpl;                    // bytes per line of font
-        char    font[4][1+9];
+        char    font[5][1+9];
         } alt_font;
 
 #define Init_display()	\

@@ -38,13 +38,15 @@ THE SOFTWARE.
 static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
             {9, 0x00,0x00,0x00,0x00,0x00,0x00, 0x00, 0x00, 0x00 } ,  /*SPC */
             {9, 0x00,0xc0,0x00,0xF0,0x00,0xFc, 0x00, 0xFF, 0x00 } ,  /* !  */
-            {9, 0x81,0x7E,0x81,0x7E,0x81,0x7E, 0x00, 0x3C, 0x00 } ,  /* "  */
+            {9, 0x00,0x18,0x00,0x3C,0x00,0xFF, 0x00, 0x18, 0x00 } ,  /* "  */
+            {9, 0x00,0x00,0x44,0x28,0xFE,0xAA, 0x44, 0x00, 0x00 } ,  /* #  */
             {9, 0x00,0x00,0x00,0x00,0x00,0x00, 0x00, 0x00, 0x00 }    /*null*/
             }
         };
 
-#define WIFI_ICON       "!" 	        	// Wifi icon from Symbol font (Defibed above)
+#define WIFI_ICON       "!" 	        	// Wifi icon from Symbol font (Defined above)
 #define SENSOR_ICON     "\"" 	   	        // Sensor icon
+#define BLUETOOTH_ICON	"#"
 
 #define CENTRE(len)     (width-(6*len))/2       // Centre stringlength on screen
 #define RIGHT(len)      (width-(6*len))       // Right Align
@@ -66,7 +68,8 @@ void display_process() {
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
 	Print_icon(SENSOR_ICON, RIGHT(2), 0, (app.temp <= 0.0)? Red: Green);
-	Print_time(normal, CENTRE(9), 0, White);
+	Print_icon(BLUETOOTH_ICON, RIGHT(2)-10, 0, (!app.at_home)? Red: Blue);
+	Print_time(normal, CENTRE(9)-5, 0, White);
 
 	if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
 	} else {		sprintf(string, " n/a " );	}
