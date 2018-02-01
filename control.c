@@ -150,7 +150,7 @@ void 	setpoint_control_process(){
 			app_data.d.setpoint.value  = timeblock_ptr->setpoint;
 			app_data.d.setpoint.hysteresis = network.zones[zone].nodes[node].hysteresis;
 			debug(DEBUG_TRACE, "Heat Setpoint packet %0.1f:%0.1f to %s\n", app_data.d.setpoint.value, app_data.d.setpoint.hysteresis, network.zones[zone].nodes[node].name);
-			send_to_node(network_id, (char *) &app_data, sizeof(app_data));
+			send_to_node(network_id, (char *) &app_data, SIZE_SETPOINT);
 		    }
 		}
 	    }
