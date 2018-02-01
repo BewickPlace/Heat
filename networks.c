@@ -564,7 +564,6 @@ ENDERROR;
 //
 int	send_to_node(int node, char *payload, int payload_len) {
     int rc;
-printf("Payload: %d\n", payload_len);
     rc = -1;
     ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down\n", EndError);	// Check Link UP
 
