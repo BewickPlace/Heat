@@ -46,8 +46,8 @@ THE SOFTWARE.
 #include "dht11.h"
 #include "networks.h"
 #include "timers.h"
-#include "application.h"
 #include "heat.h"
+#include "application.h"
 
 //
 //		Manage Call for heat (MASTER)

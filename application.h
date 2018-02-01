@@ -62,12 +62,14 @@ struct profile	profiles[MAX_PROFILES];	// Profile data (held on Master node)
 #define HEAT_SETPOINT 	11			// New setpoint active
 #define HEAT_CALL	12			// CALL for heat
 #define HEAT_SAT	13			// heat SATisfied
+#define HEAT_CANDIDATES	14			// Bluetooth proximity candidates
 
 #define PAYLOAD_DATA_LEN 12
 
 #define SIZE_SETPOINT	(sizeof(struct setpoint_pkt)+sizeof(int))
 #define SIZE_CALL	(sizeof(struct callsat_pkt)+sizeof(int))
 #define SIZE_SAT	(sizeof(struct callsat_pkt)+sizeof(int))
+#define SIZE_CANDIDATES	((sizeof(struct proximity_block)*BLUETOOTH_CANDIDATES)+sizeof(int))
 
 struct setpoint_pkt {				// Setpoint data packet
     float 	value;				// Setpoint value
@@ -85,6 +87,7 @@ union payload_data {				// Union of possible payloads
     char	data[PAYLOAD_DATA_LEN];
     struct 	setpoint_pkt 	setpoint;
     struct	callsat_pkt 	callsat;
+    struct	proximity_block candidates[BLUETOOTH_CANDIDATES];
     };
 
 struct payload_pkt {
@@ -105,3 +108,5 @@ void	manage_CALL(char *node_name);
 void	manage_SAT(char *node_name);
 
 void	proximity_process();			// Bluetooth proximity process
+void	advise_bluetooth_candidates();		// advise candidates
+void	manage_candidates(struct proximity_block[]); // Manage new candidates list from Master
