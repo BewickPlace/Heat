@@ -44,9 +44,9 @@ THE SOFTWARE.
 #include "errorcheck.h"
 #include "timers.h"
 #include "networks.h"
+#include "heat.h"
 #include "application.h"
 #include "dht11.h"
-#include "heat.h"
 
 //
 //	Callback on Link Up status change
@@ -80,7 +80,7 @@ void	check_heating_setpoint() {
 	    app_data.d.callsat.hysteresis = app.hysteresis;
 	    app_data.d.callsat.boost = app.boost;
 	    debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
-	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
 	} else if (app.temp < (app.setpoint + app.boost - app.hysteresis)) {
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
@@ -89,7 +89,7 @@ void	check_heating_setpoint() {
 	    app_data.d.callsat.hysteresis = app.hysteresis;
 	    app_data.d.callsat.boost = app.boost;
 	    debug(DEBUG_INFO, "CALL for %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
-	    send_to_node(app.active_node, (char *) &app_data, sizeof(app_data));
+	    send_to_node(app.active_node, (char *) &app_data, SIZE_CALL);
 	}
     }
 }
@@ -143,6 +143,11 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 	app.hysteresis = payload->d.setpoint.hysteresis;	// to be picked up at next check
 	break;
 
+    case HEAT_CANDIDATES:
+	debug(DEBUG_INFO, "Heat Bluetooth Candidates eceived\n");
+ 	manage_candidates(payload->d.candidates);
+	break;
+
     case HEAT_CALL:
 	debug(DEBUG_INFO, "CALL from %s for heat %.01f:%.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
 
@@ -179,7 +184,7 @@ void	handle_app_timer(int timer) {
         debug(DEBUG_INFO, "Handle Control timeout\n");
 	if (app.operating_mode == OPMODE_MASTER) {
 	    load_configuration_data();
-
+	    advise_bluetooth_candidates();
 	    setpoint_control_process();
 	} else {
 		// no actions yet"

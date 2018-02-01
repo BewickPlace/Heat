@@ -33,8 +33,9 @@ THE SOFTWARE.
 #include <wiringPi.h>
 #include "errorcheck.h"
 //#include "timers.h"
-#include "application.h"
+#include "networks.h"
 #include "heat.h"
+#include "application.h"
 
 struct bluetooth bluetooth;			// Bluetooth candidate data
 static int	bluetooth_dev_id;		// Devide Id
@@ -163,7 +164,7 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 //
 
 void proximity_process()	{
-    int	cycle_timer = 0;
+    int	cycle_timer = (MAINT_TIMER*4)/5;		// Kick off processes after short delay
 
     str2ba("00:00:00:00:00:00", &zero_bdaddr);		// Create zero address
 
@@ -184,3 +185,54 @@ void proximity_process()	{
 ENDERROR;
 }
 
+//
+//	Advise bluetooth candicates
+//
+void	advise_bluetooth_candidates() {
+    int	node, network_id, zone;				// Active node
+    struct payload_pkt	app_data;			// Packet information
+
+    app_data.type = HEAT_CANDIDATES;			// Contruct CANDIDATES packet to be sent to slave
+    memcpy(app_data.d.candidates, bluetooth.candidates, (sizeof(struct proximity_block) * BLUETOOTH_CANDIDATES));
+
+    for ( zone = 0; zone < NUM_ZONES; zone++) {		//Check each Zone
+	for ( node = 0; node <  NUM_NODES_IN_ZONE; node++) { // and configured nodes
+	    if (strcmp(network.zones[zone].nodes[node].name, "") != 0) { // with valid name
+		network_id = get_active_node(network.zones[zone].nodes[node].name); //find if it is currently active
+		if (network_id >= 0) {
+		    debug(DEBUG_TRACE, "Heat Bluetooth Candidates for %s\n", network.zones[zone].nodes[node].name);
+		    send_to_node(network_id, (char *) &app_data, SIZE_CANDIDATES);
+		}
+	    }
+	}
+    }
+}
+
+//
+//	Manage Candidates
+//
+void	manage_candidates(struct proximity_block new_candidates[]) {
+    int i, new_slot;
+
+	// Merge Bluetooth candidate lists
+
+	// First Remove any existing nodes that do not appear in new list
+    for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
+	if (check_candidate_list(new_candidates, &bluetooth.candidates[i].bdaddr) < 0) {
+	    memcpy(&bluetooth.candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr));
+	    bluetooth.candidates[i].timer = 0;
+printf("Remove slot: %d\n", i);
+	}
+    }
+	// Then add back in any new candidaes not in the list
+    for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
+	if (check_candidate_list(bluetooth.candidates, &new_candidates[i].bdaddr) < 0) {
+	    new_slot = check_candidate_list(bluetooth.candidates, &zero_bdaddr);
+	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
+printf("Add slot: %d\n", i);
+	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
+	    bluetooth.candidates[i].timer = 0;
+	}
+    }
+ENDERROR;
+}

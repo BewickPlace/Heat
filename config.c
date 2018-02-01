@@ -44,8 +44,8 @@ THE SOFTWARE.
 
 #include "errorcheck.h"
 #include "dht11.h"
-#include "application.h"
 #include "heat.h"
+#include "application.h"
 
 //
 //	Local impleentation of Strpos
