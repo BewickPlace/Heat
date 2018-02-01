@@ -231,7 +231,7 @@ printf("Remove slot: %d\n", i);
 	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
 printf("Add slot: %d\n", i);
 	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
-	    bluetooth.candidates[i].timer = 0;
+	    bluetooth.candidates[i].timer = -1;
 	}
     }
 ENDERROR;
