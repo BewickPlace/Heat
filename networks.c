@@ -275,7 +275,9 @@ void	expire_live_nodes() {
 	    (other_nodes[i].to == MSG_STATE_SENT)) {		// and awaiting outstanding reply
 	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
 	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // Re-Ping failed node
-	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
+	    if (other_nodes[i].state != NET_STATE_DOWN) {
+		debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
+	    }
 	}
     }
 }
