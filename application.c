@@ -144,7 +144,7 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 	break;
 
     case HEAT_CANDIDATES:
-	debug(DEBUG_INFO, "Heat Bluetooth Candidates eceived\n");
+	debug(DEBUG_INFO, "Heat Bluetooth Candidates received\n");
  	manage_candidates(payload->d.candidates);
 	break;
 
