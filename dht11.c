@@ -243,6 +243,7 @@ void read_dht11() {
 	   (i < MAX_DHT_RETRYS)) {		// Too many Data Errors
 	i++;					// Increment error count
 	delay(2000);				// allow DHT11 to stabalise
+	if (heat_shutdown) goto EndError;	// nut exit if shutdown requested
 	dht_signal_read_request();		// and retry Read request
     }
     if ((i== MAX_DHT_RETRYS) &&  (app.temp < 0.0)) { goto ReadError; } // Fail but without (re-)reporting the error
@@ -258,12 +259,16 @@ ERRORBLOCK(ReadError);
 ENDERROR;
 }
 
+#define	DHT11_OVERALL	(60)			// DHT11 Cycle overall timer
+#define DHT11_READ	(10)			// DHT11 Read cycle
+
 //
 //	Monitor Sensor Process
 //
 
 void monitor_process()	{
     int	rc = -1;
+    int cycle_time = DHT11_OVERALL;
 
     ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
 
@@ -279,8 +284,11 @@ void monitor_process()	{
     delay( 2000 );				// Allow time for DHT11 to settle
 
     while ( !heat_shutdown )	{
-	read_dht11();
-	delay( 10000 );
+	if ((cycle_time % DHT11_READ) == 0) {
+	    read_dht11();
+	}
+	delay( 1000 );
+	cycle_time =( cycle_time + 1) % DHT11_OVERALL;
     }
     boost_stop();				// Tidy up with no boost
 
