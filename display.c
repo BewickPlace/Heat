@@ -67,8 +67,8 @@ void display_process() {
 	// should clear their space
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
-	Print_icon(SENSOR_ICON, RIGHT(2), 0, (app.temp <= 0.0)? Red: Green);
-	Print_icon(BLUETOOTH_ICON, RIGHT(2)-10, 0, (!app.at_home)? Red: Blue);
+	Print_icon(SENSOR_ICON, RIGHT(2)+3, 0, (app.temp <= 0.0)? Red: Green);
+	Print_icon(BLUETOOTH_ICON, RIGHT(2)-9, 0, (!app.at_home)? Red: Blue);
 	Print_time(normal, CENTRE(9)-5, 0, White);
 
 	if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
