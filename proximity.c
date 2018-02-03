@@ -47,7 +47,7 @@ bdaddr_t	zero_bdaddr;			// Zero address
 #define BLUE_ADDRESS	19			// Address length
 
 #define OVERALL_TIMER	(60*60)			// Overall cycle of actions
-#define IDENTIFY_TIMER	(60*10)			// Identify potential candidates
+#define IDENTIFY_TIMER	(60*60)			// Identify potential candidates
 #define MAINT_TIMER	(60*5)			// Maintain visibility checks
 #define VISIBLE_PERIOD	7			// Num of maintenance period
 #define VISIBLE_CHECK	4			// How often to check
