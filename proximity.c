@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
+#include <errno.h>
 
 #include <wiringPi.h>
 #include "errorcheck.h"
@@ -45,12 +46,13 @@ bdaddr_t	zero_bdaddr;			// Zero address
 #define BLUE_NAME	40			// Name length
 #define BLUE_ADDRESS	19			// Address length
 
-#define OVERALL_TIMER	60			// Overall cycle of actions
-#define IDENTIFY_TIMER	30			// Identify potential candidates
-#define MAINT_TIMER	5			// Maintain visibility checks
+#define OVERALL_TIMER	(60*60)			// Overall cycle of actions
+#define IDENTIFY_TIMER	(60*10)			// Identify potential candidates
+#define MAINT_TIMER	(60*5)			// Maintain visibility checks
 #define VISIBLE_PERIOD	7			// Num of maintenance period
 #define VISIBLE_CHECK	4			// How often to check
 
+void	display_candidates();
 
 //
 //	Check Bluetooth name
@@ -58,10 +60,11 @@ bdaddr_t	zero_bdaddr;			// Zero address
 int check_bluetooth_name(bdaddr_t bdaddr, char *name, char *addr) {
     int rc;
 
-    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 0);
+    debug(DEBUG_INFO, "Ckecking ");
+    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 1500);
     if (rc < 0) strcpy(name, "[unknown]");
     ba2str(&bdaddr, addr);
-//    printf("%s  %s (%d)\n", addr, name, rc);
+    debug(DEBUG_INFO, "%s ... %s\n", addr, name);
     return(rc);
 }
 
@@ -92,21 +95,25 @@ void	identify_possible_candidates(int timer) {
 
     if (heat_shutdown) return;
     if ((timer % IDENTIFY_TIMER)==0) {
-	debug(DEBUG_TRACE, "Bluetooth At Home status: %d\n", app.at_home);
+	debug(DEBUG_TRACE, "Bluetooth At Home status: %d (%d)\n", app.at_home, timer);
 
+	debug(DEBUG_INFO, "Inquiry\n");
 	// Obtain the list of visible Bluetooth Devices
 	responses = hci_inquiry(bluetooth_dev_id, HCI_LEN, HCI_RSP, NULL, &pinfo, IREQ_CACHE_FLUSH);
-	ERRORCHECK( responses < 0, "Bluetooth Inquiry error", EndError);
+	ERRORCHECK( responses < 0, "Bluetooth Inquiry error", BlueError);
+	debug(DEBUG_INFO, "Inquiry complete\n");
 
  	// Check if we can name them
 	for (i = 0; i < responses; i++) {
-	    rc = check_bluetooth_name(info[i].bdaddr, name, addr);		//  Get candidates name over bluetooth 
 	    if (heat_shutdown) return;
-	    if (rc < 0) goto next_candidate;					// if known (named) address
 	    rc = check_candidate_list(bluetooth.candidates, &info[i].bdaddr); 	// check if already present as full candidate
-	    if (rc != -1) goto next_candidate;					// if known (named) address
+	    if (rc != -1) goto next_candidate;
 	    rc = check_candidate_list(bluetooth.possible_candidates, &info[i].bdaddr); // check if already present
 	    if (rc != -1) goto next_candidate;
+
+	    rc = check_bluetooth_name(info[i].bdaddr, name, addr);		//  Get candidates name over bluetooth 
+	    if (rc < 0) goto next_candidate;					// if known (named) address
+
 	    rc = check_candidate_list(bluetooth.possible_candidates, &zero_bdaddr); // check for free slot
 	    if (rc < 0) goto next_candidate;					// add new candidate
 	    memcpy(&bluetooth.possible_candidates[rc].bdaddr, &info[i].bdaddr, sizeof(bdaddr_t));
@@ -115,6 +122,8 @@ void	identify_possible_candidates(int timer) {
 next_candidate:;
 	}
     }
+ERRORBLOCK(BlueError);
+    debug(DEBUG_ESSENTIAL, "Bluetooth error %d, errno %d\n", responses, errno);
 ENDERROR;
 	}
 //
@@ -155,6 +164,7 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 	}
 	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
     }
+    if (del) display_candidates();
     if (!del) app.at_home = found;					// Update applicatio at home status
     }
 }
@@ -178,7 +188,7 @@ void proximity_process()	{
 
 	maintain_candidates(cycle_timer, bluetooth.candidates, 0); // Maintain list of visible candidates
 	maintain_candidates(cycle_timer, bluetooth.possible_candidates, 1); // Maintain list of visible possible candidates
-        cycle_timer = ((cycle_timer+1) % 60);
+        cycle_timer = ((cycle_timer+1) % OVERALL_TIMER);
     }
     close(bluetooth_sock);
 
@@ -216,12 +226,21 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 
 	// Merge Bluetooth candidate lists
 
-	// First Remove any existing nodes that do not appear in new list
+	// First Remove any existing nodes from potential candidate list
+    for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
+	if ((memcmp(&new_candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr)) != 0) &&
+	    (check_candidate_list(bluetooth.possible_candidates, &new_candidates[i].bdaddr) > -1)) {
+	    memcpy(&bluetooth.possible_candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr));
+	    bluetooth.possible_candidates[i].timer = 0;
+	    debug(DEBUG_DETAIL, "Remove slot: %d from potentials\n", i);
+	}
+    }
+	// Then remove any existing nodes that do not appear in new list
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
 	if (check_candidate_list(new_candidates, &bluetooth.candidates[i].bdaddr) < 0) {
 	    memcpy(&bluetooth.candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr));
 	    bluetooth.candidates[i].timer = 0;
-printf("Remove slot: %d\n", i);
+	    debug(DEBUG_DETAIL, "Remove slot: %d\n", i);
 	}
     }
 	// Then add back in any new candidaes not in the list
@@ -229,10 +248,28 @@ printf("Remove slot: %d\n", i);
 	if (check_candidate_list(bluetooth.candidates, &new_candidates[i].bdaddr) < 0) {
 	    new_slot = check_candidate_list(bluetooth.candidates, &zero_bdaddr);
 	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
-printf("Add slot: %d\n", i);
+	    debug(DEBUG_DETAIL, "Add slot: %d in %d\n", i, new_slot);
 	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
 	    bluetooth.candidates[i].timer = -1;
 	}
     }
 ENDERROR;
+}
+
+//
+//	Display Candidates
+//
+void	display_candidates() {
+    int 	i;
+    char	addr[BLUE_ADDRESS];
+    char	string[100];
+
+    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
+
+	ba2str(&bluetooth.candidates[i].bdaddr, addr);
+	sprintf(string, "[%d] %s (%2d)   -", i, addr, bluetooth.candidates[i].timer);
+	ba2str(&bluetooth.possible_candidates[i].bdaddr, addr);
+	sprintf(string, "%s %s (%2d)\n", string, addr, bluetooth.possible_candidates[i].timer);
+	debug(DEBUG_DETAIL, string);
+    }
 }
