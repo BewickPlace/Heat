@@ -296,6 +296,7 @@ void	initialise_configuration() {
 }
 
 #define MAX_CONFIG_DATA 500
+#define ENTRIES		5
 
 static time_t	last_mtime = 0;				// Time config was last modified
 
@@ -305,7 +306,7 @@ static time_t	last_mtime = 0;				// Time config was last modified
 void load_configuration_data() {
     FILE	*fp;					// File Descriptor
     struct stat file_info;				// File status info
-    char	file_data[MAX_CONFIG_DATA][4];		// Buffer for file data
+    char	file_data[MAX_CONFIG_DATA][ENTRIES];	// Buffer for file data
     char	*unprocessed_data;			// pointer to unprocessed element of data
     size_t	size;					// size in bytes of data read
     int		rc;					// return code
@@ -321,12 +322,12 @@ void load_configuration_data() {
     if (file_info.st_mtime <= last_mtime) { goto StatEnd; } // If configuration hasn't change skip load
     last_mtime = file_info.st_mtime;
 
-    ERRORCHECK( file_info.st_size > (MAX_CONFIG_DATA *4), "Configuration file too big!", StatEnd);// check our buffer is large enough!!
+    ERRORCHECK( file_info.st_size > (MAX_CONFIG_DATA *ENTRIES), "Configuration file too big!", StatEnd);// check our buffer is large enough!!
     // Proceed with Loading configuration details
     debug(DEBUG_ESSENTIAL, "Load Configuration File\n");
     initialise_configuration();				// Re-initialise all elements of the config
 
-    size = fread(file_data, MAX_CONFIG_DATA, 4, fp);	// Read the file into memory
+    size = fread(file_data, MAX_CONFIG_DATA, ENTRIES, fp);	// Read the file into memory
     ERRORCHECK( size < 0, "Configuration Read Error", EndError);
 
     unprocessed_data = (char *)file_data;		// start at the beggining of the data
