@@ -98,7 +98,7 @@ void	boost_stop() {
 void	Button_interrupt() {
     int	button_press;				// Length of time button has been pressed
 
-    piHiPri(DHT_PRIORITY);			// ensure interrupt is given highest priority
+//    piHiPri(DHT_PRIORITY);			// ensure interrupt is given highest priority
     Button_pin.new_pin_state = digitalRead(BUTTON_READ_PIN);// check the new state of the pin
     if (Button_pin.new_pin_state == Button_pin.last_pin_state) { goto EndError; } // debounce...
     Button_pin.edge2 = millis();		// record edge timestamp
