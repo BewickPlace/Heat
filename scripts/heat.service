@@ -1,6 +1,7 @@
 [Unit]
 Description=WiPi Heating Control Service
 After=network.target
+After=bluetooth.target
 
 [Service]
 EnvironmentFile=/etc/heat.conf
