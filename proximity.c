@@ -257,8 +257,8 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
 	    bluetooth.candidates[new_slot].timer = -1;
 	}
-    display_candidates();
     }
+    display_candidates();
 ENDERROR;
 }
 
