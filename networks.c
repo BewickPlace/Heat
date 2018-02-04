@@ -525,17 +525,17 @@ void	update_my_ip_details() {
 
 
     rc = gethostname(my_hostname, HOSTNAME_LEN-1);		// Obtain local host name
-    ERRORCHECK(rc < 0, "Invalid host name\n", EndError);
+    ERRORCHECK(rc < 0, "Invalid host name", EndError);
 
     my_hostname[HOSTNAME_LEN-1] = '\0';				// Endure name  string terminated
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);			// find IPv4 socket
-    ERRORCHECK(fd < 0, "IPv4 Socket error\n", ErrnoError);
+    ERRORCHECK(fd < 0, "IPv4 Socket error", ErrnoError);
     ifr.ifr_addr.sa_family = AF_INET;
     strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
 
     rc = ioctl(fd, SIOCGIFADDR, &ifr);
-    ERRORCHECK(rc < 0, "Invalid host name\n", ErrnoError);
+    ERRORCHECK(rc < 0, "Invalid host name", ErrnoError);
     close(fd);
 
     memcpy(&my_ipv4_addr, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), SIN4_LEN);
