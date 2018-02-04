@@ -293,6 +293,12 @@ void	initialise_configuration() {
     for( i=0; i < NUM_ZONES; i++) {			// For each zone
 	callsat(i, 0);					// Ensure output is off
     }
+
+    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {		// Setup  default candidate list overwriting previous
+	bacpy(&bluetooth.candidates[i].bdaddr, BDADDR_ANY);
+	bluetooth.candidates[i].timer = 0;
+	// leave potential candidates untouched
+    }
 }
 
 #define MAX_CONFIG_DATA 500
