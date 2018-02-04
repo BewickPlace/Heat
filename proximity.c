@@ -255,8 +255,9 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
 	    debug(DEBUG_DETAIL, "Add slot: %d in %d\n", i, new_slot);
 	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
-	    bluetooth.candidates[i].timer = -1;
+	    bluetooth.candidates[new_slot].timer = -1;
 	}
+    display_candidates();
     }
 ENDERROR;
 }
