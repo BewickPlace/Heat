@@ -60,6 +60,8 @@ void	display_candidates();
 int check_bluetooth_name(bdaddr_t bdaddr, char *name, char *addr) {
     int rc;
 
+    delay(3000);
+    if (heat_shutdown) return(-1);
     debug(DEBUG_INFO, "Ckecking ");
     rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 1500);
     if (rc < 0) strcpy(name, "[unknown]");
@@ -138,6 +140,9 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
     if (heat_shutdown) return;
 
     if ((timer % MAINT_TIMER)==0) {
+
+    if (!del) debug(DEBUG_TRACE, "Bluetooth Maintenance: %d (%d)\n", app.at_home, timer);
+
     for (i=0; i < BLUETOOTH_CANDIDATES; i++) {				// check all valid (non-zero) candidates
 	if (heat_shutdown) return;
 	if (memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0) {
