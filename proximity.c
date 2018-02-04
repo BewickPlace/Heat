@@ -41,7 +41,6 @@ THE SOFTWARE.
 struct bluetooth bluetooth;			// Bluetooth candidate data
 static int	bluetooth_dev_id;		// Devide Id
 static int	bluetooth_sock;			// Bluetooth socket
-bdaddr_t	zero_bdaddr;			// Zero address
 
 #define BLUE_NAME	40			// Name length
 #define BLUE_ADDRESS	19			// Address length
@@ -77,7 +76,7 @@ int	check_candidate_list(struct proximity_block list[], bdaddr_t *item) {
     int	i;
 
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {	// Search candidate list
-	if (memcmp(&list[i].bdaddr, item, sizeof(bdaddr_t)) == 0) break;
+	if (bacmp(&list[i].bdaddr, item) == 0) break;
     }
 return(i < BLUETOOTH_CANDIDATES? i : -1);
 }
@@ -116,9 +115,9 @@ void	identify_possible_candidates(int timer) {
 	    rc = check_bluetooth_name(info[i].bdaddr, name, addr);		//  Get candidates name over bluetooth 
 	    if (rc < 0) goto next_candidate;					// if known (named) address
 
-	    rc = check_candidate_list(bluetooth.possible_candidates, &zero_bdaddr); // check for free slot
+	    rc = check_candidate_list(bluetooth.possible_candidates, BDADDR_ANY); // check for free slot
 	    if (rc < 0) goto next_candidate;					// add new candidate
-	    memcpy(&bluetooth.possible_candidates[rc].bdaddr, &info[i].bdaddr, sizeof(bdaddr_t));
+	    bacpy(&bluetooth.possible_candidates[rc].bdaddr, &info[i].bdaddr);
 	    debug(DEBUG_ESSENTIAL, "Bluetooth potential candidate %s %s\n", name, addr);
 	    bluetooth.possible_candidates[rc].timer = VISIBLE_PERIOD;		//  Set countdown timer
 next_candidate:;
@@ -145,7 +144,7 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 
     for (i=0; i < BLUETOOTH_CANDIDATES; i++) {				// check all valid (non-zero) candidates
 	if (heat_shutdown) return;
-	if (memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0) {
+	if (bacmp(&list[i].bdaddr, BDADDR_ANY) != 0) {
 	    if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
 		(list[i].timer < VISIBLE_CHECK)) {			// or every interval if mising!
 		rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
@@ -157,11 +156,11 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 	    if (list[i].timer > 0) list[i].timer--;			// Decrement visibity timer
 	}
 	if ((list[i].timer == 0) && 					// if timer has expired 
-	    (memcmp(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t)) != 0)) {
+	    (bacmp(&list[i].bdaddr, BDADDR_ANY) != 0)) {
 	    ba2str(&list[i].bdaddr, addr);
 	    if (del) {							// Delete from potential list
 		debug(DEBUG_ESSENTIAL, "Bluetooth visibility lost for:  %s\n", addr);
-		memcpy(&list[i].bdaddr, &zero_bdaddr, sizeof(bdaddr_t));// Mark address invalid for entry
+		bacpy(&list[i].bdaddr, BDADDR_ANY);			// Mark address invalid for entry
 	    } else {
 		debug(DEBUG_ESSENTIAL, "Bluetooth no longer At Home:  %s\n", addr);
 		list[i].timer = -1;
@@ -180,8 +179,6 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 
 void proximity_process()	{
     int	cycle_timer = (MAINT_TIMER*4)/5;		// Kick off processes after short delay
-
-    str2ba("00:00:00:00:00:00", &zero_bdaddr);		// Create zero address
 
     bluetooth_dev_id = hci_get_route(NULL);
     bluetooth_sock = hci_open_dev( bluetooth_dev_id );
@@ -233,9 +230,9 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 
 	// First Remove any existing nodes from potential candidate list
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
-	if ((memcmp(&new_candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr)) != 0) &&
+	if ((bacmp(&new_candidates[i].bdaddr, BDADDR_ANY) != 0) &&
 	    (check_candidate_list(bluetooth.possible_candidates, &new_candidates[i].bdaddr) > -1)) {
-	    memcpy(&bluetooth.possible_candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr));
+	    bacpy(&bluetooth.possible_candidates[i].bdaddr, BDADDR_ANY);
 	    bluetooth.possible_candidates[i].timer = 0;
 	    debug(DEBUG_DETAIL, "Remove slot: %d from potentials\n", i);
 	}
@@ -243,7 +240,7 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 	// Then remove any existing nodes that do not appear in new list
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
 	if (check_candidate_list(new_candidates, &bluetooth.candidates[i].bdaddr) < 0) {
-	    memcpy(&bluetooth.candidates[i].bdaddr, &zero_bdaddr, sizeof(zero_bdaddr));
+	    bacpy(&bluetooth.candidates[i].bdaddr, BDADDR_ANY);
 	    bluetooth.candidates[i].timer = 0;
 	    debug(DEBUG_DETAIL, "Remove slot: %d\n", i);
 	}
@@ -251,10 +248,10 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 	// Then add back in any new candidaes not in the list
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
 	if (check_candidate_list(bluetooth.candidates, &new_candidates[i].bdaddr) < 0) {
-	    new_slot = check_candidate_list(bluetooth.candidates, &zero_bdaddr);
+	    new_slot = check_candidate_list(bluetooth.candidates, BDADDR_ANY);
 	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
 	    debug(DEBUG_DETAIL, "Add slot: %d in %d\n", i, new_slot);
-	    memcpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr, sizeof(zero_bdaddr));
+	    bacpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr);
 	    bluetooth.candidates[new_slot].timer = -1;
 	}
     }
