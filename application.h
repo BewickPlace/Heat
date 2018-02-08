@@ -41,6 +41,7 @@ struct node {					// Node information including  daily profiles
 //    int		network_id;
     float	hysteresis;
     int		callsat;
+    float	temp;
     };
 
 struct zone {					// Zonal information
@@ -62,13 +63,15 @@ struct profile	profiles[MAX_PROFILES];	// Profile data (held on Master node)
 #define HEAT_SETPOINT 	11			// New setpoint active
 #define HEAT_CALL	12			// CALL for heat
 #define HEAT_SAT	13			// heat SATisfied
-#define HEAT_CANDIDATES	14			// Bluetooth proximity candidates
+#define HEAT_TEMP	14			// advise currenp TEMPerature
+#define HEAT_CANDIDATES	15			// Bluetooth proximity candidates
 
 #define PAYLOAD_DATA_LEN 12
 
 #define SIZE_SETPOINT	(sizeof(struct setpoint_pkt)+sizeof(int))
 #define SIZE_CALL	(sizeof(struct callsat_pkt)+sizeof(int))
 #define SIZE_SAT	(sizeof(struct callsat_pkt)+sizeof(int))
+#define SIZE_TEMP	(sizeof(struct callsat_pkt)+sizeof(int))
 #define SIZE_CANDIDATES	((sizeof(struct proximity_block)*BLUETOOTH_CANDIDATES)+sizeof(int))
 
 struct setpoint_pkt {				// Setpoint data packet
@@ -104,8 +107,9 @@ void    load_configuration_data();              // Main process
 int	match_node(char *name, int zone);
 
 void	setpoint_control_process();
-void	manage_CALL(char *node_name);
-void	manage_SAT(char *node_name);
+void	manage_CALL(char *node_name, float temp);
+void	manage_SAT(char *node_name, float temp);
+void	manage_TEMP(char *node_name, float temp);
 
 void	proximity_process();			// Bluetooth proximity process
 void	advise_bluetooth_candidates();		// advise candidates

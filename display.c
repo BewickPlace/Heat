@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "ssd1331.h"
 #include "display.h"
 #include "heat.h"
+#include "application.h"
 #include "errorcheck.h"
 
 //
@@ -55,21 +56,87 @@ static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
 
 void display_process() {
     char	string[10];
+    int		old_mode = 0;
+    int		zone, node;
+    int		line, horiz;
+    float	temp, newtemp;
+    int		callsat;
 
     Init_display();				//Initialise the display
-    ERRORCHECK( app.operating_mode == OPMODE_MASTER, "Master Mode: no display required", EndError);
+//    ERRORCHECK( app.operating_mode == OPMODE_MASTER, "Master Mode: no display required", EndError);
 
     while (!heat_shutdown) {			// run until requested to shutdown
 	if (app.display) { 	Display_on();
 	} else {		Display_off();	}
 
 	// To avoid using Clear Screen on each refresh, all display items
-	// should clear their space
+	// should clear their space  On switching display modes it is used 
+	if (app.display_mode != old_mode) { Display_cls(); old_mode = app.display_mode; }
+
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
 	Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
 
-	if (app.operating_mode == OPMODE_MASTER) {	// MASTER Mode
+	if ((app.operating_mode == OPMODE_MASTER) &&	// MASTER Mode
+	    (app.display_mode == 1)) {			// Display Mode 1
+
+	    Print_time(normal, CENTRE(9), 0, White);
+
+	    line =  12;
+	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
+		if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
+		    Print_text(network.zones[zone].name, normal, LEFT(), line, DarkGrey);	// Name
+ 		    line = line +8;
+
+		    callsat  = 0;
+		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {				// All defines nodes
+			if (strcmp(network.zones[zone].nodes[node].name, "") !=0) {
+			    Print_text(network.zones[zone].nodes[node].name, normal, LEFT(), line, White); // Name
+
+			    callsat = network.zones[zone].nodes[node].callsat;
+			    temp = network.zones[zone].nodes[node].temp;
+			    if (temp == 0.0) { sprintf(string, "n/a"); }
+			    else { sprintf(string, "%.01f", temp); }
+			    Print_text(string, normal, RIGHT(strlen(string)), line, (callsat ? Red : Cyan));
+
+			    line = line +8;
+			}
+		    } //efor nodes in zones
+		}
+	    } // efor Zones
+
+	} else if ((app.operating_mode == OPMODE_MASTER) && 	// MASTER Mode
+		   (app.display_mode != 1)) {			// Display mode 0
+
+	    Print_time(normal, CENTRE(9), 0, White);
+
+	    line = 12;
+	    horiz = 10;
+	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
+		if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
+		    Print_text(network.zones[zone].name, normal, ((line == 12) ? LEFT() : RIGHT(strlen(network.zones[zone].name))), line, DarkGrey);	// Name
+		    line = line +8;
+
+		    temp = 0.0;
+		    newtemp = 0.0;
+		    callsat  = 0;
+		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {			// All defined nodes
+			if (strcmp(network.zones[zone].nodes[node].name, "") !=0) {	// if node defined
+			    callsat = (network.zones[zone].nodes[node].callsat ? 1 : callsat);
+			    newtemp = network.zones[zone].nodes[node].temp;
+			    if (temp > 0) {
+				temp = (newtemp < temp ? newtemp : temp);		// take the lower of te zone - ignore 0.0
+			    } else {
+				temp = newtemp;
+			    }
+			}
+		    } //efor nodes in zones
+		    if (temp == 0.0) { sprintf(string, "n/a"); }
+		    else { sprintf(string, "%.01f", temp); }
+		    Print_text(string, high, horiz, 32, (callsat ? Red : Cyan));
+		    horiz = horiz + 44;
+		}
+	    } // efor Zones
 
 	} else {					// SLAVE Mode
 	    Print_icon(SENSOR_ICON, RIGHT(2)-9, 0, (app.temp <= 0.0)? Red: Green);
@@ -90,6 +157,11 @@ void display_process() {
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 	}
 
+//SSD1331_ScrollSet(1,9,line-9,0,1);
+//SSD1331_Scrollstart();
+///delay(3000);
+///SSD1331_Scrollstop();
+
         delay(3000);
 
     }
@@ -100,6 +172,6 @@ void display_process() {
     delay(2000);
 
 
-ENDERROR
+//ENDERROR
     Display_off();
 }

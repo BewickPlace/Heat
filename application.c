@@ -90,6 +90,15 @@ void	check_heating_setpoint() {
 	    app_data.d.callsat.boost = app.boost;
 	    debug(DEBUG_INFO, "CALL for %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_CALL);
+
+	} else {
+	    app_data.type = HEAT_TEMP;					// Otherwise just advise of current temp
+	    app_data.d.callsat.temp  = app.temp;
+	    app_data.d.callsat.setpoint = app.setpoint;
+	    app_data.d.callsat.hysteresis = app.hysteresis;
+	    app_data.d.callsat.boost = app.boost;
+	    debug(DEBUG_INFO, "TEMP of %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
+	    send_to_node(app.active_node, (char *) &app_data, SIZE_TEMP);
 	}
     }
 }
@@ -151,12 +160,17 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
     case HEAT_CALL:
 	debug(DEBUG_INFO, "CALL from %s for heat %.01f:%.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
 
-	manage_CALL(node_name);
+	manage_CALL(node_name, payload->d.callsat.temp);
 	break;
 
     case HEAT_SAT:
 	debug(DEBUG_INFO, "Heat @ %s SATisfied %.01f:%0.1f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
-	manage_SAT(node_name);
+	manage_SAT(node_name, payload->d.callsat.temp);
+	break;
+
+    case HEAT_TEMP:
+	debug(DEBUG_INFO, "Heat @ %s TEMPerature %.01f:%0.1f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
+	manage_TEMP(node_name, payload->d.callsat.temp);
 	break;
 
     default:

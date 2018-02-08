@@ -53,7 +53,7 @@ THE SOFTWARE.
 //		Manage Call for heat (MASTER)
 //
 
-void 	manage_CALL(char *node_name) {
+void 	manage_CALL(char *node_name, float temp) {
     int	zone;
     int node;
 
@@ -63,6 +63,7 @@ void 	manage_CALL(char *node_name) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+    network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
 
     network.zones[zone].nodes[node].callsat = 1;			// Mark as CALLing
@@ -74,11 +75,12 @@ ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
 ENDERROR;
 }
+
 //
 //		Manage SAT heat (MASTER)
 //
 
-void 	manage_SAT(char *node_name) {
+void 	manage_SAT(char *node_name, float temp) {
     int	zone;
     int node;
     int i;
@@ -89,6 +91,7 @@ void 	manage_SAT(char *node_name) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+    network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
@@ -98,6 +101,27 @@ void 	manage_SAT(char *node_name) {
     debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 0);					    	// interface with DHT11 module to action
+
+ERRORBLOCK(NodeError);
+   debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
+ENDERROR;
+}
+
+//
+//		Manage TEMPerature advise (MASTER)
+//
+
+void 	manage_TEMP(char *node_name, float temp) {
+    int	zone;
+    int node;
+
+    for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
+	node = match_node(node_name, zone);
+	if (node != -1) break;
+    }
+    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
+								// Valid Zone and node index
+    network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);

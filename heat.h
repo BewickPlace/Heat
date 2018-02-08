@@ -34,10 +34,10 @@ struct app {					// Application key Data
     char	*confdir;			// Directory for Heating Network conf file
     char	*trackdir;			// Directory for tracking (csv) file
     int		at_home;			// Bluetooth proximity state
-    // Master specific data
-    // - none
-    // Slave specific data
     int		display;			// - display off/on
+    // Master specific data
+    int		display_mode;			// Alternate display modes
+    // Slave specific data
     int 	boost;				// - boost uplift
     float	setpoint;			// - sensor setpoint
     float	temp;				// - sensor reading
