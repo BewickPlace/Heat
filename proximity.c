@@ -112,7 +112,7 @@ void	identify_possible_candidates(int timer) {
 	    rc = check_candidate_list(bluetooth.possible_candidates, &info[i].bdaddr); // check if already present
 	    if (rc != -1) goto next_candidate;
 
-	    rc = check_bluetooth_name(info[i].bdaddr, name, addr);		//  Get candidates name over bluetooth 
+	    rc = check_bluetooth_name(info[i].bdaddr, name, addr);		//  Get candidates name over bluetooth
 	    if (rc < 0) goto next_candidate;					// if known (named) address
 
 	    rc = check_candidate_list(bluetooth.possible_candidates, BDADDR_ANY); // check for free slot
@@ -186,10 +186,10 @@ void proximity_process()	{
 
     while ( !heat_shutdown )	{
 	delay( 1000 );
-	identify_possible_candidates(cycle_timer);	// Identify list of other potential candidates
+//	identify_possible_candidates(cycle_timer);	// Identify list of other potential candidates
 
 	maintain_candidates(cycle_timer, bluetooth.candidates, 0); // Maintain list of visible candidates
-	maintain_candidates(cycle_timer, bluetooth.possible_candidates, 1); // Maintain list of visible possible candidates
+//	maintain_candidates(cycle_timer, bluetooth.possible_candidates, 1); // Maintain list of visible possible candidates
         cycle_timer = ((cycle_timer+1) % OVERALL_TIMER);
     }
     close(bluetooth_sock);
