@@ -107,24 +107,28 @@ void	Button_interrupt() {
 						// handle the button press
 	button_press = Button_pin.edge2 - Button_pin.edge1;	// get lebgth of time pressed
 
-        if (button_press < BUTTON_LONG_PRESS) {		// Short press - display
+        if (button_press < BUTTON_LONG_PRESS) {			// Short press - display
 	    debug(DEBUG_TRACE, "Button - Short Press\n");
 
-	} else if (button_press > BUTTON_EXTRALONG_PRESS) {	// Extra Long press - shutdown
-	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
-	    heat_shutdown = 1;
-	    system("shutdown -h now");
-
-	} else if ((button_press > BUTTON_LONGER_PRESS) &&	// Longer press - extra boost
-		   (app.boost)) {			// when already boosting
-	    app.boost++;
-
-	} else {				// Long press - boost
+	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Boost (slave only)
+		   (app.operating_mode == OPMODE_SLAVE)) {
+	    debug(DEBUG_TRACE, "Button - Long Press\n");
 	    if(!app.boost) {			// If not already boosting
 		boost_start();			// Start off the boost
 	    } else {
 		boost_stop();			// Stop the boost
 	    }
+
+	} else if ((button_press < BUTTON_EXTRALONG_PRESS) &&	// Longer press - Extra boost (slave only)
+		   (app.operating_mode == OPMODE_SLAVE) &&
+		   (app.boost)) {			// when already boosting
+	    debug(DEBUG_TRACE, "Button - Longer Press\n");
+	    app.boost++;
+
+	} else {				// Extra Long press - Shutdown
+	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
+	    heat_shutdown = 1;
+	    system("shutdown -h now");
 	}
 	app.display = 1;			// In all cases ensure display active
 	add_timer(TIMER_DISPLAY, 30);		// and timeout after y seconds
@@ -270,7 +274,7 @@ void monitor_process()	{
     int	rc = -1;
     int cycle_time = DHT11_OVERALL;
 
-    ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
+//    ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
 
     if ( wiringPiSetupPhys() == -1 )
 	exit( 1 );
@@ -284,7 +288,8 @@ void monitor_process()	{
     delay( 2000 );				// Allow time for DHT11 to settle
 
     while ( !heat_shutdown )	{
-	if ((cycle_time % DHT11_READ) == 0) {
+	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
+	    (app.operating_mode == OPMODE_SLAVE)) {	// and only on slave
 	    read_dht11();
 	}
 	delay( 1000 );
