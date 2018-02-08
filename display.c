@@ -67,25 +67,30 @@ void display_process() {
 	// should clear their space
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
-	Print_icon(SENSOR_ICON, RIGHT(2)+3, 0, (app.temp <= 0.0)? Red: Green);
-	Print_icon(BLUETOOTH_ICON, RIGHT(2)-9, 0, (!app.at_home)? Red: Blue);
-	Print_time(normal, CENTRE(9)-5, 0, White);
+	Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
 
-	if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
-	} else {		sprintf(string, " n/a " );	}
-	Print_text(string, wh, CENTRE(2*strlen(string)), 25, Cyan);
+	if (app.operating_mode == OPMODE_MASTER) {	// MASTER Mode
 
-	if (app.setpoint == 0.0) {		// If no target yet set display n/a
-	    sprintf(string, "n/a");
-	} else if (app.boost) {			// Boosting
-	    sprintf(string, "Set:%0.1f>>%0.1f", app.setpoint, app.setpoint+app.boost);
-	} else {
-	    sprintf(string, "Set:%0.1f", app.setpoint);
+	} else {					// SLAVE Mode
+	    Print_icon(SENSOR_ICON, RIGHT(2)-9, 0, (app.temp <= 0.0)? Red: Green);
+	    Print_time(normal, CENTRE(9)-5, 0, White);
+
+	    if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
+	    } else {		sprintf(string, " n/a " );	}
+	    Print_text(string, wh, CENTRE(2*strlen(string)), 25, Cyan);
+
+	    if (app.setpoint == 0.0) {		// If no target yet set display n/a
+		sprintf(string, "n/a");
+	    } else if (app.boost) {			// Boosting
+		sprintf(string, "Set:%0.1f>>%0.1f", app.setpoint, app.setpoint+app.boost);
+	    } else {
+		sprintf(string, "Set:%0.1f", app.setpoint);
+	    }
+	    Print_text("               ", normal, CENTRE(15), 56, White);
+	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 	}
-	Print_text("               ", normal, CENTRE(15), 56, White);
-	Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 
-        delay(5000);
+        delay(3000);
 
     }
     Display_cls();
