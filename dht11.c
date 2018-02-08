@@ -110,6 +110,15 @@ void	Button_interrupt() {
         if (button_press < BUTTON_LONG_PRESS) {			// Short press - display
 	    debug(DEBUG_TRACE, "Button - Short Press\n");
 
+	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Display Mode (Master only)
+		   (app.operating_mode == OPMODE_MASTER)) {
+	    debug(DEBUG_TRACE, "Button - Long Press\n");
+	    if (app.display_mode) {
+		app.display_mode = 0;
+	    } else {
+		app.display_mode = 1;
+	    }
+
 	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Boost (slave only)
 		   (app.operating_mode == OPMODE_SLAVE)) {
 	    debug(DEBUG_TRACE, "Button - Long Press\n");
@@ -125,10 +134,13 @@ void	Button_interrupt() {
 	    debug(DEBUG_TRACE, "Button - Longer Press\n");
 	    app.boost++;
 
-	} else {				// Extra Long press - Shutdown
+	} else if (button_press >= BUTTON_EXTRALONG_PRESS) {	// Extra Long press - Shutdown
 	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
 	    heat_shutdown = 1;
 	    system("shutdown -h now");
+
+	} else {				//  Non-effective combination
+	    debug(DEBUG_TRACE, "Button - No effect\n");
 	}
 	app.display = 1;			// In all cases ensure display active
 	add_timer(TIMER_DISPLAY, 30);		// and timeout after y seconds
