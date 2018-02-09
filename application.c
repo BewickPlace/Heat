@@ -64,6 +64,7 @@ void	notify_link_up(char *name) {
 
 void	notify_link_down(char *name) {
     app.active_node = find_active_node();				// record if any is active
+    if (app.operating_mode == OPMODE_MASTER) manage_SAT(name, 0.0);	// reset Master record of temp etc.
     }
 
 //
