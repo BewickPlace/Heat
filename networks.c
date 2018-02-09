@@ -63,7 +63,7 @@ struct net {							// Network descriptior
 	};
 
 static int netsock;						// network socket
-static void (*link_up_callback)(void), (*link_down_callback)(void);		// Link callback functions
+static void (*link_up_callback)(char *name), (*link_down_callback)(char *name);		// Link callback functions
 static char my_hostname[HOSTNAME_LEN];				// My hostname
 struct in_addr my_ipv4_addr;					// & IPv4 address
 static struct net other_nodes[NO_NETWORKS];			// Main network descriptor
@@ -105,7 +105,7 @@ struct test_msg {						// Test message format
 //
 //	Initialise network information
 //
-int	initialise_network(int max_payload_len, void (*up_callback)(void), void (*down_callback)(void)) {
+int	initialise_network(int max_payload_len, void (*up_callback)(char *name), void (*down_callback)(char *name)) {
     int ifindex, rc = -1;
     struct ipv6_mreq mreq;
     int sock = -1;
@@ -246,7 +246,7 @@ int	check_live_nodes() {
 		    other_nodes[i].state = NET_STATE_DOWN;	// Mark network as likely to be down
 		    inet_ntop(AF_INET, &other_nodes[i].addripv4, (char *)&ipv4_string, 40);
 		    debug(DEBUG_ESSENTIAL, "Link DOWN to node: %s (%s)\n", other_nodes[i].name, ipv4_string);
-		    if (link_down_callback != NULL) link_down_callback();	// run callback if defined
+		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
 	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // send out a specific message to this node
 	        ERRORCHECK( rc < 0, "Network send error\n", SendError);
@@ -377,7 +377,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	    other_nodes[node].state = NET_STATE_UP;		// Set link status UP
             inet_ntop(AF_INET, &message->src_addripv4, (char *)&ipv4_string, 40);
 	    debug(DEBUG_ESSENTIAL, "Link UP   to node: %s (%s)\n", message->src_name, ipv4_string);
-	    if (link_up_callback != NULL) link_up_callback();	// run callback if defined
+	    if (link_up_callback != NULL) link_up_callback(message->src_name);	// run callback if defined
 	}
 	cancel_reply_timer();					// Cancel reply timer if all now received
 	break;

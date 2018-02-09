@@ -52,7 +52,7 @@ THE SOFTWARE.
 //	Callback on Link Up status change
 //
 
-void	notify_link_up() {
+void	notify_link_up(char *name) {
 	app.active_node = find_active_node();				// record which node is active
 
 	add_timer(TIMER_CONTROL, 1);					// trigger a review of control actions
@@ -62,7 +62,7 @@ void	notify_link_up() {
 //	Callback on Link Down status change
 //
 
-void	notify_link_down() {
+void	notify_link_down(char *name) {
     app.active_node = find_active_node();				// record if any is active
     }
 

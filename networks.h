@@ -34,7 +34,7 @@ THE SOFTWARE.
 #define MSG_STATE_FAILED 3
 #define MSG_STATE_OK 	4
 
-int	initialise_network(int max_payload_len, void (*up_callback)(void), void (*down_callback)(void));
+int	initialise_network(int max_payload_len, void (*up_callback)(char *name), void (*down_callback)(char *name));
 
 void	wait_on_network_timers();
 
