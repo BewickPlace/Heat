@@ -95,7 +95,7 @@ void display_process() {
 
 			    callsat = network.zones[zone].nodes[node].callsat;
 			    temp = network.zones[zone].nodes[node].temp;
-			    if (temp == 0.0) { sprintf(string, "n/a"); }
+			    if (temp == 0.0) { sprintf(string, " n/a"); }
 			    else { sprintf(string, "%.01f", temp); }
 			    Print_text(string, normal, RIGHT(strlen(string)), line, (callsat ? Red : Cyan));
 
@@ -131,7 +131,7 @@ void display_process() {
 			    }
 			}
 		    } //efor nodes in zones
-		    if (temp == 0.0) { sprintf(string, "n/a"); }
+		    if (temp == 0.0) { sprintf(string, " n/a"); }
 		    else { sprintf(string, "%.01f", temp); }
 		    Print_text(string, high, horiz, 32, (callsat ? Red : Cyan));
 		    horiz = horiz + 44;
