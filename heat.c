@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include "display.h"
 
 int 		heat_shutdown = 0;				// Shutdown flag
-struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 1, 0, 0.0, 0.0, 0.25};// Application key data
+struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 1, 0, 0, 0.0, 0.0, 0.25};// Application key data
 
 void usage(char *progname) {
     printf("Usage: %s [options...]\n", progname);
