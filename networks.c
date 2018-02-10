@@ -560,6 +560,14 @@ ERRORBLOCK(ErrnoError);
     close(fd);
 ENDERROR;
 }
+//
+//	Return a pointer to my name
+//
+char 	*my_name() {
+
+    return(my_hostname);
+}
+
 
 //
 //	Cancel Reply Timer if all now received
