@@ -189,6 +189,7 @@ ENDERROR;
     return(-1);
 }
 
+int first_time  = 1;
 //
 //	Wait on message or timer, whatever comes first
 //
@@ -202,6 +203,10 @@ void	wait_on_network_timers() {
 	FD_SET(netsock, &readfds);					// timeout on next timer
 	rc = select(netsock + 1, &readfds, NULL, NULL, wait);
 	ERRORCHECK( (rc < 0) && (errno != EINTR), "Message wait on socket error\n", EndError);
+	if (first_time) {
+	    debug(DEBUG_ESSENTIAL, "No Segmentation fault yet!\n");
+	    first_time = 0;
+	}
     }
 
 ENDERROR;
