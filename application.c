@@ -120,7 +120,7 @@ void	perform_logging() {
     if (app.trackdir == NULL) { goto EndError; }	// Do NOT log is directory not specified
     seconds = time(NULL);				// get the time
     info = localtime(&seconds);				// convert into strctured time
-    sprintf(logfile,"%s%s_%04d-%02d-%02d.csv", app.trackdir, "heat", info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
+    sprintf(logfile,"%s%s-%s_%04d-%02d-%02d.csv", app.trackdir, "heat", my_name(), info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
 
     log = fopen(logfile, "r");				// Open  the file
     if (log != NULL) {					// if file exists
