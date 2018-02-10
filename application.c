@@ -111,7 +111,7 @@ void	check_heating_setpoint() {
 //	Perform Temperature Logging (SLAVE)
 //
 void	perform_logging() {
-    char 	logfile[40];			// Log file
+    char 	logfile[50];			// Log file
     time_t	seconds;
     struct tm	*info;
     FILE	*log;
@@ -120,7 +120,8 @@ void	perform_logging() {
     if (app.trackdir == NULL) { goto EndError; }	// Do NOT log is directory not specified
     seconds = time(NULL);				// get the time
     info = localtime(&seconds);				// convert into strctured time
-    sprintf(logfile,"%s%s-%s_%04d-%02d-%02d.csv", app.trackdir, "heat", my_name(), info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
+    sprintf(logfile,"%s%s_%04d-%02d-%02d.csv", app.trackdir, my_name(), info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
+    ERRORCHECK( strlen(logfile) > sizeof(logfile), "Tracking filename too long", TrackError);
 
     log = fopen(logfile, "r");				// Open  the file
     if (log != NULL) {					// if file exists
@@ -133,6 +134,9 @@ void	perform_logging() {
     fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
 
     fclose(log);
+ERRORBLOCK(TrackError);
+    debug(DEBUG_ESSENTIAL, "Size: %d:%d %s\n", strlen(logfile), sizeof(logfile), logfile);
+
 ERRORBLOCK(OpenError);
     debug(DEBUG_ESSENTIAL, "Logfile %s Append errno: %d\n2", logfile, errno);
 ENDERROR;
