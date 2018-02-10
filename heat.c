@@ -278,9 +278,10 @@ int main(int argc, char **argv) {
 	DEBUG_FUNCTION( DEBUG_DETAIL, display_timers());
     }
     debug(DEBUG_ESSENTIAL, "Heat node starting shut down\n");
-	pthread_join(proximity_thread, NULL);
-	pthread_join(display_thread, NULL);
-	pthread_join(monitor_thread, NULL);
+    manage_CLOSE();					// Close down control functions
+    pthread_join(proximity_thread, NULL);
+    pthread_join(display_thread, NULL);
+    pthread_join(monitor_thread, NULL);
 
 ENDERROR;
     debug(DEBUG_ESSENTIAL, "Heat node shut down\n");

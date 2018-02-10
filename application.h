@@ -110,6 +110,7 @@ void	setpoint_control_process();
 void	manage_CALL(char *node_name, float temp);
 void	manage_SAT(char *node_name, float temp);
 void	manage_TEMP(char *node_name, float temp);
+void	manage_CLOSE();
 
 void	proximity_process();			// Bluetooth proximity process
 void	advise_bluetooth_candidates();		// advise candidates
