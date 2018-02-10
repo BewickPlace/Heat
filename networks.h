@@ -36,6 +36,8 @@ THE SOFTWARE.
 
 int	initialise_network(int max_payload_len, void (*up_callback)(char *name), void (*down_callback)(char *name));
 
+void	network_CLOSE();
+
 void	wait_on_network_timers();
 
 void	broadcast_network();

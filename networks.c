@@ -189,6 +189,14 @@ ENDERROR;
     return(-1);
 }
 
+//
+//	network Closedown & tidy up
+//
+void	network_CLOSE() {
+
+    close(netsock);
+}
+
 int first_time  = 1;
 //
 //	Wait on message or timer, whatever comes first

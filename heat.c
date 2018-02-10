@@ -279,6 +279,7 @@ int main(int argc, char **argv) {
     }
     debug(DEBUG_ESSENTIAL, "Heat node starting shut down\n");
     manage_CLOSE();					// Close down control functions
+    network_CLOSE();					// Close network 
     pthread_join(proximity_thread, NULL);
     pthread_join(display_thread, NULL);
     pthread_join(monitor_thread, NULL);
