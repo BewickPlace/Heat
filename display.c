@@ -121,9 +121,10 @@ void display_process() {
 		    newtemp = 0.0;
 		    callsat  = 0;
 		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {			// All defined nodes
-			if (strcmp(network.zones[zone].nodes[node].name, "") !=0) {	// if node defined
+			newtemp = network.zones[zone].nodes[node].temp;
+			if ((strcmp(network.zones[zone].nodes[node].name, "") !=0) &&	// if node defined
+			    (newtemp > 0)) {						// and temperature valid
 			    callsat = (network.zones[zone].nodes[node].callsat ? 1 : callsat);
-			    newtemp = network.zones[zone].nodes[node].temp;
 			    if (temp > 0) {
 				temp = (newtemp < temp ? newtemp : temp);		// take the lower of te zone - ignore 0.0
 			    } else {
@@ -144,7 +145,7 @@ void display_process() {
 
 	    if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
 	    } else {		sprintf(string, " n/a " );	}
-	    Print_text(string, wh, CENTRE(2*strlen(string)), 25, Cyan);
+	    Print_text(string, wh, CENTRE(2*strlen(string)), 25, (app.callsat ? Red : Cyan));
 
 	    if (app.setpoint == 0.0) {		// If no target yet set display n/a
 		sprintf(string, "n/a");

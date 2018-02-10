@@ -38,6 +38,7 @@ struct app {					// Application key Data
     // Master specific data
     int		display_mode;			// Alternate display modes
     // Slave specific data
+    int		callsat;			// - local call/sat status
     int 	boost;				// - boost uplift
     float	setpoint;			// - sensor setpoint
     float	temp;				// - sensor reading

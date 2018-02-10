@@ -64,7 +64,8 @@ void	notify_link_up(char *name) {
 
 void	notify_link_down(char *name) {
     app.active_node = find_active_node();				// record if any is active
-    if (app.operating_mode == OPMODE_MASTER) manage_SAT(name, 0.0);	// reset Master record of temp etc.
+    if (app.operating_mode == OPMODE_MASTER) { manage_SAT(name, 0.0);	// reset Master record of temp etc.
+    } else { app.callsat = 0; }	  					// Maintain local callsat status
     }
 
 //
@@ -75,6 +76,7 @@ void	check_heating_setpoint() {
 
     if (app.active_node != -1) {					// As long as we have a controller to talk to
 	if (app.temp  > (app.setpoint + app.boost + app.hysteresis)) {
+	    app.callsat = 0;						// Maintain local callsat status
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
 	    app_data.d.callsat.temp  = app.temp;
 	    app_data.d.callsat.setpoint = app.setpoint;
@@ -84,6 +86,7 @@ void	check_heating_setpoint() {
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
 	} else if (app.temp < (app.setpoint + app.boost - app.hysteresis)) {
+	    app.callsat = 1;						// Maintain local callsat status
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;
 	    app_data.d.callsat.setpoint = app.setpoint;
