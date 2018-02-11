@@ -52,7 +52,6 @@ struct	proximity_block {
 
 struct  bluetooth {				// Bluetooth specific data
     struct proximity_block candidates[BLUETOOTH_CANDIDATES];
-    struct proximity_block possible_candidates[BLUETOOTH_CANDIDATES];
     };
 
 extern int heat_shutdown;			// Signal heat shutdown between threads
