@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <time.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
@@ -137,7 +138,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 void proximity_process()	{
     int	cycle_timer;
 
-    srand(getpid());					// Seed a differing start position
+    srand(time(NULL));					// Seed a differing start position
     cycle_timer = rand() % OVERALL_TIMER;		// Kick off processes after srandom delay
 
     bluetooth_dev_id = hci_get_route(NULL);
