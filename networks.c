@@ -285,11 +285,10 @@ void	expire_live_nodes() {
 
     for (i=0; i < NO_NETWORKS; i++) {				// For each of the networks
 	if ((memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) && // if an address is defined
-	    (other_nodes[i].state != NET_STATE_DOWN)) {
+	    (other_nodes[i].state != NET_STATE_DOWN) &&
+	    ((other_nodes[i].to == MSG_STATE_SENT) | (other_nodes[i].to == MSG_STATE_FAILED))) {
 
-	    if (other_nodes[i].to == MSG_STATE_SENT) {		// and awaiting outstanding reply
-		  other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
-	    }
+	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
 	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // Re-Ping failed node
 	    add_timer(TIMER_REPLY, 4);
 	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
