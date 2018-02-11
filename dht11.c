@@ -279,6 +279,13 @@ ENDERROR;
 #define DHT11_READ	(10)			// DHT11 Read cycle
 
 //
+//	Initialise wiring Pi
+//
+void	initialise_GPIO() {
+    if ( wiringPiSetupPhys() == -1 )
+	exit( 1 );
+}
+//
 //	Monitor Sensor Process
 //
 
@@ -287,9 +294,6 @@ void monitor_process()	{
     int cycle_time = DHT11_OVERALL;
 
 //    ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
-
-    if ( wiringPiSetupPhys() == -1 )
-	exit( 1 );
 
     boost_stop();				// Initialise with no boost
 

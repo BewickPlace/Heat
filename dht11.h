@@ -26,3 +26,5 @@ void	boost_stop();			//
 void	callsat(int zone, int callsat); // CALL / SAT zone heat
 
 void	monitor_process();		// Main process
+
+void    initialise_GPIO();		// Initialise wiringPi
