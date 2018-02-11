@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
@@ -45,9 +46,9 @@ static int	bluetooth_sock;			// Bluetooth socket
 #define BLUE_NAME	40			// Name length
 #define BLUE_ADDRESS	19			// Address length
 
-#define OVERALL_TIMER	(60*60)			// Overall cycle of actions
+#define OVERALL_TIMER	(60*BLUETOOTH_CANDIDATES)// Overall cycle of actions
 #define IDENTIFY_TIMER	(60*60)			// Identify potential candidates
-#define MAINT_TIMER	(60*5)			// Maintain visibility checks
+#define MAINT_TIMER	(60)			// Maintain visibility checks
 #define VISIBLE_PERIOD	7			// Num of maintenance period
 #define VISIBLE_CHECK	4			// How often to check
 
@@ -58,14 +59,18 @@ void	display_candidates();
 //
 int check_bluetooth_name(bdaddr_t bdaddr, char *name, char *addr) {
     int rc;
+    struct timeval t1, t2, res;
 
-    delay(3000);
-    if (heat_shutdown) return(-1);
-    debug(DEBUG_INFO, "Ckecking ");
-    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 1500);
+    gettimeofday(&t1, NULL);
+
+    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 1200);
     if (rc < 0) strcpy(name, "[unknown]");
+
+    gettimeofday(&t2, NULL);
+    timersub(&t2, &t1, &res);
+
     ba2str(&bdaddr, addr);
-    debug(DEBUG_INFO, "%s ... %s\n", addr, name);
+    debug(DEBUG_INFO, "Checked %s %s in %d.%d\n", addr, name, res.tv_sec, res.tv_usec);
     return(rc);
 }
 
@@ -142,11 +147,12 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 
     if (!del) debug(DEBUG_TRACE, "Bluetooth Maintenance: %d (%d)\n", app.at_home, timer);
 
-    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {				// check all valid (non-zero) candidates
+    i = (timer/MAINT_TIMER) % BLUETOOTH_CANDIDATES;			// Only process one Candidate each Interval
 	if (heat_shutdown) return;
 	if (bacmp(&list[i].bdaddr, BDADDR_ANY) != 0) {
 	    if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
 		(list[i].timer < VISIBLE_CHECK)) {			// or every interval if mising!
+		debug(DEBUG_TRACE, "Bluetooth check candidate %d\n", i);
 		rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
 	    	if (rc > -1) {						// if identified ...
 		    if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "Bluetooth At Home: %s %s\n", name, addr);
@@ -167,9 +173,10 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 	    }
 	}
 	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
-    }
-    if (del) display_candidates();
+
+    if (!del) display_candidates();
     if (!del) app.at_home = found;					// Update applicatio at home status
+    if (!del) debug(DEBUG_TRACE, "Bluetooth Maintenance Complete\n");
     }
 }
 
@@ -178,7 +185,10 @@ void	maintain_candidates(int timer, struct proximity_block list[], int del) {
 //
 
 void proximity_process()	{
-    int	cycle_timer = (MAINT_TIMER*4)/5;		// Kick off processes after short delay
+    int	cycle_timer;
+
+    srand(getpid());					// Seed a differing start position
+    cycle_timer = rand() % OVERALL_TIMER;		// Kick off processes after srandom delay
 
     bluetooth_dev_id = hci_get_route(NULL);
     bluetooth_sock = hci_open_dev( bluetooth_dev_id );
