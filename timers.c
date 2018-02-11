@@ -146,7 +146,7 @@ int	dayoftheweek() {
 
     seconds = time(NULL);		// get the time
     info = localtime(&seconds);		// convert into strctured time
-    return((info->tm_wday-1)%7);	// return the day of the week, aligned Mon to Sun
+    return((info->tm_wday+6)%7);	// return the day of the week, aligned Mon to Sun
 }
 
 //
