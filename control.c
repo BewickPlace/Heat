@@ -50,12 +50,91 @@ THE SOFTWARE.
 #include "application.h"
 
 //
+//	start run clock
+//
+
+void	start_run_clock() {
+
+    app.run_time_start = time(NULL);
+}
+//
+//	stop run clock
+//
+
+void	stop_run_clock() {
+    time_t now = time(NULL);
+
+    app.run_time = app.run_time + (now - app.run_time_start);
+    app.run_time_start = 0;
+}
+//
+//	reset run clock
+//
+
+void	reset_run_clock() {
+
+    app.run_time = 0;
+    app.run_time_start = 0;
+}
+
+//
+//	get run closk
+//
+time_t	get_run_clock() {
+    time_t now = time(NULL);
+
+    if (app.run_time_start == 0) {
+	return(app.run_time);
+    } else {
+	return(app.run_time + (now - app.run_time_start));
+    }
+}
+//
+//		Check Any Bluetooth
+//
+int	check_any_at_home() {
+    int zone, node;
+
+    for (zone=0; zone < NUM_ZONES; zone++) {				// Check all Zones
+	for (node=0 ; node < NUM_NODES_IN_ZONE; node ++) {		// and nodes
+	    if (network.zones[zone].nodes[node].at_home) return(1);	// report if any positive
+	}
+    }
+    return(0);
+}
+
+//
+//		Check Any CALL in Zone
+//
+int	check_any_CALL_in_zone(int zone) {
+    int node;
+
+    for (node=0 ; node < NUM_NODES_IN_ZONE; node ++) {			// Check all nodes
+	if (network.zones[zone].nodes[node].callsat) return(1);		// report if any positive
+    }
+    return(0);
+}
+
+//
+//		Check Any CALL
+//
+int	check_any_CALL() {
+    int zone;
+
+    for (zone=0; zone < NUM_ZONES; zone++) {				// Check all Zones
+	if (check_any_CALL_in_zone(zone)) return(1);			// report if any positive
+    }
+    return(0);
+}
+
+//
 //		Manage Call for heat (MASTER)
 //
 
 void 	manage_CALL(char *node_name, float temp) {
     int	zone;
     int node;
+    int this_time, last_time;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -63,6 +142,7 @@ void 	manage_CALL(char *node_name, float temp) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+    last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
 
@@ -70,6 +150,12 @@ void 	manage_CALL(char *node_name, float temp) {
     debug(DEBUG_ESSENTIAL, "Call for heat @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 1);					    	// interface with DHT11 module to action
+
+    this_time = check_any_CALL();				// Check if anyone now CALLing
+    if (last_time != this_time) {
+	start_run_clock();					// if starting up START the run clock
+	perform_logging();					// Log the fact
+    }
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
@@ -84,6 +170,7 @@ void 	manage_SAT(char *node_name, float temp) {
     int	zone;
     int node;
     int i;
+    int this_time, last_time;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -91,6 +178,7 @@ void 	manage_SAT(char *node_name, float temp) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+    last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
@@ -101,6 +189,12 @@ void 	manage_SAT(char *node_name, float temp) {
     debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 0);					    	// interface with DHT11 module to action
+
+    this_time = check_any_CALL();				// Check if anyone now CALLing
+    if (last_time != this_time) {
+	start_run_clock();					// if starting up STOP the run clock
+	perform_logging();					// Log the fact
+    }
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);

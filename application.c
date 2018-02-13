@@ -108,6 +108,47 @@ void	check_heating_setpoint() {
 }
 
 //
+//	Midnight processing
+//
+void	midnight_processing() {
+    char 	logfile[50];			// Log file
+    time_t	seconds;
+    struct tm	*info;
+    int		day, month, year;
+    int		i;
+
+    if (app.operating_mode != OPMODE_MASTER) return;	// Only applicable on MASTER
+
+    seconds = time(NULL);				// get the time
+    info = localtime(&seconds);				// convert into strctured time
+
+    if ((info->tm_hour == 23) && (info->tm_min >= 55)) {	// if Last log interval before Midnight
+	debug(DEBUG_TRACE, "Pre-Midnight precessing....\n");
+
+	perform_logging();				// force a final log
+    }
+
+    if (!((info->tm_hour == 0) && (info->tm_min == 0))) return;	// Exit if not Midnight
+    debug(DEBUG_TRACE, "Midnight precessing....\n");
+
+    // Delete old Track files - beyond 30 days, 7 day window
+
+    for (i = 0 ; i < 7; i++) {
+	day = ((info->tm_mday - 1 + 31 - i) % 31) + 1;
+	month = ((info->tm_mon - 1 + 12 - (day > info->tm_mday)) % 12) + 1;
+	year = (info->tm_year  - (month > info->tm_mon));
+	sprintf(logfile,"%s%s_%04d-%02d-%02d.csv", app.trackdir, my_name(), year + 1900, month, day);
+	ERRORCHECK( strlen(logfile) > sizeof(logfile), "Tracking filename too long", EndError);
+
+	debug(DEBUG_TRACE, "Delete logfile %s (%d/%d)\n", logfile, remove(logfile), errno);
+    }
+
+    reset_run_clock();					// reset CALL run timer
+    perform_logging();					// force an initial log
+ENDERROR;
+}
+
+//
 //	Perform Temperature Logging (SLAVE)
 //
 void	perform_logging() {
@@ -130,9 +171,15 @@ void	perform_logging() {
     }
     log = fopen(logfile, "a"); 				// open Tracking file for Append
     ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
-    if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
-    fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
 
+    if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE
+	if (exists == 0) { fprintf(log, "Time, Zone 1, Zone 2, At Home\n"); }
+	fprintf(log, "%02d:%02d, %d, %d, %d\n", info->tm_hour, info->tm_min, check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home());
+
+    } else {
+	if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
+	fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
+    }
     fclose(log);
 ERRORBLOCK(TrackError);
     debug(DEBUG_ESSENTIAL, "Size: %d:%d %s\n", strlen(logfile), sizeof(logfile), logfile);
@@ -204,6 +251,7 @@ void	handle_app_timer(int timer) {
 
     case TIMER_CONTROL:
         debug(DEBUG_INFO, "Handle Control timeout\n");
+
 	if (app.operating_mode == OPMODE_MASTER) {
 	    load_configuration_data();
 	    advise_bluetooth_candidates();
@@ -233,8 +281,11 @@ void	handle_app_timer(int timer) {
 	break;
 
     case TIMER_LOGGING:
-        debug(DEBUG_INFO, "Handle Logging timeout\n");
-	perform_logging();		// Perform temperature logging (SLAVE)
+        debug(DEBUG_TRACE, "Handle Logging timeout\n");
+
+	midnight_processing();		// Perform Midnight processing if appropriate
+
+	if (app.operating_mode == OPMODE_SLAVE) perform_logging(); // Perform temperature logging (SLAVE)
 	add_timer(TIMER_LOGGING, timeto5min());// wait for next 5 minute boundty
 	break;
 

@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include "display.h"
 
 int 		heat_shutdown = 0;				// Shutdown flag
-struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 1, 0, 0, 0, 0.0, 0.0, 0.25};// Application key data
+struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 1, 0, 0, 0,0, 0, 0.0, 0.0, 0.25};// Application key data
 
 void usage(char *progname) {
     printf("Usage: %s [options...]\n", progname);
@@ -238,9 +238,9 @@ int main(int argc, char **argv) {
 //	dd_timer(TIMER_APPLICATION, 15);		// Set to kick application in y seconds
 	add_timer(TIMER_SETPOINT, 15);			// Set to refresh setpoint in y seconds
 	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
-	add_timer(TIMER_LOGGING, 5);			// atart off the logging process
 	break;
     }
+    add_timer(TIMER_LOGGING, 5);			// atart off the logging process
     add_timer(TIMER_CONTROL, 1);			// Set to perform Master & slabe control actions in y seconds
 
     while (!heat_shutdown) {					// While NOT shutdown

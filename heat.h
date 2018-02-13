@@ -37,6 +37,8 @@ struct app {					// Application key Data
     int		display;			// - display off/on
     // Master specific data
     int		display_mode;			// Alternate display modes
+    time_t	run_time;			// Total run (CALL) time today
+    time_t	run_time_start;			// Start time if run(CALL) active
     // Slave specific data
     int		callsat;			// - local call/sat status
     int 	boost;				// - boost uplift

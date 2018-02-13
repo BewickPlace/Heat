@@ -61,6 +61,7 @@ void display_process() {
     int		line, horiz;
     float	temp, newtemp;
     int		callsat;
+    time_t	run_time;
 
     Init_display();				//Initialise the display
 //    ERRORCHECK( app.operating_mode == OPMODE_MASTER, "Master Mode: no display required", EndError);
@@ -138,6 +139,11 @@ void display_process() {
 		    horiz = horiz + 44;
 		}
 	    } // efor Zones
+
+	    run_time = get_run_clock();
+	    sprintf(string, "Run: %02ld:%02ld\n", run_time/360, run_time/60);
+	    Print_text("               ", normal, CENTRE(15), 56, White);
+	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 
 	} else {					// SLAVE Mode
 	    Print_icon(SENSOR_ICON, RIGHT(2)-9, 0, (app.temp <= 0.0)? Red: Green);

@@ -40,6 +40,7 @@ struct node {					// Node information including  daily profiles
     char	name[NAMELEN];
 //    int		network_id;
     float	hysteresis;
+    int		at_home;
     int		callsat;
     float	temp;
     };
@@ -103,6 +104,8 @@ void    notify_link_down();
 void	handle_app_msg(char *node_name, struct payload_pkt *packet, int payload_len);
 void	handle_app_timer(int timer);
 
+void	perform_logging();
+
 void    load_configuration_data();              // Main process
 int	match_node(char *name, int zone);
 
@@ -115,3 +118,9 @@ void	manage_CLOSE();
 void	proximity_process();			// Bluetooth proximity process
 void	advise_bluetooth_candidates();		// advise candidates
 void	manage_candidates(struct proximity_block[]); // Manage new candidates list from Master
+
+void	reset_run_clock();			// Reset run time for CALL clock
+time_t	get_run_clock();			// Get the total time run(CALL) for today
+
+int	check_any_at_home();			// Check if anyone is At Home
+int	check_any_CALL_in_zone();		// Check if any current CALL for heat
