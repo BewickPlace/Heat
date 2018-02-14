@@ -85,6 +85,7 @@ struct callsat_pkt {				// CALL & SAT  data packet
     float 	setpoint;			// Setpoint value
     float	hysteresis;			// Hysteresis
     int 	boost;				// Boost status
+    int		at_home;			// Bluetooth At_home status
     };
 
 union payload_data {				// Union of possible payloads
@@ -110,9 +111,9 @@ void    load_configuration_data();              // Main process
 int	match_node(char *name, int zone);
 
 void	setpoint_control_process();
-void	manage_CALL(char *node_name, float temp);
-void	manage_SAT(char *node_name, float temp);
-void	manage_TEMP(char *node_name, float temp);
+void	manage_CALL(char *node_name, float temp, int at_home);
+void	manage_SAT(char *node_name, float temp, int at_home);
+void	manage_TEMP(char *node_name, float temp, int at_home);
 void	manage_CLOSE();
 
 void	proximity_process();			// Bluetooth proximity process

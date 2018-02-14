@@ -76,12 +76,12 @@ void display_process() {
 
 
 	Print_icon(WIFI_ICON, LEFT(1), 0, (app.active_node == -1? Red: Green));
-	Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
 
 	if ((app.operating_mode == OPMODE_MASTER) &&	// MASTER Mode
 	    (app.display_mode == 1)) {			// Display Mode 1
 
 	    Print_time(normal, CENTRE(9), 0, White);
+	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
 	    line =  12;
 	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
@@ -110,6 +110,7 @@ void display_process() {
 		   (app.display_mode != 1)) {			// Display mode 0
 
 	    Print_time(normal, CENTRE(9), 0, White);
+	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
 	    line = 12;
 	    horiz = 10;
@@ -141,11 +142,12 @@ void display_process() {
 	    } // efor Zones
 
 	    run_time = get_run_clock();
-	    sprintf(string, "Run: %02ld:%02ld\n", run_time/360, run_time/60);
+	    sprintf(string, "Run: %02ld:%02ld\n", run_time/3600, (run_time/60)%60);
 	    Print_text("               ", normal, CENTRE(15), 56, White);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 
 	} else {					// SLAVE Mode
+	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
 	    Print_icon(SENSOR_ICON, RIGHT(2)-9, 0, (app.temp <= 0.0)? Red: Green);
 	    Print_time(normal, CENTRE(9)-5, 0, White);
 

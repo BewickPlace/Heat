@@ -100,7 +100,7 @@ int	check_any_at_home() {
 	    if (network.zones[zone].nodes[node].at_home) return(1);	// report if any positive
 	}
     }
-    return(0);
+    return(app.at_home);
 }
 
 //
@@ -131,7 +131,7 @@ int	check_any_CALL() {
 //		Manage Call for heat (MASTER)
 //
 
-void 	manage_CALL(char *node_name, float temp) {
+void 	manage_CALL(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
     int this_time, last_time;
@@ -144,6 +144,7 @@ void 	manage_CALL(char *node_name, float temp) {
 								// Valid Zone and node index
     last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
     if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
 
     network.zones[zone].nodes[node].callsat = 1;			// Mark as CALLing
@@ -166,7 +167,7 @@ ENDERROR;
 //		Manage SAT heat (MASTER)
 //
 
-void 	manage_SAT(char *node_name, float temp) {
+void 	manage_SAT(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
     int i;
@@ -180,6 +181,7 @@ void 	manage_SAT(char *node_name, float temp) {
 								// Valid Zone and node index
     last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
@@ -217,7 +219,7 @@ void 	manage_CLOSE() {
 //		Manage TEMPerature advise (MASTER)
 //
 
-void 	manage_TEMP(char *node_name, float temp) {
+void 	manage_TEMP(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
 
@@ -228,6 +230,7 @@ void 	manage_TEMP(char *node_name, float temp) {
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].at_home = at_home;		// Save the current at home status
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
