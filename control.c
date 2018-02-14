@@ -194,7 +194,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
 
     this_time = check_any_CALL();				// Check if anyone now CALLing
     if (last_time != this_time) {
-	start_run_clock();					// if starting up STOP the run clock
+	stop_run_clock();					// if starting up STOP the run clock
 	perform_logging();					// Log the fact
     }
 
