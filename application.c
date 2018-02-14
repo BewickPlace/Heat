@@ -176,8 +176,8 @@ void	perform_logging() {
     ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
 
     if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE
-	if (exists == 0) { fprintf(log, "Time, Zone 1, Zone 2, At Home\n"); }
-	fprintf(log, "%02d:%02d, %d, %d, %d\n", info->tm_hour, info->tm_min, check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home());
+	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home\n"); }
+	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d\n", info->tm_hour, info->tm_min, get_run_clock()/3600, (get_run_clock()/60) % 60, check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home());
 
     } else {
 	if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
