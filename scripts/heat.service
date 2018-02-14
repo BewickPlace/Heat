@@ -5,7 +5,7 @@ After=bluetooth.target
 
 [Service]
 EnvironmentFile=/etc/heat.conf
-ExecStart=/usr/local/bin/heat $MODE $DEBUG --config $CONFDIR --log $LOGFILE --track $TRACKDIR
+ExecStart=/usr/local/bin/heat $MODE $DEBUG $BLUE --config $CONFDIR --log $LOGFILE --track $TRACKDIR
 User=root
 Group=root
 

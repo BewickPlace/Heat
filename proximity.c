@@ -141,6 +141,8 @@ void proximity_process()	{
     srand(time(NULL));					// Seed a differing start position
     cycle_timer = rand() % OVERALL_TIMER;		// Kick off processes after srandom delay
 
+    ERRORCHECK( !app.bluetooth_enabled, "Bluetooth Proximity detection DISABLED on this node", EndError);
+
     bluetooth_dev_id = hci_get_route(NULL);
     bluetooth_sock = hci_open_dev( bluetooth_dev_id );
     ERRORCHECK((bluetooth_dev_id < 0 || bluetooth_sock < 0), "Bluetooth socket failure", EndError);

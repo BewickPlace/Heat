@@ -33,6 +33,7 @@ struct app {					// Application key Data
     char	*logfile;			// Debug log file
     char	*confdir;			// Directory for Heating Network conf file
     char	*trackdir;			// Directory for tracking (csv) file
+    int		bluetooth_enabled;		// Bluetooth proximity checking enabled on node
     int		at_home;			// Bluetooth proximity state
     int		display;			// - display off/on
     // Master specific data

@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include "display.h"
 
 int 		heat_shutdown = 0;				// Shutdown flag
-struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 1, 0, 0, 0,0, 0, 0.0, 0.0, 0.25};// Application key data
+struct app 	app = {OPMODE_MASTER, -1, NULL, "./scripts/", NULL, 0, 0, 1, 0, 0, 0,0, 0, 0.0, 0.0, 0.25};// Application key data
 
 void usage(char *progname) {
     printf("Usage: %s [options...]\n", progname);
@@ -68,6 +68,7 @@ void usage(char *progname) {
     printf("    -h, --help          show this help\n");
     printf("    -m, --master        Master operating mode\n");
     printf("    -s, --slave         Slave operating mode\n");
+    printf("    -b, --bluetooth     Bluetppth proximity enabled\n");
 
     printf("    -c, --config=DIR    Network Configuration file directory\n");
     printf("    -l, --log=FILE      redirect shairport's error output to FILE\n");
@@ -91,7 +92,7 @@ int parse_options(int argc, char **argv) {
     int opt;
 
     while ((opt = getopt_long(argc, argv,
-                              "+hmsvc:l:t:",
+                              "+hmsbvc:l:t:",
                               long_options, NULL)) > 0) {
         switch (opt) {
             default:
@@ -103,6 +104,9 @@ int parse_options(int argc, char **argv) {
                 break;
             case 's':
 		app.operating_mode = OPMODE_SLAVE;			// Set Node as Slave
+                break;
+            case 'b':
+                app.bluetooth_enabled = 1;				// Enable procimity checking on this node
                 break;
             case 'v':
                 debuglev++;
