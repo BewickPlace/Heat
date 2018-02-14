@@ -78,7 +78,7 @@ void	boost_start() {
     app.boost = 1;				// Signal boost
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 1);
-    add_timer(TIMER_BOOST, 60);			//  Boost timesout after y seconds
+    add_timer(TIMER_BOOST, (60*120));		//  Boost timesout after y minutes
 };
 
 //
