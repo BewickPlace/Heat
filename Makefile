@@ -28,6 +28,12 @@ endif
 ifeq ($(wildcard /etc/systemd/system/heat.service),)
 	install -m 644 scripts/heat.service /etc/systemd/system/heat.service
 endif
+ifeq ($(wildcard /var/www/html/changelog.txt),)
+	install -m 644 -o www-data html/*.* /var/www/html/
+endif
+ifeq ($(wildcard /home/pi/monitor.py),)
+	install -m 644 scripts/monitor.py /home/pi/
+endif
 
 %.o: %.c $(DEPS)
 	$(CC) -c $(CFLAGS) $<

@@ -1,0 +1,125 @@
+body {
+	background: #e7e7e7;
+	font-family: Verdana, sans-serif;
+	font-size: 12pt;
+	}
+
+graph {
+	background: #000000;
+	font-family: Verdana, sans-serif;
+	font-size: 12pt;
+	}
+
+#page { 
+	background: #ffffff; 
+	margin: 50px; 
+	border: 2px solid #c0c0c0; 
+	padding: 10px;
+	}
+
+#header { 
+	background: #4b6983; 
+	border: 2px solid #7590ae; 
+	text-align: center; 
+	padding: 10px; color: #ffffff;
+	}
+
+#header h1 { color: #ffffff; }
+
+#body { padding: 10px; }
+
+span.tt { font-family: monospace; }
+
+span.bold { font-weight: bold; }
+
+pre {font-family: Consolas,monospace; font-size: 11pt; }
+
+#myProgress {
+    width: 35%;
+    margin: 100px;
+    background-color: grey;
+}
+
+#myBar {
+    width: 0%;
+    height: 30px;
+    background-color: #4b6983;
+    text-align: center; /* To center it horizontally (if you want) */
+    line-height: 30px; /* To center it vertically */
+    color: white;
+}
+
+ol#toc {
+    height:31px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-top: 10px;
+    padding-left: 10px;
+    border-bottom: 1px solid #000;;
+}
+
+ol#toc a {
+    text-decoration: none;
+    float: left;
+    margin-right: 5px;
+    color: #000;;
+    border: 1px solid #000;
+    width: 140px;
+    text-align: center;
+    display: block;
+    height: 25px;
+    padding-top: 5px;
+    background: #4b6983; 
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+ol#toc li.current a{
+    color: #000;
+    background: #fff;
+    border-bottom: 1px solid #fff;
+}
+ol#toc a:hover {
+    background: #3af;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;;
+}
+
+ol#toc1 {
+    height:31px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-top: 5px;
+    padding-left: 37px;
+    border-bottom: 1px solid #000;;
+}
+
+ol#toc1 a {
+    text-decoration: none;
+    float: left;
+    margin-right: 5px;
+    color: #000;;
+    border: 1px solid #000;
+    width: 200px;
+    text-align: center;
+    display: block;
+    height: 25px;
+    padding-top: 5px;
+    background: #4b6983; 
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+ol#toc1 li.current a{
+    color: #000;
+    background: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+ol#toc1 a:hover {
+    background: #3af;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;;
+}
