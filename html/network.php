@@ -127,7 +127,7 @@ require 'manage_menu.php';
   ?>
 
   <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" autocomplete="off">
-   Host name: <input type="text" name="hostname" value=<?php echo $hostname?> <?php echo $readform ?> size=12 maxlength=10  pattern="[a-zA-Z0-9_-]+" required title="Alphanumeric and - or _"> at IP address: <?php echo $hostIPaddress ?><br>
+   Host name: <input type="text" name="hostname" value=<?php echo $hostname?> <?php echo $readform ?> size=14 maxlength=12  pattern="[a-zA-Z0-9_-]+" required title="Alphanumeric and - or _"> at IP address: <?php echo $hostIPaddress ?><br>
 
    Wi-Fi Configuration Details:    <br><br>
    <?php

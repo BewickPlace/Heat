@@ -149,7 +149,7 @@ default:
 	<input type="hidden" name="opmode" value="FALSE">
 	<input type="hidden" name="verbose" value="FALSE">
 	<input type="hidden" name="proximity" value="FALSE">
-	Opmerational Mode - MASTER: <input type="checkbox" name="opmode"    Value="TRUE" <?php echo $opmode    ?> onchange="this.form.submit()"> <br>
+	Operational Mode - MASTER: <input type="checkbox" name="opmode"    Value="TRUE" <?php echo $opmode    ?> onchange="this.form.submit()"> <br>
 	Verbose diagnostics:        <input type="checkbox" name="verbose"   Value="TRUE" <?php echo $verbose   ?> onchange="this.form.submit()"> <br>
 	Bluetooth Proximinity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
 	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>
