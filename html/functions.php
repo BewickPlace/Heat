@@ -367,6 +367,27 @@ function get_node_names() {
 
 #
 #
+#	Get Hours Run from the Logfile on the Master Node
+#
+function get_hours_run($node, $selected_date) {
+
+    $logfile = '/mnt/storage/Heat/'.$node.'_'.$selected_date.'.csv';
+    if (file_exists($logfile)) {
+	$csv = array_map('str_getcsv', file($logfile));
+
+	$timestamp = array_column($csv, 0);
+	$hours_run = array_column($csv, 1);
+
+	if (end($timestamp) === "23:55") {
+	    return(end($hours_run));
+	} else {
+	    return(end($hours_run)." - incomplete data");
+	}
+    }
+    return("data not available");
+}
+
+#
 #
 #
 function processrestart($name)

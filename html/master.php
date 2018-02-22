@@ -76,6 +76,13 @@ require 'manage_menu.php';
     </select>
     <input type="submit" value="Produce Graph">
     </form>
+<?php
+#
+#	Get the Hours Run
+#
+    $hours_run = get_hours_run($hostname, $selected_date);
+    echo "<br>Daily total of Hours Run: ", $hours_run, "<br>";;
+?>
     </p>
 
 <?php
