@@ -128,6 +128,17 @@ int	check_any_CALL() {
 }
 
 //
+//		Check any signal (CALL or At Home)
+//
+int	check_any_signals() {
+    int signal = 0;
+
+    signal = check_any_CALL();
+    signal = signal << 1;
+    signal = signal + check_any_at_home();
+    return(signal);
+}
+//
 //		Manage Call for heat (MASTER)
 //
 
@@ -142,7 +153,7 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
+    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
     if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
@@ -152,7 +163,7 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
 
     callsat(zone, 1);					    	// interface with DHT11 module to action
 
-    this_time = check_any_CALL();				// Check if anyone now CALLing
+    this_time = check_any_signals();				// Check if anyone now CALLing
     if (last_time != this_time) {
 	start_run_clock();					// if starting up START the run clock
 	perform_logging();					// Log the fact
@@ -179,7 +190,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_CALL();				// Check if anyone is already CALLing before we process
+    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
     if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
@@ -192,7 +203,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
 
     callsat(zone, 0);					    	// interface with DHT11 module to action
 
-    this_time = check_any_CALL();				// Check if anyone now CALLing
+    this_time = check_any_signals();				// Check if anyone now CALLing
     if (last_time != this_time) {
 	stop_run_clock();					// if starting up STOP the run clock
 	perform_logging();					// Log the fact
@@ -222,6 +233,7 @@ void 	manage_CLOSE() {
 void 	manage_TEMP(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
+    int this_time, last_time;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -229,8 +241,14 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current at home status
+
+    this_time = check_any_signals();				// Check if anyone now CALLing
+    if (last_time != this_time) {
+	perform_logging();					// Log the fact
+    }
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
