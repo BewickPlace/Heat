@@ -124,52 +124,52 @@ int	initialise_network(int max_payload_len, void (*up_callback)(char *name), voi
     FD_ZERO(&readfds);
 
     ifindex = if_nametoindex("wlan0");			// Use the wireless network interface
-    ERRORCHECK( ifindex <=0, "uknown interface type\n", die);
+    ERRORCHECK( ifindex <=0, "uknown interface type", die);
 
     rc = inet_pton(AF_INET6, MULTICAST, &multicast_address);
-    ERRORCHECK( rc < 0, "Protocol Group error\n", die);
+    ERRORCHECK( rc < 0, "Protocol Group error", die);
 
     sock = socket(PF_INET6, SOCK_DGRAM, 0);
-    ERRORCHECK( sock < 0, "socket error 1\n", EndError);
+    ERRORCHECK( sock < 0, "socket error 1", EndError);
 
     rc = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    ERRORCHECK( rc < 0, "socket error 2\n", die);
+    ERRORCHECK( rc < 0, "socket error 2", die);
 
     rc = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &zero, sizeof(zero));
-    ERRORCHECK( rc < 0, "socket error 3\n", die);
+    ERRORCHECK( rc < 0, "socket error 3", die);
 
     rc = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &one, sizeof(one));
-    ERRORCHECK( rc < 0, "socket error 3\n", die);
+    ERRORCHECK( rc < 0, "socket error 3", die);
 
     rc = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &zero, sizeof(zero));
-    ERRORCHECK( rc < 0, "socket error 4\n", die);
+    ERRORCHECK( rc < 0, "socket error 4", die);
 
     rc = setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS, &ds, sizeof(ds));
-    ERRORCHECK( rc < 0, "socket error 5\n", die);
+    ERRORCHECK( rc < 0, "socket error 5", die);
 
     rc = fcntl(sock, F_GETFD, 0);
-    ERRORCHECK( rc < 0, "fcntl error 1\n", die);
+    ERRORCHECK( rc < 0, "fcntl error 1", die);
 
     rc = fcntl(sock, F_SETFD, rc | FD_CLOEXEC);
-    ERRORCHECK( rc < 0, "fcntl error 2\n", die);
+    ERRORCHECK( rc < 0, "fcntl error 2", die);
 
     rc = fcntl(sock, F_GETFL, 0);
-    ERRORCHECK( rc < 0, "fcntl error 3\n", die);
+    ERRORCHECK( rc < 0, "fcntl error 3", die);
 
     rc = fcntl(sock, F_SETFL, (rc | O_NONBLOCK));
-    ERRORCHECK( rc < 0, "fcntl error 1\n", die);
+    ERRORCHECK( rc < 0, "fcntl error 1", die);
 
     memset(&sin6, 0, sizeof(sin6));
     sin6.sin6_family = AF_INET6;
     sin6.sin6_port = htons(protocol_port);
     rc = bind(sock, (struct sockaddr*)&sin6, sizeof(sin6));
-    ERRORCHECK( rc < 0, "Bind error \n", die);
+    ERRORCHECK( rc < 0, "Bind error ", die);
 
     memset(&mreq, 0, sizeof(mreq));
     memcpy(&mreq.ipv6mr_multiaddr, &multicast_address, SIN_LEN);
     mreq.ipv6mr_interface = ifindex;
     rc = setsockopt(sock, IPPROTO_IPV6, IPV6_JOIN_GROUP, (char*)&mreq, sizeof(mreq));
-    ERRORCHECK( rc<0, "set socket error\n", die);
+    ERRORCHECK( rc<0, "set socket error", die);
 
     netsock = sock;						// Save network socket
     update_my_ip_details();					// Update local host name & Ip address
@@ -209,7 +209,7 @@ void	wait_on_network_timers() {
 								// attempt read on socket
 	FD_SET(netsock, &readfds);					// timeout on next timer
 	rc = select(netsock + 1, &readfds, NULL, NULL, wait);
-	ERRORCHECK( (rc < 0) && (errno != EINTR), "Message wait on socket error\n", EndError);
+	ERRORCHECK( (rc < 0) && (errno != EINTR), "Message wait on socket error", EndError);
     }
 
 ENDERROR;
@@ -223,7 +223,7 @@ void	broadcast_network() {
 
     i = -1;
     rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, 0, NULL, 0); // send out a broadcast message to identify networks
-    ERRORCHECK( rc < 0,  "Broadcast send error\n", SendError);
+    ERRORCHECK( rc < 0,  "Broadcast send error", SendError);
 
 ERRORBLOCK(SendError);
     warn("Send error: Node %d, send error %d errno(%d)", i, rc, errno);
@@ -257,7 +257,7 @@ int	check_live_nodes() {
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
 	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // send out a specific message to this node
-	        ERRORCHECK( rc < 0, "Network send error\n", SendError);
+	        ERRORCHECK( rc < 0, "Network send error", SendError);
 	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
                 other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
 		sent = 1;
@@ -361,15 +361,15 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 
     ERRORCHECK( (message->type != MSG_TYPE_ECHO) && \
 		(message->type != MSG_TYPE_PING) && \
-		(message->type != MSG_TYPE_REPLY), "Unrecognised message type\n", EndError);
-    ERRORCHECK( (message->version != MSG_VERSION), "Incompatible message version\n", EndError);
+		(message->type != MSG_TYPE_REPLY), "Unrecognised message type", EndError);
+    ERRORCHECK( (message->version != MSG_VERSION), "Incompatible message version", EndError);
 
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
     if (node < 0) {						// if unknown
 	node = add_live_node(&sin6.sin6_addr);			// Add the source as a valid node
 	add_timer(TIMER_PING, 1);				// initiate PINGs
     }
-    ERRORCHECK( node < 0, "Network node unknown\n", EndError);
+    ERRORCHECK( node < 0, "Network node unknown", EndError);
 
     switch (message->type) {					// Handle different message types
     case MSG_TYPE_ECHO:
@@ -487,7 +487,7 @@ int	add_live_node(struct in6_addr *src) {
     if (node >= 0) goto EndError;				// skip on if already found
 
     node = find_live_node((struct in6_addr*)&zeros);		// Find an empty node
-    ERRORCHECK( node < 0, "Node list full!!\n", EndError);
+    ERRORCHECK( node < 0, "Node list full!!", EndError);
 
     memcpy(&other_nodes[node].address, src, SIN_LEN);		// Record address &
     other_nodes[node].state = NET_STATE_UNKNOWN;		// Set link and message states
@@ -584,10 +584,10 @@ ENDERROR;
 int	send_to_node(int node, char *payload, int payload_len) {
     int rc;
     rc = -1;
-    ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down\n", EndError);	// Check Link UP
+    ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down", EndError);	// Check Link UP
 
     rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, 0, payload, payload_len); // send out a specific message to this node
-    ERRORCHECK( rc < 0, "Network send error\n", SendError);
+    ERRORCHECK( rc < 0, "Network send error", SendError);
 
 ERRORBLOCK(SendError);
     warn("Send error: Node %d, send error %d errno(%d)", node, rc, errno);
