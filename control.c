@@ -132,10 +132,13 @@ int	check_any_CALL() {
 //
 int	check_any_signals() {
     int signal = 0;
+    int zone;
 
-    signal = check_any_CALL();
-    signal = signal << 1;
-    signal = signal + check_any_at_home();
+    for (zone=0; zone < NUM_ZONES; zone++) {				// Check all Zones
+	signal = signal + check_any_CALL_in_zone(zone);			// Check each zone separately
+        signal = signal << 1;
+    }
+    signal = signal + check_any_at_home();				// and check At Home
     return(signal);
 }
 //
