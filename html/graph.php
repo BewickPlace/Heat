@@ -103,7 +103,7 @@ function data_graph($node, $time, $temp, $setpoint, $boost) {
 
     $graph->xaxis->SetTickLabels($time);
     $graph->xaxis->SetTextTickInterval(12);
-    $graph->xaxis->SetTextLabelInterval(3);
+    $graph->xaxis->SetTextLabelInterval(1);
 
 // Display the graph to image file
     $filename=$node.'.png';

@@ -8,6 +8,7 @@
 </head>
 
 <?php
+require 'html_functions.php';
 require 'functions.php';
 require 'graph.php';
 ?>
@@ -33,49 +34,55 @@ require 'manage_home_submenu.php';
 
 <?php
 #
-#	WiPi-Heat Slave Display Page
+#	WiPi-Heat MASTER Display Page
 #
 ?>
-    <h2>Welcome to your WiPi-Heat Temperature Control System</h2>
+    <h2>Current Usage Profiles</h2>
     <p>
-
 <?php
 #    var_dump($_POST);
 #
-    $time = time();
-    $date = date('Y-m-d', $time);
-    $selected_date = (!empty($_POST['graph_date']) ? $_POST['graph_date'] : $date);
-?>
-
-    <form  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" autocomplete="off">
-    Select Date :
-    <select name="graph_date">
-<?php
-    for($i = 1; $i <30; $i++) {
-	$date =  date('Y-m-d', $time);
-	$selected = ($date == $selected_date ? " selected" : "");
-?>
-	<option value=<?php echo $date, $selected;?>><?php echo $date;?></option>
-<?php
-	$time = $time -(60 *60*24);
+    $opmode = getWiPiopmode();
+    if ($opmode == '-m') {
+	$selected_date = html_select_date($menu_mode, $submenu_mode);
+#
+#	Get the Hours Run
+#
+	$hours_run = get_hours_run($hostname, $selected_date);
+	echo "<br>Daily total of Hours Run: ", $hours_run, "<br>";
     }
 ?>
-    </select>
-    <input type="submit" value="Produce Graph">
-    </form>
     </p>
 
 <?php
 #
-#	Generate Graph for this node
+#	Generate Graph for all nodes/this node depending on node type
 #
-    $filename = $hostname.'.png';
+    if ($opmode == '-m') {
+	$nodes = get_node_names();
+	foreach($nodes as $node) {
+	    $filename = $node.'.png';
 ?>
     <p>
-    <?php unlink($filename); ?>
-    <?php generate_graph($hostname, $selected_date); ?>
+    <?php if (file_exists($filename)) { unlink($filename);} ?>
+    <?php generate_graph($node, $selected_date); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
+<?php
+	}
+    } else {
+	$node = $hostname;
+	$filename = $node.'.png';
+?>
+    <p>
+    <?php if (file_exists($filename)) { unlink($filename);} ?>
+    <?php generate_graph($node, $selected_date); ?>
+    <img src=<?php echo $filename ?> height=50% width=100%>
+    </p>
+
+<?php
+    }
+?>
     <p>
     <small>Overall &copy IT and Media Services 2018-<?php echo date("y"); ?></small>
     </p>

@@ -149,6 +149,7 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
     int this_time, last_time;
+    int this_call, last_call;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -156,19 +157,24 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
+    last_time = check_any_signals();				// Check ALL loggable signals
+    last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
-    network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
-    if (network.zones[zone].nodes[node].callsat) { goto EndError; } // if already in CALL skip to end
+    network.zones[zone].nodes[node].at_home = at_home;		// Save the current bluetooth status
+    if (network.zones[zone].nodes[node].callsat) { goto Checks; } // if already in CALL skip to checks
 
-    network.zones[zone].nodes[node].callsat = 1;			// Mark as CALLing
+    network.zones[zone].nodes[node].callsat = 1;		// Mark as CALLing
     debug(DEBUG_ESSENTIAL, "Call for heat @ %s (%d:%d)\n",node_name, zone, node);
-
     callsat(zone, 1);					    	// interface with DHT11 module to action
 
-    this_time = check_any_signals();				// Check if anyone now CALLing
-    if (last_time != this_time) {
+Checks:
+    this_call = check_any_CALL();				// Check if anyone now CALLing
+    if (last_call != this_call) {
 	start_run_clock();					// if starting up START the run clock
+    }
+
+    this_time = check_any_signals();				// Check if any Signal has changed
+    if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
 
@@ -186,6 +192,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     int node;
     int i;
     int this_time, last_time;
+    int this_call, last_call;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -193,22 +200,28 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
+    last_time = check_any_signals();				// Check ALL loggable signals
+    last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
-    if (!network.zones[zone].nodes[node].callsat) { goto EndError; } // if already SAT skip to end
+    if (!network.zones[zone].nodes[node].callsat) { goto Checks; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
     for(i = 0; i < NUM_NODES_IN_ZONE; i++) {			// Check if Zone fully satisfied
-	if (network.zones[zone].nodes[i].callsat) { goto EndError; } // Skip if CALL still required anywhere in zone
+	if (network.zones[zone].nodes[i].callsat) { goto Checks; } // Skip if CALL still required anywhere in zone
     }
     debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
 
     callsat(zone, 0);					    	// interface with DHT11 module to action
 
-    this_time = check_any_signals();				// Check if anyone now CALLing
-    if (last_time != this_time) {
+Checks:
+    this_call = check_any_CALL();				// Check if anyone now CALLing
+    if (last_call != this_call) {
 	stop_run_clock();					// if starting up STOP the run clock
+    }
+
+    this_time = check_any_signals();				// Check if any Signal has changed
+    if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
 

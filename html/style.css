@@ -123,3 +123,31 @@ ol#toc1 a:hover {
     color: #fff;
     text-shadow: 1px 1px 1px #000;;
 }
+
+.circle {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+#circle1 {
+  width: 200px;
+  height: 200px;
+  background: green;
+}
+		
+#circle2 {
+  width: 125px;
+  height: 125px;
+  background: red;
+}
+		
+#circle3 {
+  width: 100px;
+  height: 100px;
+  background: blue;
+  position: relative;
+}
+

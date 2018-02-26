@@ -329,9 +329,8 @@ $password = "";
 #
 #	Get a list of name from Heating Config file
 #
-function get_names($primekey) {
+function get_names($primekey,$namekey) {
     $heatingfile = '/etc/heating.conf';
-    $key1 = 'name';
 
     $filedata = file_get_contents($heatingfile);
     if ($filedata !== FALSE) {
@@ -341,7 +340,7 @@ function get_names($primekey) {
             $n = count($names);
  	    $i = 1;
 	    while ($i !== $n) {
-	        $output[$i-1] = extractstring($names[$i],$key1);
+	        $output[$i-1] = extractstring($names[$i],$namekey);
 		$i = $i+1;
 	    }
 	} else {
@@ -356,13 +355,16 @@ function get_names($primekey) {
 #	Associated Get from... Heating Config file
 #
 function get_system_name() {
-    return(get_names('network {'));
+    return(get_names('network {', 'name'));
 }
 function get_zone_names() {
-    return(get_names('zone {'));
+    return(get_names('zone {', 'name'));
 }
 function get_node_names() {
-    return(get_names('node {'));
+    return(get_names('node {', 'name'));
+}
+function get_node_zone() {
+    return(get_names('node {', 'zone'));
 }
 
 #
@@ -385,6 +387,31 @@ function get_hours_run($node, $selected_date) {
 	}
     }
     return("data not available");
+}
+
+#
+#	Get data from MASTER Log File
+#
+function get_log_info($node, $selected_date, $column) {
+
+    $logfile = '/mnt/storage/Heat/'.$node.'_'.$selected_date.'.csv';
+    if (file_exists($logfile)) {
+	$csv = array_map('str_getcsv', file($logfile));
+
+        $info = array_column($csv, $column);
+	return(end($info));
+    }
+    return("data not available");
+}
+
+function get_logtime($node, $selected_date) {
+    return(get_log_info($node, $selected_date,0));
+}
+function get_logstate_zone($node, $selected_date, $zone) {
+    return(get_log_info($node, $selected_date,$zone+2));
+}
+function get_logstate_at_home($node, $selected_date) {
+    return(get_log_info($node, $selected_date,4));
 }
 
 #
