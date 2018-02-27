@@ -124,30 +124,32 @@ ol#toc1 a:hover {
     text-shadow: 1px 1px 1px #000;;
 }
 
-.circle {
-  height: 25px;
-  width: 25px;
-  background-color: #bbb;
-  border-radius: 50%;
-  display: inline-block;
+.container {
+  display: flex;
+  width: 80%;
+  justify-content: space-around;
 }
 
-#circle1 {
-  width: 200px;
-  height: 200px;
-  background: green;
+.circle {
+  height: 150px;
+  width: 150px;
+  line-height: 150px;
+  border-radius: 50%;
+  background: cyan;
+}
+
+#circle-plain {
+  border: 10px solid cyan;
 }
 		
-#circle2 {
+#circle-border {
+  border: 10px solid red;
+}
+		
+#circle-zone {
   width: 125px;
   height: 125px;
-  background: red;
-}
-		
-#circle3 {
-  width: 100px;
-  height: 100px;
-  background: blue;
-  position: relative;
+  line-height: 125px;
+  background: grey;
 }
 
