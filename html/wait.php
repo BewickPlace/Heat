@@ -7,6 +7,10 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
+<?php
+require 'functions.php';
+?>
+
 <body>
 <div id="page">
  <div id="header">
@@ -15,23 +19,19 @@
 #	Header section of the page
 #
 ?>
- <h1>WiPi Air</h1>
+ <h1>WiPi Heat</h1>
  </div>
- <ol id="toc">
-    <li class="current"><a href="index.php" >Home</a></li>
-    <li><a href="music.php" >Music Server</a></li>
-    <li><a href="changelog.php">Changelog</a></li>
-    <li><a href="diagnostics.php">Diagnostics</a></li>
-    <li><a href="about.php">About</a></li>
- </ol>
- <div id="body">
+
+<?php
+require 'manage_menu.php';
+?>
 
 <?php
 #
-#	WiPi-Air waiting page
+#	WiPi-Heat waiting page
 #
 ?>
-<h2>WiPi-Air Shutdown or Restart:</h2>
+<h2>WiPi-Heat Shutdown or Restart:</h2>
 <div id="myProgress">
   <div id="myBar">0%</div>
 </div>
@@ -75,7 +75,7 @@ move();
 #
 ?>
    <p>
-   <small>Overall &copy IT and Media Services 2013-<?php echo date("y"); ?></small>
+   <small>Overall &copy IT and Media Services 2018-<?php echo date("y"); ?></small>
   </p>
  </div>
 </div>

@@ -32,7 +32,7 @@ default:
     $class_home = "current";
     break;
 }
-$opmode = getWiPIopmode();
+$opmode = getWiPiopmode();
 ?>
 
 <ol id="toc">

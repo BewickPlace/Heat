@@ -48,7 +48,7 @@ require 'manage_menu.php';
 #	Obtain configuration data from files or returned POST
 #
 #
-  var_dump($_POST);
+#  var_dump($_POST);
 
   $remotename = "";
 
@@ -109,7 +109,7 @@ require 'manage_menu.php';
       ?><script>window.location.href = "wait.php";</script><?php
       requestrestart(FALSE);
 	 break;
-    case "Restart WiPi-Air":
+    case "Restart WiPi-Heat":
       ?><script>window.location.href = "wait.php?page=index.php";</script><?php
       requestrestart(TRUE);
 	 break;
