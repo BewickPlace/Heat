@@ -29,7 +29,7 @@ function generate_graph($node, $selected_date) {
     }
 
     system('umount /mnt/network');
-//    updatenetwork_share(TRUE, '', '');
+    updatenetwork_share(TRUE, '', '');
 }
 
 #
