@@ -74,23 +74,16 @@ def check_restart():
            logging.info('User requested WiFi Network restart')
            try: os.remove('/var/www/restart.network-restart')
            except: pass
-	   GPIO.output(7, GPIO.LOW)
 	   flash = True
 	   os.system("sudo ifdown wlan0")
 	   time.sleep(5)
 	   os.system("sudo ifup wlan0")
-        if os.path.isfile('/var/www/restart.shairport-restart'):
-	   # restart shairport
-           logging.info('User requested Shairport restart')
-           try: os.remove('/var/www/restart.shairport-restart')
+        if os.path.isfile('/var/www/restart.heat-restart'):
+	   # restart heat
+           logging.info('User requested Heat restart')
+           try: os.remove('/var/www/restart.heat-restart')
            except: pass
-	   os.system("sudo systemctl restart shairport.service")
-        if os.path.isfile('/var/www/restart.daapd-restart'):
-	   # restart forked-daapd
-           logging.info('User requested Daapd restart')
-           try: os.remove('/var/www/restart.daapd-restart')
-           except: pass
-	   os.system("sudo /etc/init.d/forked-daapd restart")
+	   os.system("sudo systemctl restart heat.service")
         if shutdown:
 	   # we are shutting down the Pi - remove forced disk check
            try: os.remove('/forcefsck')
@@ -181,15 +174,12 @@ try: os.remove('/var/www/restart.force-restart')
 except: pass
 try: os.remove('/var/www/restart.network-restart')
 except: pass
-try: os.remove('/var/www/restart.shairport-restart')
-except: pass
-try: os.remove('/var/www/restart.daapd-restart')
+try: os.remove('/var/www/restart.heat-restart')
 except: pass
 restartenabled = (not os.path.isfile('/var/www/restart.force-shutdown') and 
                   not os.path.isfile('/var/www/restart.force-restart') and
                   not os.path.isfile('/var/www/restart.network-restart') and
-                  not os.path.isfile('/var/www/restart.shairport-restart') and
-                  not os.path.isfile('/var/www/restart.daapd-restart'))
+                  not os.path.isfile('/var/www/restart.heat-restart'))
 
 # Force /var/log permissions
 os.system("sudo chmod 777 /var/log")

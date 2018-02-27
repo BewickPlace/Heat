@@ -48,7 +48,7 @@ require 'manage_menu.php';
 #	Obtain configuration data from files or returned POST
 #
 #
-#  var_dump($_POST);
+  var_dump($_POST);
 
   $remotename = "";
 
@@ -116,7 +116,7 @@ require 'manage_menu.php';
     case "Restart WiFi Network":
       processrestart("network");
 	 break;
-    case "Restart Shairport":
+    case "Restart Heat App":
       processrestart("heat");
 	 break;
     }
