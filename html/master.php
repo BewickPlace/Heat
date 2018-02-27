@@ -10,7 +10,6 @@
 <?php
 require 'html_functions.php';
 require 'functions.php';
-require 'graph.php';
 ?>
 
 <body>

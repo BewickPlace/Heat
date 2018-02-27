@@ -8,8 +8,8 @@
 </head>
 
 <?php
+require 'html_functions.php';
 require 'functions.php';
-require 'graph.php';
 ?>
 
 <body>
@@ -29,57 +29,28 @@ require 'manage_menu.php';
 require 'manage_home_submenu.php';
 ?>
 
- <div id="body">
+ <div id="body" align="center" width="%50">
 
 <?php
 #
-#	WiPi-Heat Slave Display Page
+#	WiPi-Heat MASTER Display Page
+#
 #
 ?>
-    <h2>Welcome to your WiPi-Heat Temperature Control System</h2>
+    <h2>WiPi-Heat</h2>
+    <h2>Temperature Control System</h2>
+
+    <div id ="circle-plain" class="circle">
+	Zone: <?php echo $hostname ?>
+    </div>
     <p>
-
-<?php
-#    var_dump($_POST);
-#
-    $time = time();
-    $date = date('Y-m-d', $time);
-    $selected_date = (!empty($_POST['graph_date']) ? $_POST['graph_date'] : $date);
-?>
-
-    <form  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" autocomplete="off">
-    Select Date :
-    <select name="graph_date">
-<?php
-    for($i = 1; $i <30; $i++) {
-	$date =  date('Y-m-d', $time);
-	$selected = ($date == $selected_date ? " selected" : "");
-?>
-	<option value=<?php echo $date, $selected;?>><?php echo $date;?></option>
-<?php
-	$time = $time -(60 *60*24);
-    }
-?>
-    </select>
-    <input type="submit" value="Produce Graph">
-    </form>
+	Welcome to your WiPi-Heat.
     </p>
-
-<?php
-#
-#	Generate Graph for this node
-#
-    $filename = $hostname.'.png';
-?>
-    <p>
-    <?php unlink($filename); ?>
-    <?php generate_graph($hostname, $selected_date); ?>
-    <img src=<?php echo $filename ?> height=50% width=100%>
-    </p>
+</div>
+<div>
     <p>
     <small>Overall &copy IT and Media Services 2018-<?php echo date("y"); ?></small>
     </p>
- </div>
 </div>
 <!-- s:853e9a42efca88ae0dd1a83aeb215047 -->
 </body>

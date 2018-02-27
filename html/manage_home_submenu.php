@@ -31,7 +31,9 @@ default:
 ?>
 
 <ol id="toc1">
-    <li class=<?php echo $class_home 	?>><a href="master.php?menumode=home&submenumode=home">		Home</a></li>
+    <li class=<?php echo $class_home 	?>><a href="index.php?menumode=home&submenumode=home">		Home</a></li>
     <li class=<?php echo $class_usage	?>><a href="usage.php?menumode=home&submenumode=usage">	 	Usage</a></li>
+<?php if ($opmode == '-m') { ?>
     <li class=<?php echo $class_controls?>><a href="usage.php?menumode=home&submenumode=controls"> 	Controls</a></li>
+<?php } ?>
 </ol>

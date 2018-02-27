@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>WiPi-Heat Temperature Control System</title>
+<title>WiPi-Heat: Usage Profile</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
@@ -37,14 +37,14 @@ require 'manage_home_submenu.php';
 #	WiPi-Heat MASTER Display Page
 #
 ?>
-    <h2>Current Usage Profiles</h2>
+    <h2>Usage Profile</h2>
     <p>
 <?php
 #    var_dump($_POST);
 #
+    $selected_date = html_select_date($menu_mode, $submenu_mode);
     $opmode = getWiPiopmode();
     if ($opmode == '-m') {
-	$selected_date = html_select_date($menu_mode, $submenu_mode);
 #
 #	Get the Hours Run
 #
