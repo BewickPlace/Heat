@@ -120,7 +120,7 @@ void	Button_interrupt() {
 	    }
 
 	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Boost (slave only)
-		   (app.operating_mode == OPMODE_SLAVE)) {
+		   (app.operating_mode != OPMODE_MASTER)) {
 	    debug(DEBUG_TRACE, "Button - Long Press\n");
 	    if(!app.boost) {			// If not already boosting
 		boost_start();			// Start off the boost
@@ -129,7 +129,7 @@ void	Button_interrupt() {
 	    }
 
 	} else if ((button_press < BUTTON_EXTRALONG_PRESS) &&	// Longer press - Extra boost (slave only)
-		   (app.operating_mode == OPMODE_SLAVE) &&
+		   (app.operating_mode != OPMODE_MASTER) &&
 		   (app.boost)) {			// when already boosting
 	    debug(DEBUG_TRACE, "Button - Longer Press\n");
 	    app.boost++;
@@ -293,8 +293,6 @@ void monitor_process()	{
     int	rc = -1;
     int cycle_time = DHT11_OVERALL;
 
-//    ERRORCHECK(app.operating_mode == OPMODE_MASTER, "Master Mode: no temperature sensor required", EndError);
-
     boost_stop();				// Initialise with no boost
 
     Button_pin.last_pin_state = HIGH;		// last known pin state
@@ -305,7 +303,7 @@ void monitor_process()	{
 
     while ( !heat_shutdown )	{
 	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
-	    (app.operating_mode == OPMODE_SLAVE)) {	// and only on slave
+	    (app.operating_mode != OPMODE_MASTER)) {	// and only on slave
 	    read_dht11();
 	}
 	delay( 1000 );

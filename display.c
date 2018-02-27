@@ -64,7 +64,6 @@ void display_process() {
     time_t	run_time;
 
     Init_display();				//Initialise the display
-//    ERRORCHECK( app.operating_mode == OPMODE_MASTER, "Master Mode: no display required", EndError);
 
     while (!heat_shutdown) {			// run until requested to shutdown
 	if (app.display) { 	Display_on();

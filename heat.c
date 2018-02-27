@@ -83,6 +83,7 @@ int parse_options(int argc, char **argv) {
         {"help",    no_argument,        NULL, 'h'},
         {"master",  no_argument,        NULL, 'm'},
         {"slave",   no_argument,        NULL, 's'},
+        {"watch",   no_argument,        NULL, 'w'},
 
         {"config",  required_argument,  NULL, 'c'},
         {"log",     required_argument,  NULL, 'l'},
@@ -92,7 +93,7 @@ int parse_options(int argc, char **argv) {
     int opt;
 
     while ((opt = getopt_long(argc, argv,
-                              "+hmsbvc:l:t:",
+                              "+hmswbvc:l:t:",
                               long_options, NULL)) > 0) {
         switch (opt) {
             default:
@@ -104,6 +105,9 @@ int parse_options(int argc, char **argv) {
                 break;
             case 's':
 		app.operating_mode = OPMODE_SLAVE;			// Set Node as Slave
+                break;
+            case 'w':
+		app.operating_mode = OPMODE_WATCH;			// Set Node as Watch (non-cotrolling Slave
                 break;
             case 'b':
                 app.bluetooth_enabled = 1;				// Enable procimity checking on this node
@@ -219,7 +223,7 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv);				// Parse command line parameters
     open_logfile();					// Open correct logfile
-    debug(DEBUG_ESSENTIAL, "Heat starting in %s mode\n", (app.operating_mode ? "SLAVE": "MASTER"));
+    debug(DEBUG_ESSENTIAL, "Heat starting in %s mode\n", (app.operating_mode == OPMODE_MASTER ? "MASTER" :app.operating_mode == OPMODE_SLAVE ? "SLAVE" : "WATCH"));
 
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks
     initialise_timers();				// and set all timers
@@ -239,7 +243,7 @@ int main(int argc, char **argv) {
 	break;
 
     case OPMODE_SLAVE:
-//	dd_timer(TIMER_APPLICATION, 15);		// Set to kick application in y seconds
+    case OPMODE_WATCH:
 	add_timer(TIMER_SETPOINT, 15);			// Set to refresh setpoint in y seconds
 	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;

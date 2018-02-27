@@ -67,12 +67,16 @@ require 'manage_about_submenu.php';
 
 	  switch($_POST["opmode"])
 	  {
-          case "TRUE":
+          case "MASTER":
 	    updateWiPiopmode("-m");
 
 	    break;
-          case "FALSE":
+          case "SLAVE":
 	    updateWiPiopmode("-s");
+
+	    break;
+          case "WATCH":
+	    updateWiPiopmode("-w");
 
 	    break;
 	  }
@@ -138,7 +142,9 @@ case "system":
     break;
 
 default:
-	$opmode = ((getWiPiopmode() == "-m")? "checked":"unchecked");
+	$opmodeM = ((getWiPiopmode() == "-m")? "checked":"unchecked");
+	$opmodeS = ((getWiPiopmode() == "-s")? "checked":"unchecked");
+	$opmodeW = ((getWiPiopmode() == "-w")? "checked":"unchecked");
 	$verbose = ((getWiPidebug() == "-v")? "checked":"unchecked");
 	$proximity = ((getWiPibluetooth() == "-b")? "checked":"unchecked");
 ?>
@@ -149,9 +155,11 @@ default:
 	<input type="hidden" name="opmode" value="FALSE">
 	<input type="hidden" name="verbose" value="FALSE">
 	<input type="hidden" name="proximity" value="FALSE">
-	Operational Mode - MASTER: <input type="checkbox" name="opmode"    Value="TRUE" <?php echo $opmode    ?> onchange="this.form.submit()"> <br>
+	Operational Mode - MASTER: <input type="radio" name="opmode"    Value="MASTER" <?php echo $opmodeM    ?> onchange="this.form.submit()">
+	                   SLAVE : <input type="radio" name="opmode"    Value="SLAVE" <?php echo $opmodeS    ?> onchange="this.form.submit()">
+	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()"> <br><br>
 	Verbose diagnostics:        <input type="checkbox" name="verbose"   Value="TRUE" <?php echo $verbose   ?> onchange="this.form.submit()"> <br>
-	Bluetooth Proximinity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
+	Bluetooth Proximiity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
 	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>
 	<input type="hidden" name="submenuselect" value=<?php echo $submenu_mode ?>>
 	</form>

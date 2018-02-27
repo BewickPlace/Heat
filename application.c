@@ -75,7 +75,8 @@ void	check_heating_setpoint() {
     struct payload_pkt app_data;
 
     if (app.active_node != -1) {					// As long as we have a controller to talk to
-	if (app.temp  > (app.setpoint + app.boost + app.hysteresis)) {
+	if ((app.temp  > (app.setpoint + app.boost + app.hysteresis)) &&
+	    (app.operating_mode == OPMODE_SLAVE)) {
 	    app.callsat = 0;						// Maintain local callsat status
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
 	    app_data.d.callsat.temp  = app.temp;
@@ -86,7 +87,8 @@ void	check_heating_setpoint() {
 	    debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
-	} else if (app.temp < (app.setpoint + app.boost - app.hysteresis)) {
+	} else if ((app.temp < (app.setpoint + app.boost - app.hysteresis)) &&
+	    (app.operating_mode == OPMODE_SLAVE)) {
 	    app.callsat = 1;						// Maintain local callsat status
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;
@@ -292,7 +294,7 @@ void	handle_app_timer(int timer) {
 
 	midnight_processing();		// Perform Midnight processing if appropriate
 
-	if (app.operating_mode == OPMODE_SLAVE) perform_logging(); // Perform temperature logging (SLAVE)
+	if (app.operating_mode != OPMODE_MASTER) perform_logging(); // Perform temperature logging (SLAVE)
 	add_timer(TIMER_LOGGING, timeto5min());// wait for next 5 minute boundty
 	break;
 
