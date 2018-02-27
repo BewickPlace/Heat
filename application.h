@@ -23,7 +23,7 @@ THE SOFTWARE.
 #define	NAMELEN		14			// Length of names allowed
 #define MAX_TIME_BLOCKS 10			// time change blocks in a profile
 #define MAX_PROFILES	10			// total number of profiles
-#define NUM_NODES_IN_ZONE 2			// Max nodes per zone
+#define NUM_NODES_IN_ZONE 3			// Max nodes per zone
 #define NUM_ZONES	2			// Max zones supported
 
 struct	timeblock {				// Setpoint  Change Time  Block

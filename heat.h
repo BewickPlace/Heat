@@ -27,7 +27,7 @@ THE SOFTWARE.
 #define OPMODE_SLAVE	1			// Master (controller)/ Slave (Sensor)
 #define OPMODE_WATCH	2			// Watch (Sensor) - monitoring only
 
-#define BLUETOOTH_CANDIDATES 8			// Number of bluetooth devices for proximity checking
+#define BLUETOOTH_CANDIDATES 5			// Number of bluetooth devices for proximity checking
 struct app {					// Application key Data
     int		operating_mode;			// - operating mode
     int		active_node;			// - active node
