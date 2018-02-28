@@ -255,7 +255,8 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	node = match_node(node_name, zone);
 	if (node != -1) break;
     }
-    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
+    if(node <0) { goto EndError; }				// Ignore error - likely to come from Watch device
+//    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
     last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
@@ -266,8 +267,8 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	perform_logging();					// Log the fact
     }
 
-ERRORBLOCK(NodeError);
-   debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
+//ERRORBLOCK(NodeError);
+//   debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
 ENDERROR;
 }
 //
