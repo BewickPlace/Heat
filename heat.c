@@ -239,15 +239,14 @@ int main(int argc, char **argv) {
     switch (app.operating_mode) {
     case OPMODE_MASTER:					// Only Master nodes are responsible for broadcasting
 	add_timer(TIMER_BROADCAST, 5);			// Set to refresh network in y seconds
-	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;
 
     case OPMODE_SLAVE:
     case OPMODE_WATCH:
 	add_timer(TIMER_SETPOINT, 15);			// Set to refresh setpoint in y seconds
-	add_timer(TIMER_DISPLAY, 30);			// and timeout the screen in z seconds
 	break;
     }
+    add_timer(TIMER_DISPLAY, 60);			// and timeout the screen in z seconds
     add_timer(TIMER_LOGGING, 5);			// atart off the logging process
     add_timer(TIMER_CONTROL, 1);			// Set to perform Master & slabe control actions in y seconds
 

@@ -93,6 +93,21 @@ void	boost_stop() {
 };
 
 //
+//	Flash button
+//
+void	flash_button() {
+    int i;
+    int flash = 1;
+
+    for(i=0; i< 10; i++) {			// repeat x times (even finishes off
+	digitalWrite(BUTTON_WRITE_PIN, flash);  // Flash the button
+
+	flash = ( flash ? 0 : 1);		// Toggle the output
+	delay(200);
+    }
+}
+
+//
 //	Button Interrupot Handler
 //
 void	Button_interrupt() {
@@ -299,6 +314,8 @@ void monitor_process()	{
     Button_pin.edge1 = millis();		// record starting edge timestamp
     rc = wiringPiISR(BUTTON_READ_PIN, INT_EDGE_BOTH, &Button_interrupt);  // Interrupt on rise or fall of DHT Pin
     ERRORCHECK( rc < 0, "DHT Error - Pi ISR problem", EndError);
+
+    flash_button();				// Flash button to signal start
     delay( 2000 );				// Allow time for DHT11 to settle
 
     while ( !heat_shutdown )	{
@@ -310,6 +327,7 @@ void monitor_process()	{
 	cycle_time =( cycle_time + 1) % DHT11_OVERALL;
     }
     boost_stop();				// Tidy up with no boost
+    flash_button();				// Flash button to signal shutdown
 
 ENDERROR;
     return;
