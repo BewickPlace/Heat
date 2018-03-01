@@ -27,11 +27,11 @@ All pins can be changed in the .h header definitions, however the base setup is 
       Zone 1 Write  | 11|   |
       Zone 2 Write  | 13| 14| GRND
                     |   |   |
-              +3.3v | 17| 18| DC
-           SDA/MOSI | 19|   |
-                    |   | 22| RES/RET
-               SCLK | 23| 24| CS/CEO
-               GRND | 25|   |
+      O       +3.3v | 17| 18| DC        W
+      Br    SDA/MOSI | 19|   |
+                    |   | 22| RES/RET  Bl
+      R        SCLK | 23| 24| CS/CEO   Gr
+      Y        GRND | 25|   |
                     |   |   |
 
 The program uses wiringPi to access the GPIO pins, and utilises Physical pin numbering mode.
