@@ -204,12 +204,13 @@ void	wait_on_network_timers() {
     int rc;
     struct timeval *wait;
     wait = next_timers();
-    debug(DEBUG_DETAIL, "Wait on read or timeout %llds\n", (long long)wait->tv_sec);
+    debug(DEBUG_DETAIL, "Wait on read or timeout %lds\n", wait->tv_sec);
     if (wait->tv_sec > 0L) {					// As long as next timer not expired
 								// attempt read on socket
 	FD_SET(netsock, &readfds);					// timeout on next timer
 	rc = select(netsock + 1, &readfds, NULL, NULL, wait);
 	ERRORCHECK( (rc < 0) && (errno != EINTR), "Message wait on socket error", EndError);
+	adjust_timers();
     }
 
 ENDERROR;
