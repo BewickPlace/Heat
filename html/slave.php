@@ -41,7 +41,7 @@ require 'manage_home_submenu.php';
     <h2>Temperature Control System</h2>
 
     <div id ="circle-plain" class="circle">
-	Zone: <?php echo $hostname ?>
+	<?php echo $hostname ?>
     </div>
     <p>
 	Welcome to your WiPi-Heat.
