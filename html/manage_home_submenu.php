@@ -7,7 +7,7 @@ $submenumode = "";
 #
 $class_home = "";
 $class_usage = "";
-$class_controls = "";
+$class_reports = "";
 #
 $submenu_mode = (!empty($_GET['submenumode']) ? $_GET['submenumode'] : (!empty($_POST['submenuselect']) ? $_POST['submenuselect'] : ""));
 
@@ -20,8 +20,8 @@ case "usage":
     $class_usage = "current";
     break;
 
-case "controls":
-    $class_controls = "current";
+case "reports":
+    $class_reports = "current";
     break;
 
 default:
@@ -34,6 +34,6 @@ default:
     <li class=<?php echo $class_home 	?>><a href="index.php?menumode=home&submenumode=home">		Home</a></li>
     <li class=<?php echo $class_usage	?>><a href="usage.php?menumode=home&submenumode=usage">	 	Usage</a></li>
 <?php if ($opmode == '-m') { ?>
-    <li class=<?php echo $class_controls?>><a href="usage.php?menumode=home&submenumode=controls"> 	Controls</a></li>
+    <li class=<?php echo $class_reports ?>><a href="reports.php?menumode=home&submenumode=reports"> 	Reports</a></li>
 <?php } ?>
 </ol>

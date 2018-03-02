@@ -65,7 +65,7 @@ require 'manage_home_submenu.php';
 ?>
     <p>
     <?php if (file_exists($filename)) { unlink($filename);} ?>
-    <?php generate_graph($node, $selected_date); ?>
+    <?php generate_graph($node, $selected_date, 1); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
 <?php
@@ -76,7 +76,7 @@ require 'manage_home_submenu.php';
 ?>
     <p>
     <?php if (file_exists($filename)) { unlink($filename);} ?>
-    <?php generate_graph($node, $selected_date); ?>
+    <?php generate_graph($node, $selected_date, 1); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
 
