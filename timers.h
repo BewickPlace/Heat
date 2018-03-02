@@ -45,6 +45,8 @@ void	cancel_timer(int timer);
 
 struct timeval *next_timers();
 
+void	adjust_timers();
+
 int	check_timers();
 
 void	display_timers();

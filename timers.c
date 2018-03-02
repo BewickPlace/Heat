@@ -76,6 +76,9 @@ void	 cancel_timer(int timer) {
 	timers.timers[timer].tv_sec = 0;		// Set chosen timer to zero
 	}
 
+
+static struct timeval 	next;
+static time_t		timeout;
 	//
 	//	Return the address of the next timer due
 	//
@@ -92,9 +95,32 @@ struct timeval *next_timers() {
 		lowest_time = timers.timers[i].tv_sec - now.tv_sec; // Record lowest time
 	    }
 	}
+	next = now;
+	timeout = lowest_time;
 	timers.wait_time.tv_sec = lowest_time;  	// Copy to timer slot
 	return(&timers.wait_time);			// Return address of lowest timer - NULL if none valid
 	}
+
+	//
+	//	Check to see if time adjusted
+	//
+void	adjust_timers() {
+	struct timeval now;
+	time_t diff;
+        int i;
+
+	gettimeofday(&now, NULL);			// Check if gap bewteen calls is too big
+	diff = now.tv_sec - next.tv_sec - (timeout - timers.wait_time.tv_sec + 1); // allowing a flex of 1
+	if (diff > 0 ) {
+	    warn("Time adjustsd by %ld seconds", diff);
+
+	    for (i=0; i < NO_TIMERS; i++) {		// Update all active timers
+	        if (timers.timers[i].tv_sec != 0) {
+		    timers.timers[i].tv_sec = timers.timers[i].tv_sec + diff;	// by the difference identified
+	    	}
+	    }
+	}
+}
 
 	//
 	//	Check Timers for expired timer - decrement others
