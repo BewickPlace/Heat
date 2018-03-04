@@ -27,7 +27,6 @@ $hostname = getmyhostname();
 
 <?php
 require 'manage_menu.php';
-require 'manage_home_submenu.php';
 ?>
 
  <div id="body">
@@ -55,20 +54,27 @@ require 'manage_home_submenu.php';
     </p>
 
 <?php
-#
+    $zones = get_zone_names();
+    $nodes = get_node_names();
+    $nodezone = get_node_zone();
+##
 #	Generate Graph for all nodes/this node depending on node type
 #
     if ($opmode == '-m') {
-	$nodes = get_node_names();
-	foreach($nodes as $node) {
-	    $filename = $node.'.png';
+	for ($zone = 0; $zone < count($zones); $zone++) {
+	    print("<h3>".$zones[$zone]."</h3>");
+	    for ($node = 0; $node < count($nodes); $node++) {
+		if($nodezone[$node] == $zones[$zone]) {
+		    $filename = $nodes[$node].'.png';
 ?>
     <p>
     <?php if (file_exists($filename)) { unlink($filename);} ?>
-    <?php generate_graph($node, $selected_date, 1); ?>
+    <?php generate_graph($hostname, $zone, $nodes[$node], $selected_date, 1); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
 <?php
+		}
+	    }
 	}
     } else {
 	$node = $hostname;
@@ -76,7 +82,7 @@ require 'manage_home_submenu.php';
 ?>
     <p>
     <?php if (file_exists($filename)) { unlink($filename);} ?>
-    <?php generate_graph($node, $selected_date, 1); ?>
+    <?php generate_graph($hostname, $node, $selected_date, 1); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
 

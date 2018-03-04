@@ -5,7 +5,7 @@
 #
 $submenumode = "";
 #
-$class_heat = "";
+$class_diag = "";
 $class_monitor = "";
 $class_system = "";
 $class_change = "";
@@ -14,9 +14,9 @@ $class_abouts = "";
 $submenu_mode = (!empty($_GET['submenumode']) ? $_GET['submenumode'] : (!empty($_POST['submenuselect']) ? $_POST['submenuselect'] : ""));
 
 switch($submenu_mode) {
-case "heat":
+case "diag":
     $logfile = $Heatlogfile;
-    $class_heat = "current";
+    $class_diag = "current";
     break;
 
 case "monitor":
@@ -44,9 +44,9 @@ default:
 ?>
 
 <ol id="toc1">
-    <li class=<?php echo $class_heat 	?>><a href="diagnostics.php?menumode=about&submenumode=heat">		WiPi-Heat</a></li>
+    <li class=<?php echo $class_abouts 	?>><a href="about.php?menumode=about&submenumode=abouts">		About</a></li>
+    <li class=<?php echo $class_diag 	?>><a href="diagnostics.php?menumode=about&submenumode=diag">		Diagnostics</a></li>
     <li class=<?php echo $class_monitor	?>><a href="diagnostics.php?menumode=about&submenumode=monitor"> 	System Monitor</a></li>
     <li class=<?php echo $class_system	?>><a href="diagnostics.php?menumode=about&submenumode=system"> 	System Information</a></li>
     <li class=<?php echo $class_change  ?>><a href="changelog.php?menumode=about&submenumode=change">		Changelog</a></li>
-    <li class=<?php echo $class_abouts 	?>><a href="about.php?menumode=about&submenumode=abouts">		About</a></li>
 </ol>

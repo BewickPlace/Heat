@@ -120,6 +120,25 @@ require 'manage_menu.php';
       processrestart("heat");
 	 break;
     }
+    switch($_POST["opmode"]){
+    case "MASTER":
+	updateWiPiopmode("-m");
+        break;
+    case "SLAVE":
+	updateWiPiopmode("-s");
+	break;
+    case "WATCH":
+	updateWiPiopmode("-w");
+	break;
+    }
+    switch($_POST["proximity"]) {
+    case "TRUE":
+	updateWiPibluetooth("-b");
+	break;
+    case "FALSE":
+	updateWiPibluetooth("");
+	break;
+    }
     }
   }
   $numberofnetworks = count($networks)/3;
@@ -208,8 +227,26 @@ require 'manage_menu.php';
      <input type="submit" name="submit" value="Reset Values">
      <?php
    }
+	$opmodeM = ((getWiPiopmode() == "-m")? "checked":"unchecked");
+	$opmodeS = ((getWiPiopmode() == "-s")? "checked":"unchecked");
+	$opmodeW = ((getWiPiopmode() == "-w")? "checked":"unchecked");
+	$proximity = ((getWiPibluetooth() == "-b")? "checked":"unchecked");
    ?>
-   <br><br>
+	</form>
+        </p>
+	<p>
+	<form  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" autocomplete="off">
+	<input type="hidden" name="opmode" value="FALSE">
+	<input type="hidden" name="proximity" value="FALSE">
+	Operational Mode - MASTER: <input type="radio" name="opmode"    Value="MASTER" <?php echo $opmodeM    ?> onchange="this.form.submit()">
+	                   SLAVE : <input type="radio" name="opmode"    Value="SLAVE" <?php echo $opmodeS    ?> onchange="this.form.submit()">
+	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()"> <br>
+	Bluetooth Proximiity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
+	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>
+	<input type="hidden" name="submenuselect" value=<?php echo $submenu_mode ?>>
+	</form>
+        </p>
+   <p>
    Wi-Fi Status:
    <?php
    exec('lsusb',$lsusb,$iwreturn);
@@ -239,12 +276,8 @@ require 'manage_menu.php';
      echo "Network status unrecognised:", count($iwoutput), "<br>";
    }
    ?>
-
-  </form>
   </p>
 
-  </p>
- 
 <?php
 #
 #	Footer section of page

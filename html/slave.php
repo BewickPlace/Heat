@@ -26,7 +26,6 @@ $hostname = getmyhostname();
 
 <?php
 require 'manage_menu.php';
-require 'manage_home_submenu.php';
 ?>
 
  <div id="body" align="center" width="%50">

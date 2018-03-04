@@ -53,10 +53,11 @@ require 'manage_home_submenu.php';
 #
     $node = $hostname;
     $filename = $node.'.png';
+echo $filename,"<br>";
 ?>
     <p>
     <?php if (file_exists($filename)) { unlink($filename);} ?>
-    <?php generate_graph($node, $selected_date, 2); ?>
+    <?php generate_graph($hostname, NULL, $node, $selected_date, 2); ?>
     <img src=<?php echo $filename ?> height=50% width=100%>
     </p>
 
