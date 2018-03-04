@@ -90,7 +90,8 @@ void display_process() {
 
 		    callsat  = 0;
 		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {				// All defines nodes
-			if (strcmp(network.zones[zone].nodes[node].name, "") !=0) {
+			if ((strcmp(network.zones[zone].nodes[node].name, "") !=0) &&
+			    (network.zones[zone].nodes[node].temp > 0.0L)) {
 			    Print_text(network.zones[zone].nodes[node].name, normal, LEFT(), line, White); // Name
 
 			    callsat = network.zones[zone].nodes[node].callsat;
