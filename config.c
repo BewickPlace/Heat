@@ -79,6 +79,20 @@ char	*find_key(char *haystack, char *key, char *field, char *upper) {
     return (haystack + y);
 }
 //
+//	Find Time
+//
+char	*find_time(char *haystack, char *key, time_t *time, char *upper) {
+    char *p;
+    char time_string[20];
+    int	hours, minutes;
+
+    p =  find_key(haystack, key, time_string, upper);
+    sscanf(time_string, "%d:%d", &hours, &minutes);
+    *time = (((hours * 60) + minutes)*60);
+
+    return(p);
+}
+//
 //	Extract the element in quotes after the defined key
 //	in the format HH:MM, xx.y
 //
@@ -162,6 +176,12 @@ int	parse_network(char **haystack) {
     ERRORCHECK( block_end == NULL, "Network block end not found", EndError);
 
     p = find_key(p, "name", &network.name[0], block_end);
+    ERRORCHECK(p == NULL, "Network: Name Block not found", EndError);
+
+    p = find_time(p, "on", &network.on, block_end);
+    ERRORCHECK(p == NULL, "Network: On Block not found", EndError);
+    p = find_time(p, "off", &network.off, block_end);
+    ERRORCHECK(p == NULL, "Network: Off Block not found", EndError);
 
     *haystack = block_end;
     return(1);

@@ -49,6 +49,8 @@ THE SOFTWARE.
 #include "heat.h"
 #include "application.h"
 
+#define	HOURS24	(24*60*60)
+
 //
 //	start run clock
 //
@@ -150,6 +152,12 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     int node;
     int this_time, last_time;
     int this_call, last_call;
+    time_t time24;
+
+    time24 = time(NULL);					// Get the current time
+    time24 = time24 % HOURS24;					// and get 24hour time
+
+    if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -176,6 +184,9 @@ Checks:
     this_time = check_any_signals();				// Check if any Signal has changed
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
+    }
+    } else {							// Network Control OFF
+	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
 
 ERRORBLOCK(NodeError);
@@ -250,6 +261,10 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
     int this_time, last_time;
+    time_t time24;
+
+    time24 = time(NULL);					// Get the current time
+    time24 = time24 % HOURS24;					// and get 24hour time
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -258,6 +273,9 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     if(node <0) { goto EndError; }				// Ignore error - likely to come from Watch device
 //    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
+
+    if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
+
     last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current at home status
@@ -265,6 +283,9 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     this_time = check_any_signals();				// Check if anyone now CALLing
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
+    }
+    } else {
+	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
 
 //ERRORBLOCK(NodeError);
@@ -274,7 +295,6 @@ ENDERROR;
 //
 //		Perform Setpoint control (MASTER)
 //
-#define	HOURS24	(24*60*60)
 
 void 	setpoint_control_process(){
     int		zone, node, change;

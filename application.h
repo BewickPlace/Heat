@@ -53,6 +53,8 @@ struct zone {					// Zonal information
 
 struct network {				// Overall Network data
     char	name[NAMELEN];
+    time_t	on;
+    time_t	off;
     struct zone zones[NUM_ZONES];
     };
 
