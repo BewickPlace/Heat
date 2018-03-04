@@ -43,7 +43,7 @@ function expand_array($time1, $time2, $source) {
 #       Generate Graph
 #	type:
 #	1 - usage profile
-#	2 - ??
+#	2 - control report
 #	3 - ??
 #
 function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
@@ -55,7 +55,7 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
         $logfile = '/mnt/network/'.$node.'_'.$selected_date.'.csv';
         $confile = '/mnt/storage/Heat/'.$host.'_'.$selected_date.'.csv';
         if ((file_exists($confile)) &&
-	    (strcmp($hostname, $node) != 0)) {
+	    (strcmp($host, $node) != 0)) {
             $csv2 = array_map('str_getcsv', file($confile));
 	} else {
 	    $csv2 = NULL;
@@ -79,6 +79,7 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		$setpoint = array_column($csv,2);
 		$boost	= array_column($csv,3);
 		$time2	= array_column($csv2,0);
+
 		if ($zone_id == 0) {
 		    $zoned  = expand_array($time, $time2, array_column($csv2,2));
 		} else {
