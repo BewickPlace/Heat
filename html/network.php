@@ -243,7 +243,6 @@ require 'manage_menu.php';
 	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()"> <br>
 	Bluetooth Proximiity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
 	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>
-	<input type="hidden" name="submenuselect" value=<?php echo $submenu_mode ?>>
 	</form>
         </p>
    <p>
