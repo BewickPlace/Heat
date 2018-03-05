@@ -46,10 +46,8 @@ require 'manage_about_submenu.php';
 #	var_dump($_POST);
 #	echo "<br><br>";
 #
-	if ($_SERVER["REQUEST_METHOD"] == "POST")
-	{
-	  switch ($_POST["submit"])
-	  {
+	  if (isset($_POST['submit'])) {
+	  switch ($_POST["submit"]) {
 	  case "Select Diagnostics":
 #	   No extra functions to perform
 	    break;
@@ -59,12 +57,14 @@ require 'manage_about_submenu.php';
 	    break;
 
 	  case "Delete Logfile":
-	    $logfile = ($Heatselect =="checked" ? $Heatlogfile : $logfile);
-	    $logfile = ($Shutdownselect  =="checked" ? $Shutdownlogfile  : $logfile);
+#	    $logfile = ($Heatselect =="checked" ? $Heatlogfile : $logfile);
+#	    $logfile = ($Shutdownselect  =="checked" ? $Shutdownlogfile  : $logfile);
 	    if (unlink($logfile) == 0) {echo "<font color='red'>Delete (",$logfile,") failed - check permissions<font color='black'><br><br>";}
 	    break;
 	  }
+	  }
 
+	  if(isset($_POST['verbose'])) {
 	  switch($_POST["verbose"])
 	  {
           case "TRUE":
@@ -76,7 +76,7 @@ require 'manage_about_submenu.php';
 
 	    break;
 	  }
-	}
+	  }
 
 
 ?>

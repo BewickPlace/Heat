@@ -53,6 +53,7 @@ require 'manage_menu.php';
   $remotename = "";
 
   if (($_SERVER["REQUEST_METHOD"] == "POST")
+        AND (isset($POST['submit']))
 	AND (($_POST["submit"] === "Edit Values")
 	OR ($_POST["submit"] === "Add")
 	OR ($_POST["submit"] === "Delete")
@@ -98,11 +99,8 @@ require 'manage_menu.php';
     $hostIPaddress = $_SERVER['SERVER_ADDR']; 
     $networks = getnetworknames();
 
-#    if (isset($_POST["submit"])) echo "Submit received", $_POST["submit"], "<br>";
-#    if (isset($_POST["checkbox"])) echo "checkbox received", $_POST["checkbox"], "<br>";
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST")
-    {
+    if(isset($POST['submit'])) {
     switch ($_POST["submit"])
     {
     case "Shutdown WiPi-Heat":
@@ -120,6 +118,8 @@ require 'manage_menu.php';
       processrestart("heat");
 	 break;
     }
+    }
+    if(isset($POST['opmode'])) {
     switch($_POST["opmode"]){
     case "MASTER":
 	updateWiPiopmode("-m");
@@ -131,6 +131,8 @@ require 'manage_menu.php';
 	updateWiPiopmode("-w");
 	break;
     }
+    }
+    if(isset($POST['proximity'])) {
     switch($_POST["proximity"]) {
     case "TRUE":
 	updateWiPibluetooth("-b");
