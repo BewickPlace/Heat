@@ -98,7 +98,7 @@ require 'manage_menu.php';
     $networks = getnetworknames();
 
 
-    if(isset($POST['submit'])) {
+    if(isset($_POST['submit'])) {
     switch ($_POST["submit"])
     {
     case "Shutdown WiPi-Heat":
@@ -117,7 +117,7 @@ require 'manage_menu.php';
 	 break;
     }
     }
-    if(isset($POST['opmode'])) {
+    if(isset($_POST['opmode'])) {
     switch($_POST["opmode"]){
     case "MASTER":
 	updateWiPiopmode("-m");
@@ -130,7 +130,7 @@ require 'manage_menu.php';
 	break;
     }
     }
-    if(isset($POST['proximity'])) {
+    if(isset($_POST['proximity'])) {
     switch($_POST["proximity"]) {
     case "TRUE":
 	updateWiPibluetooth("-b");
