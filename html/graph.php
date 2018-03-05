@@ -89,15 +89,19 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		data_graph($node, $time, $temp, $setpoint, $boost, $zoned, $athome);
 		break;
 	    }
+	    $retval = 0;
         } else {
 	    echo "<font color='Red'>".$node.": File not available - select alternate date <font color='Black'>", "<br><br>";
+	    $retval = 2;
         }
     } else {
         echo "<font color='Red'>".$node.": No data currently accessible (", $retval, ")<font color='Black'>", "<br><br>";
+	$retval = 1;
     }
 
     system('umount /mnt/network');
     updatenetwork_share(TRUE, '', '');
+    return($retval);
 }
 
 #
