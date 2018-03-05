@@ -79,12 +79,15 @@ void display_process() {
 	if ((app.operating_mode == OPMODE_MASTER) &&	// MASTER Mode
 	    (app.display_mode == 1)) {			// Display Mode 1
 
+//	Display_cls();
+
 	    Print_time(normal, CENTRE(9), 0, White);
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
 	    line =  12;
 	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
 		if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
+		    Display_clearline(line);
 		    Print_text(network.zones[zone].name, normal, LEFT(), line, DarkGrey);	// Name
  		    line = line +8;
 
@@ -92,6 +95,7 @@ void display_process() {
 		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {				// All defines nodes
 			if ((strcmp(network.zones[zone].nodes[node].name, "") !=0) &&
 			    (network.zones[zone].nodes[node].temp > 0.0L)) {
+			    Display_clearline(line);
 			    Print_text(network.zones[zone].nodes[node].name, normal, LEFT(), line, White); // Name
 
 			    callsat = network.zones[zone].nodes[node].callsat;
@@ -104,7 +108,12 @@ void display_process() {
 			}
 		    } //efor nodes in zones
 		}
-	    } // efor Zones
+	    } // efor Zone
+	    while (line <= width) {
+		Display_clearline(line);
+		line = line +8;
+	    }
+
 
 	} else if ((app.operating_mode == OPMODE_MASTER) && 	// MASTER Mode
 		   (app.display_mode != 1)) {			// Display mode 0
@@ -143,7 +152,7 @@ void display_process() {
 
 	    run_time = get_run_clock();
 	    sprintf(string, "Run: %02ld:%02ld\n", run_time/3600, (run_time/60)%60);
-	    Print_text("               ", normal, CENTRE(15), 56, White);
+	    Display_clearline(56);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 
 	} else {					// SLAVE Mode
@@ -162,7 +171,7 @@ void display_process() {
 	    } else {
 		sprintf(string, "Set:%0.1f", app.setpoint);
 	    }
-	    Print_text("               ", normal, CENTRE(15), 56, White);
+	    Display_clearline(56);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 	}
 

@@ -53,5 +53,7 @@ typedef struct alt_font {
 		SSD1331_off()
 #define	Display_cls()	\
 		SSD1331_cls()
+#define Display_clearline(line) \
+		SSD1331_fillrect(0, line, width, line+8, Black, Black)
 
 void	display_process();			// Main display process
