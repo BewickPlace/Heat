@@ -52,13 +52,11 @@ require 'manage_menu.php';
 
   $remotename = "";
 
-  if (($_SERVER["REQUEST_METHOD"] == "POST")
-        AND (isset($POST['submit']))
+     if ((isset($_POST["submit"]))
 	AND (($_POST["submit"] === "Edit Values")
 	OR ($_POST["submit"] === "Add")
 	OR ($_POST["submit"] === "Delete")
-	OR ($_POST["submit"] === "Apply Changes")))
-  {
+	OR ($_POST["submit"] === "Apply Changes"))) {
     $hostname = test_input($_POST["hostname"]);
 
     $i = 0;
