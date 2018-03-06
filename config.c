@@ -169,6 +169,7 @@ int	match_node(char *name, int zone) {
 //
 int	parse_network(char **haystack) {
     char	*p, *block_end = NULL;
+    char	string[10];
 
     p = find_block(*haystack, "network {");
     ERRORCHECK( p == NULL, "Network block not found", EndError);
@@ -182,6 +183,8 @@ int	parse_network(char **haystack) {
     ERRORCHECK(p == NULL, "Network: On Block not found", EndError);
     p = find_time(p, "off", &network.off, block_end);
     ERRORCHECK(p == NULL, "Network: Off Block not found", EndError);
+    p = find_key(p, "delta", &string[0], block_end);
+    sscanf(string, "%f", &network.at_home_delta);
 
     *haystack = block_end;
     return(1);

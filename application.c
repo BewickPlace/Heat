@@ -55,7 +55,7 @@ THE SOFTWARE.
 void	notify_link_up(char *name) {
 	app.active_node = find_active_node();				// record which node is active
 
-	add_timer(TIMER_CONTROL, 1);					// trigger a review of control actions
+	add_timer(TIMER_CONTROL, 16);					// trigger a review of control actions
     }
 
 //

@@ -304,9 +304,12 @@ void 	setpoint_control_process(){
     time_t	time24;
     struct profile 	*profile_ptr;;
     struct timeblock	*timeblock_ptr = NULL;
+    float	proximity_delta;
 
     if (app.active_node != -1) {				// As long as some node is active
 	debug(DEBUG_INFO, "Setpoint Control, active nodes\n");
+
+	proximity_delta = ( check_any_at_home() ? 0.0 :	network.at_home_delta ); // Set the profile deviation if not At Home
 
 	time24 = time(NULL);					// Get the current time
 	time24 = time24 % HOURS24;				// and get 24hour time
@@ -335,7 +338,7 @@ void 	setpoint_control_process(){
 		    network_id = get_active_node(network.zones[zone].nodes[node].name); //find if it is currently active
 		    if (network_id >= 0) {
 			app_data.type = HEAT_SETPOINT;			// Contruct SETPOINT packet to be sent to slave
-			app_data.d.setpoint.value  = timeblock_ptr->setpoint;
+			app_data.d.setpoint.value  = timeblock_ptr->setpoint + network.zones[zone].nodes[node].delta - proximity_delta;
 			app_data.d.setpoint.hysteresis = network.zones[zone].nodes[node].hysteresis;
 			debug(DEBUG_TRACE, "Heat Setpoint packet %0.1f:%0.1f to %s\n", app_data.d.setpoint.value, app_data.d.setpoint.hysteresis, network.zones[zone].nodes[node].name);
 			send_to_node(network_id, (char *) &app_data, SIZE_SETPOINT);

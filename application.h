@@ -56,6 +56,7 @@ struct network {				// Overall Network data
     char	name[NAMELEN];
     time_t	on;
     time_t	off;
+    float	at_home_delta;
     struct zone zones[NUM_ZONES];
     };
 
