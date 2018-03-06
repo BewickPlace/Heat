@@ -51,7 +51,7 @@ default:
 <ol id="toc1">
     <li class=<?php echo $class_abouts 	?>><a href="about.php?menumode=about&submenumode=abouts">		About</a></li>
     <li class=<?php echo $class_diag 	?>><a href="diagnostics.php?menumode=about&submenumode=diag">		Diagnostics</a></li>
-<?php if($opmode=='m') { ?>
+<?php if($opmode=='-m') { ?>
     <li class=<?php echo $class_calibrate?>><a href="calibrate.php?menumode=about&submenumode=calibate">	Calibrate</a></li>
 <?php } ?>
     <li class=<?php echo $class_monitor	?>><a href="diagnostics.php?menumode=about&submenumode=monitor"> 	System Monitor</a></li>
