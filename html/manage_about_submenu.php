@@ -6,6 +6,7 @@
 $submenumode = "";
 #
 $class_diag = "";
+$class_calibrate = "";
 $class_monitor = "";
 $class_system = "";
 $class_change = "";
@@ -17,6 +18,10 @@ switch($submenu_mode) {
 case "diag":
     $logfile = $Heatlogfile;
     $class_diag = "current";
+    break;
+
+case "calibrate":
+    $class_calibrate = "current";
     break;
 
 case "monitor":
@@ -46,6 +51,9 @@ default:
 <ol id="toc1">
     <li class=<?php echo $class_abouts 	?>><a href="about.php?menumode=about&submenumode=abouts">		About</a></li>
     <li class=<?php echo $class_diag 	?>><a href="diagnostics.php?menumode=about&submenumode=diag">		Diagnostics</a></li>
+<?php if($opmode=='m') { ?>
+    <li class=<?php echo $class_calibrate?>><a href="calibrate.php?menumode=about&submenumode=calibate">	Calibrate</a></li>
+<?php } ?>
     <li class=<?php echo $class_monitor	?>><a href="diagnostics.php?menumode=about&submenumode=monitor"> 	System Monitor</a></li>
     <li class=<?php echo $class_system	?>><a href="diagnostics.php?menumode=about&submenumode=system"> 	System Information</a></li>
     <li class=<?php echo $class_change  ?>><a href="changelog.php?menumode=about&submenumode=change">		Changelog</a></li>

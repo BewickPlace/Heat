@@ -237,6 +237,8 @@ int	parse_node(char **haystack) {
 	ERRORCHECK(node < 0, "Zone no node space", EndError);
 	memcpy(network.zones[zone].nodes[node].name, name, strlen(name));
 
+	p = find_key(p, "delta", &string[0], block_end);
+	sscanf(string, "%f", &network.zones[zone].nodes[node].delta);
 	p = find_key(p, "hysteresis", &string[0], block_end);
 	sscanf(string, "%f", &network.zones[zone].nodes[node].hysteresis);
 

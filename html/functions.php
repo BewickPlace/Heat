@@ -366,6 +366,9 @@ function get_node_names() {
 function get_node_zone() {
     return(get_names('node {', 'zone'));
 }
+function get_node_profiledelta() {
+    return(get_names('node {', 'delta'));
+}
 
 #
 #

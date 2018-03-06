@@ -39,6 +39,7 @@ struct profile {				// Daily profile of Timeblock changes
 struct node {					// Node information including  daily profiles
     char	name[NAMELEN];
 //    int		network_id;
+    float	delta;
     float	hysteresis;
     int		at_home;
     int		callsat;
