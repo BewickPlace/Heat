@@ -43,7 +43,8 @@ clear:
 	rm -f /home/pi/monitor.py
 	rm -f /var/log/heat.log
 
-release: clear heat
+release: clear
+	$(MAKE) install
 
 %.o: %.c $(DEPS)
 	$(CC) -c $(CFLAGS) $<
