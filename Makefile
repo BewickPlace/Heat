@@ -35,6 +35,16 @@ ifeq ($(wildcard /home/pi/monitor.py),)
 	install -m 644 scripts/monitor.py /home/pi/
 endif
 
+clear:
+	rm -f /etc/heat.conf
+	rm -f /etc/heating.conf
+	rm -f /etc/systemd/system/heat.service
+	rm -f /var/www/html/changelog.txt
+	rm -f /home/pi/monitor.py
+	rm -f /var/log/heat.log
+
+release: clear heat
+
 %.o: %.c $(DEPS)
 	$(CC) -c $(CFLAGS) $<
 
