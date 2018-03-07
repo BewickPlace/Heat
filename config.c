@@ -343,6 +343,7 @@ void load_configuration_data() {
     int		rc;					// return code
     char	conf_file[40];				// full path and file name
 
+    if (app.operating_mode != OPMODE_MASTER) { goto EndError; } // Only Load on MASTER node
     sprintf(conf_file, "%s%s", app.confdir, "heating.conf");
     fp = fopen(conf_file, "r");				// Open config file read only
     ERRORCHECK(fp==NULL, "Configuration Open Error", OpenError);

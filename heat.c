@@ -228,6 +228,7 @@ int main(int argc, char **argv) {
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks
     initialise_timers();				// and set all timers
     initialise_GPIO();					// initialise wiringPi
+    load_configuration_data();				// Load the Configuration on MASTER node
 
     pthread_create(&monitor_thread, NULL, (void *) monitor_process, NULL);	// create Monitor thread
     ERRORCHECK( monitor_thread == 0, "Monitor thread creation failed\n", EndError);
