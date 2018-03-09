@@ -23,17 +23,13 @@ function expand_array($time1, $time2, $source) {
     $value = NULL;
 
     for ($i = 1; $i < count($time1); $i++) {
-	$cmp= strcmp($time1[$i], $time2[$j]);
 
-	if (($cmp >= 0 ) &&
-	    ($j < count($time2))) {
-
+	if ($j < count($time2)) { $cmp = strcmp($time1[$i], $time2[$j]); }
+	while(($cmp >= 0) && ($j < count($time2))) {
 	    $value = $source[$j];
 
-	    for( ; $j < count($time2); $j++) {
-		$cmp= strcmp($time1[$i], $time2[$j]);
-		if ($cmp < 0) { break; }
-	   }
+	    $j++;
+	    if ($j < count($time2)) { $cmp = strcmp($time1[$i], $time2[$j]); }
 	}
 	$out[] = $value;
     }
@@ -79,7 +75,6 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		$setpoint = array_column($csv,2);
 		$boost	= array_column($csv,3);
 		$time2	= array_column($csv2,0);
-
 		if ($zone_id == 0) {
 		    $zoned  = expand_array($time, $time2, array_column($csv2,2));
 		} else {
