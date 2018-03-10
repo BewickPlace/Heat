@@ -218,11 +218,11 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     if (!network.zones[zone].nodes[node].callsat) { goto Checks; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
+    debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
+
     for(i = 0; i < NUM_NODES_IN_ZONE; i++) {			// Check if Zone fully satisfied
 	if (network.zones[zone].nodes[i].callsat) { goto Checks; } // Skip if CALL still required anywhere in zone
     }
-    debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
-
     callsat(zone, 0);					    	// interface with DHT11 module to action
 
 Checks:
