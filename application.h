@@ -53,6 +53,7 @@ struct zone {					// Zonal information
     };
 
 struct network {				// Overall Network data
+    int		fresh;				// Signal a fresh copy of config data
     char	name[NAMELEN];
     time_t	on;
     time_t	off;

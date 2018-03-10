@@ -113,7 +113,7 @@ void	check_heating_setpoint() {
 }
 
 //
-//	Midnight processing
+//	Midnight processing (MASTER or SLAVE)
 //
 void	midnight_processing() {
     char 	logfile[50];			// Log file
@@ -122,12 +122,11 @@ void	midnight_processing() {
     int		day, month, year;
     int		i;
 
-    if (app.operating_mode != OPMODE_MASTER) return;	// Only applicable on MASTER
-
     seconds = time(NULL);				// get the time
     info = localtime(&seconds);				// convert into strctured time
 
-    if ((info->tm_hour == 23) && (info->tm_min >= 55)) {	// if Last log interval before Midnight
+    if ((info->tm_hour == 23) && (info->tm_min >= 55) &&// if Last log interval before Midnight
+        (app.operating_mode == OPMODE_MASTER)) {	// Only applicable on MASTER
 	debug(DEBUG_TRACE, "Pre-Midnight precessing....\n");
 
 	perform_logging();				// force a final log
@@ -148,8 +147,10 @@ void	midnight_processing() {
 	debug(DEBUG_TRACE, "Delete logfile %s (%d/%d)\n", logfile, remove(logfile), errno);
     }
 
-    reset_run_clock();					// reset CALL run timer
-    perform_logging();					// force an initial log
+    if (app.operating_mode == OPMODE_MASTER) {		// Only applicable on MASTER
+	reset_run_clock();				// reset CALL run timer
+	perform_logging();				// force an initial log
+    }
 ENDERROR;
 }
 
@@ -295,7 +296,7 @@ void	handle_app_timer(int timer) {
 	midnight_processing();		// Perform Midnight processing if appropriate
 
 	if (app.operating_mode != OPMODE_MASTER) perform_logging(); // Perform temperature logging (SLAVE)
-	add_timer(TIMER_LOGGING, timeto5min());// wait for next 5 minute boundty
+	add_timer(TIMER_LOGGING, timeto5min()+30);// wait for next 5 minute boundty - log @ 30 seconds
 	break;
 
     default:

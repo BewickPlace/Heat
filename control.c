@@ -309,7 +309,12 @@ void 	setpoint_control_process(){
     if (app.active_node != -1) {				// As long as some node is active
 	debug(DEBUG_INFO, "Setpoint Control, active nodes\n");
 
-	proximity_delta = ( check_any_at_home() ? 0.0 :	network.at_home_delta ); // Set the profile deviation if not At Home
+	if (network.fresh) {					// If new copy of configuration
+	    proximity_delta = 0.0;				// override At Home adjustment this time
+	    network.fresh = 0;
+	} else {
+	    proximity_delta = ( check_any_at_home() ? 0.0 :	network.at_home_delta ); // Set the profile deviation if not At Home
+	}
 
 	time24 = time(NULL);					// Get the current time
 	time24 = time24 % HOURS24;				// and get 24hour time
