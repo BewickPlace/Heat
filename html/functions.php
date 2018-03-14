@@ -427,7 +427,7 @@ function processrestart($name)
 #
       $tmp = "/var/www/restart.tmp";
       $file = "/var/www/restart." .  $name . "-restart";
-      echo "WiPi Restart request", " using ", $file, "<br><br>";
+#      echo "WiPi Restart request", " using ", $file, "<br><br>";
       file_put_contents($tmp, "Please restart\n");
       $p = rename($tmp, $file);
       if ($p === FALSE) echo "<font color='Red'>Write failed - check permissions<font color='Black'>", "<br><br>";
@@ -440,7 +440,7 @@ function requestrestart($shut)
 #
       $tmp = "/var/www/restart.tmp";
       $file = ($shut ? "/var/www/restart.force-restart" : "/var/www/restart.force-shutdown");
-      echo "WiPi Restart request", " using ", $file, "<br><br>";
+#      echo "WiPi Restart request", " using ", $file, "<br><br>";
       file_put_contents($tmp, "Please restart\n");
       $p = rename($tmp, $file);
       if ($p === FALSE) echo "<font color='Red'>Write failed - check permissions<font color='Black'>", "<br><br>";
