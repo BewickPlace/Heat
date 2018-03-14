@@ -56,8 +56,12 @@ THE SOFTWARE.
 //
 
 void	start_run_clock() {
-
-    app.run_time_start = time(NULL);
+    time_t now = time(NULL);
+debug(DEBUG_ESSENTIAL, "Run-Clock Start\n");
+    if (app.run_time_start != 0) {
+	app.run_time = app.run_time + (now - app.run_time_start);
+    }
+    app.run_time_start = now;
 }
 //
 //	stop run clock
@@ -65,8 +69,10 @@ void	start_run_clock() {
 
 void	stop_run_clock() {
     time_t now = time(NULL);
-
-    app.run_time = app.run_time + (now - app.run_time_start);
+debug(DEBUG_ESSENTIAL, "Run-Clock Stop\n");
+    if (app.run_time_start != 0) {
+	app.run_time = app.run_time + (now - app.run_time_start);
+    }
     app.run_time_start = 0;
 }
 //
@@ -129,6 +135,8 @@ int	check_any_CALL() {
     return(0);
 }
 
+#define	SIGNAL_AT_HOME(signal) (signal & 0x01)
+#define SIGNAL_CALLING(signal) (signal & 0xFE)
 //
 //		Check any signal (CALL or At Home)
 //
@@ -185,6 +193,10 @@ Checks:
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
+    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
+	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
+    }
     } else {							// Network Control OFF
 	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
@@ -235,6 +247,10 @@ Checks:
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
+    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
+	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
+    }
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
@@ -283,6 +299,10 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     this_time = check_any_signals();				// Check if anyone now CALLing
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
+    }
+    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
+	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
     } else {
 	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
