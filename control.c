@@ -248,9 +248,11 @@ ENDERROR;
 void 	manage_CLOSE() {
     int	zone;
 
+    if (app.operating_mode == OPMODE_MASTER) {
     debug(DEBUG_TRACE, "Zone controls shut down\n");
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	callsat(zone, 0);
+    }
     }
 }
 //
