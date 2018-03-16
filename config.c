@@ -316,6 +316,7 @@ void	initialise_configuration() {
 
     memset(&network,0, sizeof(network));		// Seroise internal configuration data
     network.fresh = 1;					// Signal this is a fresh copy of configuration
+    stop_run_clock();					// Ensure Run Clock has been stopped
     for( i=0; i < NUM_ZONES; i++) {			// For each zone
 	callsat(i, 0);					// Ensure output is off
     }
