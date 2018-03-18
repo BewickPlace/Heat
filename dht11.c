@@ -71,6 +71,11 @@ static  int timings[MAX_PULSE_TIMINGS]; 	// record of pulse duration
 
 static int dht11_data[5] = { 0, 0, 0, 0, 0 };
 
+static int read_count;
+static int success_count;
+static int crc_count;
+
+
 //
 //	Boost Start
 //
@@ -183,6 +188,7 @@ void	callsat(int zone, int callsat) {
 void	dht_signal_read_request() {
     int	new_pin_state;					// Latest state of DHT11 pin
     uint8_t pulse_width;				// count of usec pulse width
+    read_count++;
 
 							// ADJUSTED to maximise performace
     last_pin_state = LOW;				// Assume we will miss first edge transition
@@ -230,6 +236,7 @@ int	dht_interpret_data() {
 
     if (data_count < MAX_PULSE_DATA) goto ReadError;
     if (dht11_data[4] != ((dht11_data[0] + dht11_data[1] + dht11_data[2] + dht11_data[3]) & 0xFF)) goto CRCError;
+    success_count++;
 
 ERRORBLOCK(ReadError);
     char	string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
@@ -250,6 +257,7 @@ ERRORBLOCK(ReadError);
     return(0);
 ERRORBLOCK(CRCError);
     debug(DEBUG_TRACE, "DHT11 CRC error\n");
+    crc_count++;
     return(0);
 ENDERROR;
     return(1);
@@ -290,7 +298,7 @@ ERRORBLOCK(ReadError);
 ENDERROR;
 }
 
-#define	DHT11_OVERALL	(60)			// DHT11 Cycle overall timer
+#define	DHT11_OVERALL	(300)			// DHT11 Cycle overall timer
 #define DHT11_READ	(10)			// DHT11 Read cycle
 
 //
@@ -307,6 +315,12 @@ void	initialise_GPIO() {
 void monitor_process()	{
     int	rc = -1;
     int cycle_time = DHT11_OVERALL;
+    float efficiency;
+
+
+    read_count = 0;				// Initialise read status
+    success_count = 0;
+    crc_count = 0;
 
     boost_stop();				// Initialise with no boost
 
@@ -319,6 +333,19 @@ void monitor_process()	{
     delay( 2000 );				// Allow time for DHT11 to settle
 
     while ( !heat_shutdown )	{
+	if(cycle_time == 0) {
+	    efficiency = ((float)success_count/ (float)read_count)* 100.0;
+	    if (efficiency < 70.0) {
+		warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]", efficiency, read_count, success_count, crc_count);
+	    } else {
+		debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]\n", efficiency, read_count, success_count, crc_count);
+	    }
+
+	    read_count = 0;
+	    success_count = 0;
+	    crc_count = 0;
+
+	}
 	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
 	    (app.operating_mode != OPMODE_MASTER)) {	// and only on slave
 	    read_dht11();
