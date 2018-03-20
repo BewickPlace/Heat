@@ -108,7 +108,7 @@ int	check_any_at_home() {
 	    if (network.zones[zone].nodes[node].at_home) return(1);	// report if any positive
 	}
     }
-    return(app.at_home);
+    return((app.at_home || app.boost));
 }
 
 //

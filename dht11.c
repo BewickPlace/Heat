@@ -83,7 +83,7 @@ void	boost_start() {
     app.boost = 1;				// Signal boost
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 1);
-    add_timer(TIMER_BOOST, (60*120));		//  Boost timesout after y minutes
+    if (app.operating_mode != OPMODE_MASTER) { add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after y minutes (not MASTER)
 };
 
 //
@@ -130,17 +130,12 @@ void	Button_interrupt() {
         if (button_press < BUTTON_LONG_PRESS) {			// Short press - display
 	    debug(DEBUG_TRACE, "Button - Short Press\n");
 
-	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Display Mode (Master only)
-		   (app.operating_mode == OPMODE_MASTER)) {
-	    debug(DEBUG_TRACE, "Button - Long Press\n");
-	    if (app.display_mode) {
-		app.display_mode = 0;
-	    } else {
-		app.display_mode = 1;
+	    if ((app.operating_mode == OPMODE_MASTER) && 	// On MASTER
+		(app.display)) {				// If display already visible
+		app.display_mode = !app.display_mode;		// Toggle display mode
 	    }
 
-	} else if ((button_press < BUTTON_LONGER_PRESS) &&	// Long press - Boost (slave only)
-		   (app.operating_mode != OPMODE_MASTER)) {
+	} else if (button_press < BUTTON_LONGER_PRESS) {	// Long press - Boost
 	    debug(DEBUG_TRACE, "Button - Long Press\n");
 	    if(!app.boost) {			// If not already boosting
 		boost_start();			// Start off the boost
@@ -333,22 +328,22 @@ void monitor_process()	{
     delay( 2000 );				// Allow time for DHT11 to settle
 
     while ( !heat_shutdown )	{
-	if(cycle_time == 0) {
-	    efficiency = ((float)success_count/ (float)read_count)* 100.0;
-	    if (efficiency < 70.0) {
-		warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]", efficiency, read_count, success_count, crc_count);
-	    } else {
-		debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]\n", efficiency, read_count, success_count, crc_count);
-	    }
-
-	    read_count = 0;
-	    success_count = 0;
-	    crc_count = 0;
-
-	}
 	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
 	    (app.operating_mode != OPMODE_MASTER)) {	// and only on slave
+
 	    read_dht11();
+
+	    if(cycle_time == 0) {
+	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
+		if (efficiency < 70.0) {
+		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]", efficiency, read_count, success_count, crc_count);
+		} else {
+		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]\n", efficiency, read_count, success_count, crc_count);
+		}
+		read_count = 0;
+		success_count = 0;
+		crc_count = 0;
+	    }
 	}
 	delay( 1000 );
 	cycle_time =( cycle_time + 1) % DHT11_OVERALL;
