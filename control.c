@@ -161,9 +161,11 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     int this_time, last_time;
     int this_call, last_call;
     time_t time24;
+    struct tm *info;
 
     time24 = time(NULL);					// Get the current time
-    time24 = time24 % HOURS24;					// and get 24hour time
+    info = localtime(&time24);					// convert to DST
+    time24 = (((info->tm_hour * 60) + info->tm_min) * 60) + info->tm_sec; // and get 24hout time
 
     if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
 
@@ -280,9 +282,11 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     int node;
     int this_time, last_time;
     time_t time24;
+    struct tm *info;
 
     time24 = time(NULL);					// Get the current time
-    time24 = time24 % HOURS24;					// and get 24hour time
+    info = localtime(&time24);					// convert to DST
+    time24 = (((info->tm_hour * 60) + info->tm_min) * 60) + info->tm_sec; // and get 24hout time
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
 	node = match_node(node_name, zone);
@@ -327,6 +331,7 @@ void 	setpoint_control_process(){
     struct profile 	*profile_ptr;;
     struct timeblock	*timeblock_ptr = NULL;
     float	proximity_delta;
+    struct tm *info;
 
     if (app.active_node != -1) {				// As long as some node is active
 	debug(DEBUG_INFO, "Setpoint Control, active nodes\n");
@@ -339,7 +344,8 @@ void 	setpoint_control_process(){
 	}
 
 	time24 = time(NULL);					// Get the current time
-	time24 = time24 % HOURS24;				// and get 24hour time
+	info = localtime(&time24);					// convert to DST
+	time24 = (((info->tm_hour * 60) + info->tm_min) * 60) + info->tm_sec; // and get 24hout time
 	debug(DEBUG_DETAIL, "Profile time %ld (%2d:%2d)\n", time24, time24/(60*60), (time24/60)%60);
 
 	for ( zone = 0; zone < NUM_ZONES; zone++) {		// Looking through each zone
