@@ -193,8 +193,8 @@ void	dht_signal_read_request() {
     digitalWrite( DHT_PIN, LOW );
     delay( 18 );
     digitalWrite( DHT_PIN, HIGH );
-    delayMicroseconds( 30 );
     pinMode( DHT_PIN, INPUT );
+    delayMicroseconds( 20 );
 
     for (pulse_count = 0; pulse_count < MAX_PULSE_TIMINGS; pulse_count++) { // For all of pulses in the expected pulse train
 	pulse_width = 0;
@@ -224,7 +224,7 @@ int	dht_interpret_data() {
     for (i = MAX_PULSE_RESPONSES; i < pulse_count; i++) { // for each of the pulses (ignoring startup pulses)
 	if (i % 2 == 1) {			// place bit in appropriate data array
 	    dht11_data[data_count / 8] <<= 1;	// check pulse width for data 1 or 0
-	    if ( timings[i] > 16 ) { dht11_data[data_count / 8] |= 1; }
+	    if ( timings[i] > 12 ) { dht11_data[data_count / 8] |= 1; }
 	    data_count++;
 	}
     }
