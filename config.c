@@ -329,7 +329,7 @@ void	initialise_configuration() {
 }
 
 #define MAX_CONFIG_DATA 500
-#define ENTRIES		5
+#define ENTRIES		6
 
 static time_t	last_mtime = 0;				// Time config was last modified
 
