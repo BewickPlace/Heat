@@ -22,12 +22,12 @@ require 'functions.php';
 ?>
  <h1> WiPi-Heat:  <?php echo $hostname ?></h1>
  </div>
-
+ <p>
 <?php
 require 'manage_menu.php';
 require 'manage_about_submenu.php';
 ?>
-
+ </p>
  <div id="body">
 
 <?php
