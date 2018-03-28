@@ -12,6 +12,16 @@ function imageantialias($image, $enabled){
         return true;
     }
 #
+#	Simplify Array
+#
+function simplify_array(&$data) {
+    $i;
+
+    for ($i = 0; $i < count($data); $i++) {
+	if ($data[$i] > 0) { $data[$i] = 1; }
+    }
+}
+
 #	Expand Array
 #	Expand the source arrays into a single column
 #	with timestamps acording to the first array
@@ -118,11 +128,14 @@ function data_graph($node, $time, $temp, $setpoint, $boost, $zone, $athome) {
     array_shift($temp);
     array_shift($zone);
     array_shift($athome);
+    simplify_array($athome);
 
 // Create the graph. These two calls are always required
     $graph = new Graph(1600,400);
     $graph->clearTheme();
-    $graph->SetScale("textlin", 15, 23);
+    $graph->SetScale("textlin");
+    $graph->yaxis->scale->SetAutoMin(14);
+
     $graph->SetClipping(TRUE);
 
     $graph->SetShadow();
