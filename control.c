@@ -102,13 +102,16 @@ time_t	get_run_clock() {
 //
 int	check_any_at_home() {
     int zone, node;
+    int any = 0;
 
     for (zone=0; zone < NUM_ZONES; zone++) {				// Check all Zones
 	for (node=0 ; node < NUM_NODES_IN_ZONE; node ++) {		// and nodes
-	    if (network.zones[zone].nodes[node].at_home) return(1);	// report if any positive
+//	    if (network.zones[zone].nodes[node].at_home) return(1);	// report if any positive
+	    any = any | network.zones[zone].nodes[node].at_home;	// build mask of visible devices
 	}
     }
-    return((app.at_home || app.boost));
+    any = (any | app.at_home) | app.boost;
+    return(any);
 }
 
 //
@@ -135,8 +138,8 @@ int	check_any_CALL() {
     return(0);
 }
 
-#define	SIGNAL_AT_HOME(signal) (signal & 0x01)
-#define SIGNAL_CALLING(signal) (signal & 0xFE)
+#define	SIGNAL_AT_HOME(signal) (signal & 0x00FF)
+#define SIGNAL_CALLING(signal) (signal & 0xFF00)
 //
 //		Check any signal (CALL or At Home)
 //
@@ -148,7 +151,7 @@ int	check_any_signals() {
 	signal = signal + check_any_CALL_in_zone(zone);			// Check each zone separately
         signal = signal << 1;
     }
-    signal = signal + check_any_at_home();				// and check At Home
+    signal = (signal * 0x100) + check_any_at_home();				// and check At Home
     return(signal);
 }
 //
