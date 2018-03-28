@@ -51,11 +51,40 @@ Last state change:
     </div>
     <div>
 Bluetooth At Home:
-    <?php if (get_logstate_at_home($hostname, $date) == 0) {
+    <?php $at_home = get_logstate_at_home($hostname, $date);
+    if ($at_home  == 0) {
 	echo " FALSE";
     } else {
 	echo " TRUE";
     } ?>
+    </div>
+    <div>
+    <?php
+    print("<table style=\"with:40%; text-align:center\">");
+    print("<tr>");
+	print("<th>Device</th>");
+	print("<th>Status</th>");
+    print("</tr>");
+
+    $mask = 1;
+    for($device = 0; $device <(5+1); $device++) {
+	print("<tr>");
+	    if ($device == 0) {
+		print("<td>Override</td>");
+	    } else {
+		print("<td>$device</td>");
+	    }
+	    if(($at_home & $mask)== 0) {
+		print("<td>-</td>");
+	    } else {
+		print("<td>At Home</td>");
+	    }
+	print("</tr>");
+	$mask = $mask << 1;
+    }
+    print("</table>");
+    ?>
+
     </div>
 
     <div class="container">
