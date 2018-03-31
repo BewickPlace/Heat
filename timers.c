@@ -98,6 +98,7 @@ struct timeval *next_timers() {
 	next = now;
 	timeout = lowest_time;
 	timers.wait_time.tv_sec = lowest_time;  	// Copy to timer slot
+	timers.wait_time.tv_usec = 0;		  	// Copy to timer slot
 	return(&timers.wait_time);			// Return address of lowest timer - NULL if none valid
 	}
 
@@ -112,7 +113,7 @@ void	adjust_timers() {
 	gettimeofday(&now, NULL);			// Check if gap bewteen calls is too big
 	diff = now.tv_sec - next.tv_sec - (timeout - timers.wait_time.tv_sec + 1); // allowing a flex of 1
 	if (diff > 0 ) {
-	    warn("Time adjustsd by %ld seconds", diff);
+	    warn("Time adjusted by %ld seconds", diff);
 
 	    for (i=0; i < NO_TIMERS; i++) {		// Update all active timers
 	        if (timers.timers[i].tv_sec != 0) {
