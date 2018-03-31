@@ -193,8 +193,8 @@ void	dht_signal_read_request() {
     digitalWrite( DHT_PIN, LOW );
     delay( 18 );
     digitalWrite( DHT_PIN, HIGH );
-    delayMicroseconds( 30 );
     pinMode( DHT_PIN, INPUT );
+    delayMicroseconds( 20 );
 
     for (pulse_count = 0; pulse_count < MAX_PULSE_TIMINGS; pulse_count++) { // For all of pulses in the expected pulse train
 	pulse_width = 0;
@@ -211,20 +211,29 @@ void	dht_signal_read_request() {
     }
 }
 
+static int	dht_threshold = 12;		// High/Low threshold
 //
 //	Interpret DHT response tinings & extract data
 //
 
 int	dht_interpret_data() {
+    char string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
     int data_count = 0;
     int	i;
+    int min_high = MAX_PULSE_WIDTH;
+    int max_low = 0;
 
     for (i=0; i < 5; i++) dht11_data[i] = 0;	// initialise data
 
     for (i = MAX_PULSE_RESPONSES; i < pulse_count; i++) { // for each of the pulses (ignoring startup pulses)
 	if (i % 2 == 1) {			// place bit in appropriate data array
 	    dht11_data[data_count / 8] <<= 1;	// check pulse width for data 1 or 0
-	    if ( timings[i] > 16 ) { dht11_data[data_count / 8] |= 1; }
+	    if ( timings[i] > dht_threshold ) {
+		dht11_data[data_count / 8] |= 1;
+		min_high = (timings[i] < min_high ? timings[i] : min_high);
+	    } else {
+		max_low  = (timings[i] > max_low  ? timings[i] : max_low );
+	    }
 	    data_count++;
 	}
     }
@@ -232,11 +241,12 @@ int	dht_interpret_data() {
     if (data_count < MAX_PULSE_DATA) goto ReadError;
     if (dht11_data[4] != ((dht11_data[0] + dht11_data[1] + dht11_data[2] + dht11_data[3]) & 0xFF)) goto CRCError;
     success_count++;
+    debug(DEBUG_INFO, "DHT11 Good Result T/L/H [%2d:%2d:%2d]\n", dht_threshold, max_low, min_high);
 
 ERRORBLOCK(ReadError);
-    char	string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
-
     debug(DEBUG_INFO, "DHT11 Incomplete Read data\n");
+
+    debug(DEBUG_DETAIL, "Pulse & Data: %d:%d\n", pulse_count, data_count);
     sprintf(string, "Timings:   Low - ");
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     sprintf(string, "%s\n", string);
@@ -247,12 +257,26 @@ ERRORBLOCK(ReadError);
     sprintf(string, "%s\n", string);
     debug(DEBUG_DETAIL, string);
 
-    debug(DEBUG_DETAIL, "Pulse & Data: %d:%d\n", pulse_count, data_count);
-
     return(0);
 ERRORBLOCK(CRCError);
-    debug(DEBUG_TRACE, "DHT11 CRC error\n");
+    debug(DEBUG_TRACE, "DHT11 CRC error T/L/H [%2d:%2d:%2d]\n", dht_threshold, max_low, min_high);
+    if ((dht_threshold < max_low) |				// Auto configure the LOW/High threshold
+	((dht_threshold + 1) == min_high)) { 			// depending on Max/Min
+	dht_threshold++;
+    }
     crc_count++;
+
+    debug(DEBUG_INFO, "Pulse & Data: %d:%d\n", pulse_count, data_count);
+    sprintf(string, "Timings:   Low - ");
+    for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
+    sprintf(string, "%s\n", string);
+    debug(DEBUG_INFO, string);
+
+    sprintf(string, "           High- ");
+    for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
+    sprintf(string, "%s\n", string);
+    debug(DEBUG_INFO, string);
+
     return(0);
 ENDERROR;
     return(1);
@@ -336,9 +360,9 @@ void monitor_process()	{
 	    if(cycle_time == 0) {
 	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
 		if (efficiency < 70.0) {
-		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]", efficiency, read_count, success_count, crc_count);
+		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]", efficiency, read_count, success_count, crc_count, dht_threshold);
 		} else {
-		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d]\n", efficiency, read_count, success_count, crc_count);
+		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold);
 		}
 		read_count = 0;
 		success_count = 0;

@@ -122,8 +122,12 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	debug(DEBUG_ESSENTIAL, "Bluetooth [%s] no longer At Home\n", addr);
 	list[i].timer = -1;
     }
-    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
-	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
+//    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
+//	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
+//    }
+    for (i = BLUETOOTH_CANDIDATES-1; i >= 0; i--) {			// Formulate bitmap of At Home devices
+	if (list[i].timer > 0) found = found + 1;			// Mark Visible device still in list
+	found = found << 1;
     }
     display_candidates();
     app.at_home = found;						// Update applicatio at home status
