@@ -545,13 +545,16 @@ void	update_my_ip_details() {
     strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
 
     rc = ioctl(fd, SIOCGIFADDR, &ifr);
-    ERRORCHECK(rc < 0, "Invalid host name", ErrnoError);
+    if ((rc < 0) && (errno == EADDRNOTAVAIL)) { goto IOCTLError; }
+    ERRORCHECK(rc < 0, "IO ctl Error", ErrnoError);
     close(fd);
 
     memcpy(&my_ipv4_addr, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), SIN4_LEN);
 
 ERRORBLOCK(ErrnoError);
     warn("Errno (%d)", errno);
+    close(fd);
+ERRORBLOCK(IOCTLError);
     close(fd);
 ENDERROR;
 }
