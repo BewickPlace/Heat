@@ -211,24 +211,23 @@ void	dht_signal_read_request() {
     }
 }
 
-static int	dht_threshold = 12;		// High/Low threshold
+static int	dht_threshold = 14;		// High/Low threshold
 //
-//	Interpret DHT response tinings & extract data
+//	Parse Data
 //
-
-int	dht_interpret_data() {
-    char string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
+int	parse_data(int dht) {
     int data_count = 0;
     int	i;
     int min_high = MAX_PULSE_WIDTH;
     int max_low = 0;
+    int ret;
 
     for (i=0; i < 5; i++) dht11_data[i] = 0;	// initialise data
 
     for (i = MAX_PULSE_RESPONSES; i < pulse_count; i++) { // for each of the pulses (ignoring startup pulses)
 	if (i % 2 == 1) {			// place bit in appropriate data array
 	    dht11_data[data_count / 8] <<= 1;	// check pulse width for data 1 or 0
-	    if ( timings[i] > dht_threshold ) {
+	    if ( timings[i] > dht ) {
 		dht11_data[data_count / 8] |= 1;
 		min_high = (timings[i] < min_high ? timings[i] : min_high);
 	    } else {
@@ -237,16 +236,37 @@ int	dht_interpret_data() {
 	    data_count++;
 	}
     }
+    ret = (dht11_data[4] == ((dht11_data[0] + dht11_data[1] + dht11_data[2] + dht11_data[3]) & 0xFF));
+    debug(DEBUG_INFO, "DHT11 Result %d T/L/H [%2d:%2d:%2d]\n", ret, dht, max_low, min_high);
+    return(ret);
+}
+//
+//	Interpret DHT response tinings & extract data
+//
 
-    if (data_count < MAX_PULSE_DATA) goto ReadError;
-    if (dht11_data[4] != ((dht11_data[0] + dht11_data[1] + dht11_data[2] + dht11_data[3]) & 0xFF)) goto CRCError;
+int	dht_interpret_data() {
+    char string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
+    int	i, j = 0;
+    int good = 0;
+    int adjust[] = {0, 1, -1, 2, -2};
+
+    if (pulse_count <((2* MAX_PULSE_DATA)+MAX_PULSE_RESPONSES)) goto ReadError;
+
+    for( i = 0; i < 5; i++) {
+        j = adjust[i];
+        good = parse_data(dht_threshold + j);
+        if (good) {
+            dht_threshold = dht_threshold + j;
+            break;
+        }
+    }
+    if (!good) goto CRCError;
     success_count++;
-    debug(DEBUG_INFO, "DHT11 Good Result T/L/H [%2d:%2d:%2d]\n", dht_threshold, max_low, min_high);
 
 ERRORBLOCK(ReadError);
     debug(DEBUG_INFO, "DHT11 Incomplete Read data\n");
 
-    debug(DEBUG_DETAIL, "Pulse & Data: %d:%d\n", pulse_count, data_count);
+    debug(DEBUG_DETAIL, "Pulse: %d\n", pulse_count);
     sprintf(string, "Timings:   Low - ");
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     sprintf(string, "%s\n", string);
@@ -259,14 +279,10 @@ ERRORBLOCK(ReadError);
 
     return(0);
 ERRORBLOCK(CRCError);
-    debug(DEBUG_TRACE, "DHT11 CRC error T/L/H [%2d:%2d:%2d]\n", dht_threshold, max_low, min_high);
-    if ((dht_threshold < max_low) |				// Auto configure the LOW/High threshold
-	((dht_threshold + 1) == min_high)) { 			// depending on Max/Min
-	dht_threshold++;
-    }
+    debug(DEBUG_TRACE, "DHT11 CRC error, L/H[%d]\n", dht_threshold);
     crc_count++;
 
-    debug(DEBUG_INFO, "Pulse & Data: %d:%d\n", pulse_count, data_count);
+    debug(DEBUG_DETAIL, "Pulse: %d\n", pulse_count);
     sprintf(string, "Timings:   Low - ");
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     sprintf(string, "%s\n", string);
