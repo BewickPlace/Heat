@@ -154,6 +154,9 @@ int	check_any_signals() {
     signal = (signal * 0x100) + check_any_at_home();				// and check At Home
     return(signal);
 }
+
+
+static	int	last_time = 0;					// Bitmap mask of signals last logged
 //
 //		Manage Call for heat (MASTER)
 //
@@ -161,7 +164,7 @@ int	check_any_signals() {
 void 	manage_CALL(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
-    int this_time, last_time;
+    int this_time;
     int this_call, last_call;
     time_t time24;
     struct tm *info;
@@ -178,7 +181,6 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_signals();				// Check ALL loggable signals
     last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current bluetooth status
@@ -202,6 +204,7 @@ Checks:
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
+    last_time = this_time;					// Save signals Bit mask for next time
     } else {							// Network Control OFF
 	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
@@ -219,7 +222,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
     int i;
-    int this_time, last_time;
+    int this_time;
     int this_call, last_call;
 
     for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
@@ -228,7 +231,6 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     }
     ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
-    last_time = check_any_signals();				// Check ALL loggable signals
     last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
@@ -256,6 +258,7 @@ Checks:
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
+    last_time = this_time;					// Save signals Bit mask for next time
 
 ERRORBLOCK(NodeError);
    debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
@@ -283,7 +286,7 @@ void 	manage_CLOSE() {
 void 	manage_TEMP(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
-    int this_time, last_time;
+    int this_time;
     time_t time24;
     struct tm *info;
 
@@ -301,7 +304,6 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 
     if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
 
-    last_time = check_any_signals();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current at home status
 
@@ -313,6 +315,7 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
+    last_time = this_time;					// Save signals Bit mask for next time
     } else {
 	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
