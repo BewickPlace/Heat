@@ -138,8 +138,9 @@ int	check_any_CALL() {
     return(0);
 }
 
-#define	SIGNAL_AT_HOME(signal) (signal & 0x00FF)
+#define	SIGNAL_AT_HOME(signal) (signal & 0x007F)
 #define SIGNAL_CALLING(signal) (signal & 0xFF00)
+static	int			last_time = 0x0080;			// Bitmap mask of signals last logged
 //
 //		Check any signal (CALL or At Home)
 //
@@ -155,8 +156,6 @@ int	check_any_signals() {
     return(signal);
 }
 
-
-static	int	last_time = 0;					// Bitmap mask of signals last logged
 //
 //		Manage Call for heat (MASTER)
 //
@@ -200,7 +199,7 @@ Checks:
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
-    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+    if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
@@ -254,7 +253,7 @@ Checks:
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
-    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+    if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
@@ -311,7 +310,7 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
     }
-    if (SIGNAL_AT_HOME(this_time) & !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
+    if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
 	debug(DEBUG_ESSENTIAL, "Now At Home - trigger new setpoints\n"); // Note
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
     }
