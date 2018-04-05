@@ -109,7 +109,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	    debug(DEBUG_TRACE, "Bluetooth check candidate %d\n", i);
 	    rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
 	    if (rc > -1) {						// if identified ...
-		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "Bluetooth [%s] At Home: %s\n", addr, name);
+		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %s\n", addr, name);
 		    list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
 		}
 	    }
@@ -119,7 +119,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	(bacmp(&list[i].bdaddr, BDADDR_ANY) != 0)) {
 	ba2str(&list[i].bdaddr, addr);
 
-	debug(DEBUG_ESSENTIAL, "Bluetooth [%s] no longer At Home\n", addr);
+	debug(DEBUG_ESSENTIAL, "[%s] Not Home: -\n", addr);
 	list[i].timer = -1;
     }
 //    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
