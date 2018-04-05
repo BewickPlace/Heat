@@ -57,7 +57,6 @@ THE SOFTWARE.
 
 void	start_run_clock() {
     time_t now = time(NULL);
-debug(DEBUG_ESSENTIAL, "Run-Clock Start\n");
     if (app.run_time_start != 0) {
 	app.run_time = app.run_time + (now - app.run_time_start);
     }
@@ -69,7 +68,6 @@ debug(DEBUG_ESSENTIAL, "Run-Clock Start\n");
 
 void	stop_run_clock() {
     time_t now = time(NULL);
-debug(DEBUG_ESSENTIAL, "Run-Clock Stop\n");
     if (app.run_time_start != 0) {
 	app.run_time = app.run_time + (now - app.run_time_start);
     }
@@ -186,15 +184,17 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
     if (network.zones[zone].nodes[node].callsat) { goto Checks; } // if already in CALL skip to checks
 
     network.zones[zone].nodes[node].callsat = 1;		// Mark as CALLing
-    debug(DEBUG_ESSENTIAL, "Call for heat @ %s (%d:%d)\n",node_name, zone, node);
-    callsat(zone, 1);					    	// interface with DHT11 module to action
 
-Checks:
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	start_run_clock();					// if starting up START the run clock
+	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %s (%d:%d) - Clock Start\n",node_name, zone, node);
+    } else {
+	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %s (%d:%d)\n",node_name, zone, node);
     }
+    callsat(zone, 1);					    	// interface with DHT11 module to action
 
+Checks:
     this_time = check_any_signals();				// Check if any Signal has changed
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
@@ -220,7 +220,6 @@ ENDERROR;
 void 	manage_SAT(char *node_name, float temp, int at_home) {
     int	zone;
     int node;
-    int i;
     int this_time;
     int this_call, last_call;
 
@@ -236,19 +235,17 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     if (!network.zones[zone].nodes[node].callsat) { goto Checks; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
-    debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
-
-    for(i = 0; i < NUM_NODES_IN_ZONE; i++) {			// Check if Zone fully satisfied
-	if (network.zones[zone].nodes[i].callsat) { goto Checks; } // Skip if CALL still required anywhere in zone
-    }
-    callsat(zone, 0);					    	// interface with DHT11 module to action
-
-Checks:
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	stop_run_clock();					// if starting up STOP the run clock
+	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d) - Stop Clock\n",node_name, zone, node);
+	callsat(zone, 0);				   	// interface with DHT11 module to action
+
+    } else {
+	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
     }
 
+Checks:
     this_time = check_any_signals();				// Check if any Signal has changed
     if (last_time != this_time) {
 	perform_logging();					// Log the fact
