@@ -235,11 +235,13 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     if (!network.zones[zone].nodes[node].callsat) { goto Checks; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
 
+    if(!check_any_CALL_in_zone(zone)) {				// Check if zone now fully satisfied
+	callsat(zone, 0);				   	// interface with DHT11 module to action
+    }
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	stop_run_clock();					// if starting up STOP the run clock
 	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d) - Stop Clock\n",node_name, zone, node);
-	callsat(zone, 0);				   	// interface with DHT11 module to action
 
     } else {
 	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
