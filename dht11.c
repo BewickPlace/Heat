@@ -59,8 +59,8 @@ static int zone_pin_map[2] = { 11, 13};		// Pin mapping maximum 2 zones
 
 #define MAX_PULSE_RESPONSES	3		// DHT11 response pulses - transitions to be measured
 #define MAX_PULSE_DATA		40		// DHT11 data pulses
-#define MAX_PULSE_TIMINGS	84		// Maximum number of pulse transitions Response Pulses (2*2) + Data (2*40)
-#define MAX_PULSE_WIDTH		99		// Maximum pulse width on data pulses
+#define MAX_PULSE_TIMINGS	(MAX_PULSE_RESPONSES+(2*MAX_PULSE_DATA)) // Maximum number of pulse transitions Response Pulses (2*2) + Data (2*40)
+#define MAX_PULSE_WIDTH		49		// Maximum pulse width on data pulses
 #define DHT_PIN			8		// DHT control pin (physical Pin number)
 #define DHT_PRIORITY		10		// DHT process priority
 
@@ -237,7 +237,7 @@ int	parse_data(int dht) {
 	}
     }
     ret = (dht11_data[4] == ((dht11_data[0] + dht11_data[1] + dht11_data[2] + dht11_data[3]) & 0xFF));
-    debug(DEBUG_INFO, "DHT11 Result %d T/L/H [%2d:%2d:%2d]\n", ret, dht, max_low, min_high);
+    debug(DEBUG_INFO, "DHT11 Result %d T/L/H [%2d:%2d:%2d] count[%d/%d]\n", ret, dht, max_low, min_high, pulse_count, MAX_PULSE_TIMINGS);
     return(ret);
 }
 //
@@ -245,7 +245,7 @@ int	parse_data(int dht) {
 //
 
 int	dht_interpret_data() {
-    char string[(20+3*MAX_PULSE_TIMINGS)];	// Risky string length - CAREFUL  if you change strings
+    char string[(30+3*(MAX_PULSE_TIMINGS/2))];	// Risky string length - CAREFUL  if you change strings
     int	i, j = 0;
     int good = 0;
     int adjust[] = {0, 1, -1, 2, -2};
@@ -264,7 +264,7 @@ int	dht_interpret_data() {
     success_count++;
 
 ERRORBLOCK(ReadError);
-    debug(DEBUG_INFO, "DHT11 Incomplete Read data\n");
+    debug(DEBUG_INFO, "DHT11 Incomplete Read data, count[%d/%d]\n", pulse_count, MAX_PULSE_TIMINGS);
 
     debug(DEBUG_DETAIL, "Pulse: %d\n", pulse_count);
     sprintf(string, "Timings:   Low - ");
@@ -279,7 +279,7 @@ ERRORBLOCK(ReadError);
 
     return(0);
 ERRORBLOCK(CRCError);
-    debug(DEBUG_TRACE, "DHT11 CRC error, L/H[%d]\n", dht_threshold);
+    debug(DEBUG_TRACE, "DHT11 CRC error, L/H[%d] count[%d/%d]\n", dht_threshold, pulse_count, MAX_PULSE_TIMINGS);
     crc_count++;
 
     debug(DEBUG_DETAIL, "Pulse: %d\n", pulse_count);
@@ -303,10 +303,12 @@ ENDERROR;
 //
 
 #define		MAX_DHT_RETRYS	10		// Maximum nuber of reties to get a valid reading
+#define         DHT_SIGN	0x80		// DHT22 Sign bit
+#define         DHT_DATA	0x7F		// DHT22 Data bits
 
 void read_dht11() {
     int	i;
-    float	f = 0.0;
+    int raw_temperature;
 						// initialise data handling variables
     for ( i = 0; i < MAX_PULSE_TIMINGS; i++ ) { timings[i] = 0; } // record of pulse durations
 
@@ -322,11 +324,27 @@ void read_dht11() {
     }
     if ((i== MAX_DHT_RETRYS) &&  (app.temp < 0.0)) { goto ReadError; } // Fail but without (re-)reporting the error
     ERRORCHECK(i== MAX_DHT_RETRYS, "DHT11 Persistant Read Failure", ReadError);  // Fail
-    f = dht11_data[2] * 9. / 5. + 32;
-    debug(DEBUG_INFO, "Humidity = %d.%d %% Temperature = %d.%d C (%.1f F)\n", dht11_data[0], dht11_data[1], dht11_data[2], dht11_data[3], f );
 
-    f = (float)dht11_data[2] + ((float)dht11_data[3]/10.0);
-    app.temp = f;
+    //	Support for DHT11 or DHT22 devices
+    //	DHT11 - uses data[2].data[3]
+    //  DHT22 - uses data[2]*256 + data[3] /10, plus sign bit in data[2]
+    //
+
+    if ((dht11_data[2] & DHT_DATA) < 30) {	// Data looks valid (have encountered some problems with adaptive crc check)
+	if ((dht11_data[2] & DHT_DATA) < 4) {	// Device is most likely a DHT22
+	    raw_temperature = ((dht11_data[2] & DHT_DATA) << 8) + dht11_data[3];
+	    if(dht11_data[2] & DHT_SIGN) { raw_temperature  = -raw_temperature;}
+	    debug(DEBUG_INFO, "DHT Device DHT22 [%d.%d] => %d.%d\n", dht11_data[2], dht11_data[3], raw_temperature/10, abs(raw_temperature%10));
+
+	} else {				// Device is most liekly a DHT11
+	    raw_temperature = (dht11_data[2] * 10) + dht11_data[3];
+	    debug(DEBUG_INFO, "DHT Device DHT11 [%d.%d] => %d.%d\n", dht11_data[2], dht11_data[3], raw_temperature/10, abs(raw_temperature%10));
+	}
+	app.temp = (float) raw_temperature / 10.0;
+
+    } else {					// Data is out of realistic range - don't chage reported temp
+	warn("DHT11 temperature out of range [%d.%d] - ignored", dht11_data[2], dht11_data[3]);
+    }
 
 ERRORBLOCK(ReadError);
     app.temp = -0.1;
