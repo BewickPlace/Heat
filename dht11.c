@@ -60,7 +60,7 @@ static int zone_pin_map[2] = { 11, 13};		// Pin mapping maximum 2 zones
 #define MAX_PULSE_RESPONSES	3		// DHT11 response pulses - transitions to be measured
 #define MAX_PULSE_DATA		40		// DHT11 data pulses
 #define MAX_PULSE_TIMINGS	(MAX_PULSE_RESPONSES+(2*MAX_PULSE_DATA)) // Maximum number of pulse transitions Response Pulses (2*2) + Data (2*40)
-#define MAX_PULSE_WIDTH		49		// Maximum pulse width on data pulses
+#define MAX_PULSE_WIDTH		59		// Maximum pulse width on data pulses
 #define DHT_PIN			8		// DHT control pin (physical Pin number)
 #define DHT_PRIORITY		10		// DHT process priority
 
