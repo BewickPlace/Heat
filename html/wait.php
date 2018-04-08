@@ -3,13 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>WiPi-Heat: Wait for shutdown/restart</title>
+<?php
+require 'html_functions.php';
+require 'functions.php';
+$hostname = getmyhostname();
+print("<title>".$hostname.": Wait for Shutdown/Restart</title>");
+?>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-
-<?php
-require 'functions.php';
-?>
 
 <body>
 <div id="page">
@@ -19,7 +20,7 @@ require 'functions.php';
 #	Header section of the page
 #
 ?>
- <h1>WiPi Heat</h1>
+ <h1> WiPi-Heat:  <?php echo $hostname ?></h1>
  </div>
 
 <?php

@@ -3,13 +3,16 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>WiPi-Heat: Configure Control System</title>
+<?php
+require 'html_functions.php';
+require 'functions.php';
+$hostname = getmyhostname();
+print("<title>".$hostname.": Configure Control System</title>");
+?>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <?php
-require 'functions.php';
-
 $opmode = getWiPiopmode();
 if ($opmode == '-s')  {
     ?><script>window.location.href = "index.php";</script><?php
@@ -23,7 +26,6 @@ if ($opmode == '-s')  {
 #
 #	Header section of the page
 #
-$hostname = getmyhostname();
 ?>
  <h1> WiPi-Heat:  <?php echo $hostname ?></h1>
  </div>

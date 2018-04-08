@@ -3,12 +3,16 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>WiPi-Heat Network</title>
+<?php
+require 'html_functions.php';
+require 'functions.php';
+$hostname = getmyhostname();
+print("<title>".$hostname.": Device</title>");
+?>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <?php
-require 'functions.php';
 #
 #	Define local variables
 #
@@ -24,7 +28,6 @@ $wirelessmode = "";
 #
 #	Header section of the page
 #
- $hostname = getmyhostname();
 ?>
  <h1> WiPi-Heat:  <?php echo $hostname ?></h1>
  </div>
