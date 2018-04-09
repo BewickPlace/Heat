@@ -211,7 +211,8 @@ void	dht_signal_read_request() {
     }
 }
 
-static int	dht_threshold = 14;		// High/Low threshold
+#define	DHT_INITIAL_THRESHOLD 14
+static int	dht_threshold = DHT_INITIAL_THRESHOLD;		// High/Low threshold
 //
 //	Parse Data
 //
@@ -395,6 +396,7 @@ void monitor_process()	{
 	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
 		if (efficiency < 70.0) {
 		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]", efficiency, read_count, success_count, crc_count, dht_threshold);
+		    dht_threshold = DHT_INITIAL_THRESHOLD;	// reset auto calibration
 		} else {
 		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold);
 		}
