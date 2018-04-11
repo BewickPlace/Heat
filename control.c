@@ -241,7 +241,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	stop_run_clock();					// if starting up STOP the run clock
-	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d) - Stop Clock\n",node_name, zone, node);
+	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d) - Clock Stop\n",node_name, zone, node);
 
     } else {
 	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %s (%d:%d)\n",node_name, zone, node);
