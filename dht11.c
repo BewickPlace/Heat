@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "errorcheck.h"
 #include "timers.h"
 #include "heat.h"
+#include "application.h"
 
 //
 //	Button Device variables
@@ -95,6 +96,7 @@ void	boost_stop() {
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// &switch off  Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 0);
     cancel_timer(TIMER_BOOST);			// cancel timer if running
+    send_SAT();					// Send SAT if required
 };
 
 //

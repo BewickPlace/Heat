@@ -69,14 +69,40 @@ void	notify_link_down(char *name) {
     }
 
 //
+//	Send SAT
+//
+void	send_SAT() {
+    struct payload_pkt app_data;
+
+    if ((app.active_node != -1) &&					// Active MASTER exists
+	(app.operating_mode == OPMODE_WATCH) &&				// if WATCH and we were calling
+	(app.callsat == 1)) {						// force SAT message
+	app.callsat = 0;						// Maintain local callsat status
+	app_data.type = HEAT_SAT;					// When temp above then SATisfied
+	app_data.d.callsat.temp  = app.temp;
+	app_data.d.callsat.setpoint = app.setpoint;
+	app_data.d.callsat.hysteresis = app.hysteresis;
+	app_data.d.callsat.boost = app.boost;
+	app_data.d.callsat.at_home = app.at_home;
+	debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
+	send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
+    }
+}
+
+//
 //	Check heating setpoint (SLAVE)
 //
 void	check_heating_setpoint() {
     struct payload_pkt app_data;
 
     if (app.active_node != -1) {					// As long as we have a controller to talk to
-	if ((app.temp  > (app.setpoint + app.boost + app.hysteresis)) &&
-	    (app.operating_mode == OPMODE_SLAVE)) {
+	if (((app.operating_mode == OPMODE_SLAVE) &&
+	     (app.temp  > (app.setpoint + app.boost + app.hysteresis)))	// SLAVE - include Boost in calculation
+		||
+	    ((app.operating_mode == OPMODE_WATCH) &&			// WATCH - require Boost to activate
+	     (app.boost) &&
+	     (app.temp  > (app.setpoint + app.hysteresis)))) {
+
 	    app.callsat = 0;						// Maintain local callsat status
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
 	    app_data.d.callsat.temp  = app.temp;
@@ -87,8 +113,12 @@ void	check_heating_setpoint() {
 	    debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
-	} else if ((app.temp < (app.setpoint + app.boost - app.hysteresis)) &&
-	    (app.operating_mode == OPMODE_SLAVE)) {
+	} else if (((app.operating_mode == OPMODE_SLAVE)  &&
+		    (app.temp < (app.setpoint + app.boost - app.hysteresis))) // SLAVE - include Boost in calculation
+		||
+		   ((app.operating_mode == OPMODE_WATCH)  &&		// WATCH - require Boost to activate
+		    (app.boost) &&
+		    (app.temp < (app.setpoint - app.hysteresis)))) {
 	    app.callsat = 1;						// Maintain local callsat status
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;

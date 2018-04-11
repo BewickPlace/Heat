@@ -155,7 +155,7 @@ void display_process() {
 	    Display_clearline(56);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 
-	} else {					// SLAVE Mode
+	} else {					// SLAVE or WATCH Mode
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
 	    Print_icon(SENSOR_ICON, RIGHT(2)-9, 0, (app.temp <= 0.0)? Red: Green);
 	    Print_time(normal, CENTRE(9)-5, 0, White);
@@ -164,24 +164,26 @@ void display_process() {
 	    } else {		sprintf(string, " n/a " );	}
 	    Print_text(string, wh, CENTRE(2*strlen(string)), 25, (app.callsat ? Red : Cyan));
 
-	    if (app.setpoint == 0.0) {		// If no target yet set display n/a
+	    if (app.setpoint == 0.0) {			// If no target yet set display n/a
 		sprintf(string, "n/a");
-	    } else if (app.boost) {			// Boosting
-		sprintf(string, "Set:%0.1f>>%0.1f", app.setpoint, app.setpoint+app.boost);
-	    } else {
-		sprintf(string, "Set:%0.1f", app.setpoint);
+	    } else if (app.operating_mode == OPMODE_SLAVE) { // SLAVE Mode
+		if (app.boost) {			// Boosting
+		    sprintf(string, "Set:%0.1f>>%0.1f", app.setpoint, app.setpoint+app.boost);
+		} else {
+		    sprintf(string, "Set:%0.1f", app.setpoint);
+		}
+	    } else {					// WATCH Mode
+		if (app.boost) {			// Boosting
+		    sprintf(string, "Set:%0.1f", app.setpoint);
+		} else {
+		    sprintf(string, "Watch:%0.1f", app.setpoint);
+		}
 	    }
 	    Display_clearline(56);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
 	}
 
-//SSD1331_ScrollSet(1,9,line-9,0,1);
-//SSD1331_Scrollstart();
-///delay(3000);
-///SSD1331_Scrollstop();
-
         delay(3000);
-
     }
     Display_cls();
     Print_text("Shutting", high, CENTRE(8), 20, Cyan);

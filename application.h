@@ -131,3 +131,5 @@ time_t	get_run_clock();			// Get the total time run(CALL) for today
 
 int	check_any_at_home();			// Check if anyone is At Home
 int	check_any_CALL_in_zone();		// Check if any current CALL for heat
+
+void	send_SAT();				// Send SATisfied message to master
