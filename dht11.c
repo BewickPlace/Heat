@@ -211,7 +211,7 @@ void	dht_signal_read_request() {
     }
 }
 
-#define	DHT_INITIAL_THRESHOLD 14
+#define	DHT_INITIAL_THRESHOLD 16
 static int	dht_threshold = DHT_INITIAL_THRESHOLD;		// High/Low threshold
 //
 //	Parse Data
