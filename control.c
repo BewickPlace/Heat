@@ -227,7 +227,7 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
 	node = match_node(node_name, zone);
 	if (node != -1) break;
     }
-    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
+    if(node <0) { goto EndError; }				// Ignore error - likely to come from Watch device
 								// Valid Zone and node index
     last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
@@ -258,8 +258,6 @@ Checks:
     }
     last_time = this_time;					// Save signals Bit mask for next time
 
-ERRORBLOCK(NodeError);
-   debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
 ENDERROR;
 }
 
@@ -297,7 +295,6 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	if (node != -1) break;
     }
     if(node <0) { goto EndError; }				// Ignore error - likely to come from Watch device
-//    ERRORCHECK(node < 0, "Live node mismatch with configuration", NodeError);
 								// Valid Zone and node index
 
     if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
@@ -318,8 +315,6 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
     }
 
-//ERRORBLOCK(NodeError);
-//   debug(DEBUG_ESSENTIAL, "Mismatch %s\n", node_name);
 ENDERROR;
 }
 //
