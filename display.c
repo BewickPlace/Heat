@@ -163,6 +163,7 @@ void display_process() {
 	    if (app.temp >  0.0) { 	sprintf(string, "%.01f", app.temp);
 	    } else {		sprintf(string, " n/a " );	}
 	    Print_text(string, wh, CENTRE(2*strlen(string)), 25, (app.callsat ? Red : Cyan));
+if (strlen(string)>4) {warn("Display illegal temp %s (%d) %0.1f",string, strlen(string), app.temp);}
 
 	    if (app.setpoint == 0.0) {			// If no target yet set display n/a
 		sprintf(string, "n/a");
