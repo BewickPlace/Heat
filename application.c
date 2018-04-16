@@ -208,13 +208,18 @@ void	perform_logging() {
     log = fopen(logfile, "a"); 				// open Tracking file for Append
     ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
 
-    if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE
+    if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE/WATCH
 	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home\n"); }
 	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d\n", info->tm_hour, info->tm_min, get_run_clock()/3600, (get_run_clock()/60) % 60, check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home());
 
     } else {
 	if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
-	fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
+
+	if (app.operating_mode == OPMODE_SLAVE) {	// SLAVE format
+	    fprintf(log, "%02d:%02d, %0.1f, %0.1f, %d, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, app.boost, app.hysteresis);
+	} else {					// WATCH format
+	    fprintf(log, "%02d:%02d, %0.1f, %0.1f, %0.1f, %0.1f\n", info->tm_hour, info->tm_min, app.temp, app.setpoint, ((float)app.boost) /10.0, app.hysteresis);
+	}
     }
     fclose(log);
 ERRORBLOCK(TrackError);
