@@ -6,6 +6,7 @@
 Version  Date         Kernel    Changes
 =======  ====         ======    =======
 
+1.1      16-04-2018   4.9.59+   Trial upgrades & bug fixes
 1.0      31-03-2018   4.9.59+   Initial Release
 0.7      07-03-2018   4.9.59+   Home trial baseline
 0.6      21-02-2018   4.9.59+   Initial Web Interface
