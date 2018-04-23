@@ -395,3 +395,32 @@ ERRORBLOCK(ParseError);
 
 ENDERROR;
 }
+
+//
+//	Read Pi Revision code from /proc/CPUinfo
+//
+void PiRevision(char *rev) {
+    FILE	*fp;					// File Descriptor
+    char	file_data[MAX_CONFIG_DATA][1];		// Buffer for file data
+    size_t	size;					// size in bytes of data read
+    char	*p;					// data pointer
+
+    fp = fopen("/proc/cpuinfo", "r");			// Open processor config file read only
+    ERRORCHECK(fp==NULL, "CPUinfo Open Error", EndError);
+
+    size = fread(file_data, MAX_CONFIG_DATA, ENTRIES, fp);	// Read the file into memory
+    ERRORCHECK( size < 0, "CPUinfo Read Error", ReadError);
+
+    p = find_block((char *)file_data, "Revision");		// Find the revision line
+    ERRORCHECK(p==NULL, "CPUinfo Revision not found", ReadError);
+    p = find_block(p, ": ");				// Find the revision line
+    ERRORCHECK(p==NULL, "CPUinfo Revision not found", ReadError);
+
+    sscanf(p,"%s", rev);				// Extract the string after the colon
+    fclose(fp);
+
+
+ERRORBLOCK(ReadError);
+    fclose(fp);
+ENDERROR;
+}
