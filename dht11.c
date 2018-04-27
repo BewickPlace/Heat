@@ -264,7 +264,7 @@ void	set_dht_threshold() {
     }
     if (i >= NUMDEV) { i = NUMDEV -1;}		// if not found use last entry in the table
     dht_threshold = devices[i].dht;		// set DHT threshold accordingly
-    debug(DEBUG_ESSENTIAL, "DHT11 Threshold set to %d based on revision %s\n", dht_threshold, devices[i].revision);
+    debug(DEBUG_TRACE, "DHT11 Threshold set to %d based on revision %s\n", dht_threshold, devices[i].revision);
 }
 
 //
@@ -389,11 +389,11 @@ void read_dht11() {
 	     (new_temp < (app.temp + 5.0)))) {
 	    app.temp = new_temp;
 	} else {
-	    warn("DHT11 temperature out of range %0.1f [%d.%d] - ignored", new_temp, dht11_data[2], dht11_data[3]);
+	    debug(DEBUG_TRACE, "DHT11 temperature out of range %0.1f [%d.%d] - ignored", new_temp, dht11_data[2], dht11_data[3]);
 	}
 
     } else {					// Data is out of realistic range - don't chage reported temp
-	warn("DHT11 temperature out of range [%d.%d] - ignored", dht11_data[2], dht11_data[3]);
+	debug(DEBUG_TRACE, "DHT11 temperature out of range [%d.%d] - ignored", dht11_data[2], dht11_data[3]);
     }
 
 ERRORBLOCK(ReadError);
