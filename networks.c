@@ -216,6 +216,7 @@ void	wait_on_network_timers() {
 ENDERROR;
 }
 
+static int network_warn = 0;
 //
 //	Broadcast to all nodes
 //
@@ -224,10 +225,14 @@ void	broadcast_network() {
 
     i = -1;
     rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, 0, NULL, 0); // send out a broadcast message to identify networks
-    ERRORCHECK( rc < 0,  "Broadcast send error", SendError);
+    if (rc < 0) { goto SendError; }
+    network_warn = 0;
 
 ERRORBLOCK(SendError);
-    warn("Send error: Node %d, send error %d errno(%d)", i, rc, errno);
+    if (network_warn == 0) {
+	warn("Broadcast send error: Node %d, send error %d errno(%d)", i, rc, errno);
+	network_warn = 1;
+    }
 ENDERROR;
 }
 
@@ -258,16 +263,13 @@ int	check_live_nodes() {
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
 	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // send out a specific message to this node
-	        ERRORCHECK( rc < 0, "Network send error", SendError);
+		if (rc < 0) { warn("Ping send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
                 other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
 		sent = 1;
 	    }
 	}
     }
-ERRORBLOCK(SendError);
-    warn("Send error: Node %d, send error %d errno(%d)", i, rc, errno);
-ENDERROR;
     return(sent);
 }
 
@@ -594,7 +596,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
     ERRORCHECK( rc < 0, "Network send error", SendError);
 
 ERRORBLOCK(SendError);
-    warn("Send error: Node %d, send error %d errno(%d)", node, rc, errno);
+    warn("Payload send error: Node %d, send error %d errno(%d)", node, rc, errno);
 
 ENDERROR;
     return(rc);
