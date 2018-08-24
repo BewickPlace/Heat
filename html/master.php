@@ -45,8 +45,14 @@ require 'manage_menu.php';
     <h2><?php echo $system[0]?></h2>
     <h2>Temperature Control System</h2>
     <div>
+<?php
+    $hours_run = get_hours_run($hostname, $date, $status);
+    echo "Daily total of Hours Run: ", $hours_run,"<br><br>";
+?>
+    </div>
+    <div>
 Last state change:
-    <?php echo get_logtime($hostname, $date); ?>
+    <?php echo get_logtime($hostname, $date),"<br><br>"; ?>
     </div>
     <div>
 Bluetooth At Home:

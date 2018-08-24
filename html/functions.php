@@ -374,7 +374,7 @@ function get_node_profiledelta() {
 #
 #	Get Hours Run from the Logfile on the Master Node
 #
-function get_hours_run($node, $selected_date) {
+function get_hours_run($node, $selected_date, &$status) {
 
     $logfile = '/mnt/storage/Heat/'.$node.'_'.$selected_date.'.csv';
     if (file_exists($logfile)) {
@@ -384,11 +384,14 @@ function get_hours_run($node, $selected_date) {
 	$hours_run = array_column($csv, 1);
 
 	if (end($timestamp) === "23:55") {
+	    $status = 2;
 	    return(end($hours_run));
 	} else {
+	    $status = 1;
 	    return(end($hours_run)." - incomplete data");
 	}
     }
+    $status = 0;
     return("data not available");
 }
 
@@ -445,5 +448,11 @@ function requestrestart($shut)
       $p = rename($tmp, $file);
       if ($p === FALSE) echo "<font color='Red'>Write failed - check permissions<font color='Black'>", "<br><br>";
 }
-?>
 
+function time_to_decimal($time) {
+    $timeArr = explode(':', $time);
+    $decTime = (($timeArr[0]*60) + ($timeArr[1]))/60;
+
+    return $decTime;
+}
+?>

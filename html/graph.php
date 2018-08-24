@@ -5,6 +5,7 @@
 require_once ('jpgraph/jpgraph.php');
 require_once ('jpgraph/jpgraph_bar.php');
 require_once ('jpgraph/jpgraph_line.php');
+require_once ('jpgraph/jpgraph_date.php');
 #
 #	Include this as not available within Jesiie PHP and required by JPGraph
 #
@@ -44,6 +45,92 @@ function expand_array($time1, $time2, $source) {
 	$out[] = $value;
     }
     return($out);
+}
+#
+#	Gerenrate Run Hours Graph
+#
+function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, $status_nod) {
+
+// Create the graph. These two calls are always required
+    $graph = new Graph(1600,400);
+    $graph->clearTheme();
+    $graph->SetScale("datint");
+    $graph->yaxis->scale->SetAutoMin(0);
+
+//    $graph->SetClipping(TRUE);
+
+    $graph->SetShadow();
+    $graph->img->SetMargin(60,30,20,40);
+
+// Create the bar plots
+    $lplot = new LinePlot($run_hours, $dates);
+//    $lplot->SetBarCenter();
+    $lplot->SetStepStyle();
+    $lplot->SetColor("orange");
+    $lplot->SetFillColor("orange");
+
+//    $lplot->SetWidth(1.0);
+
+// Create Controls Line plots
+    $lplot2 = new LinePlot($status_ok, $dates);
+//    $lplot2->SetBarCenter();
+    $lplot2->SetStepStyle();
+    $lplot2->SetColor("green");
+    $lplot2->SetFillColor("green");
+
+    $lplot1 = new LinePlot($status_inc, $dates);
+//    $lplot1->SetBarCenter();
+    $lplot1->SetStepStyle();
+    $lplot1->SetColor("blue");
+    $lplot1->SetFillColor("blue");
+
+    $lplot0 = new LinePlot($status_nod, $dates);
+//    $lplot0->SetBarCenter();
+    $lplot0->SetStepStyle();
+    $lplot0->SetColor("red");
+    $lplot0->SetFillColor("red");
+
+// ...and add it to the graPH
+    $graph->Add($lplot);
+    $graph->AddY(0,$lplot2);
+    $graph->AddY(1,$lplot1);
+    $graph->AddY(2,$lplot0);
+//    $graph->Add($lplot);
+
+    $graph->SetYscale(0,'lin', 0, 50);
+    $graph->SetYscale(1,'lin', 0, 50);
+    $graph->SetYscale(2,'lin', 0, 50);
+    $graph->ynaxis[0]->Hide();
+    $graph->ynaxis[1]->Hide();
+    $graph->ynaxis[2]->Hide();
+
+    $title = "Run Hours per Day for last month";
+    $graph->title->Set($title);
+    $graph->xaxis->title->Set("Days");
+    $graph->xaxis->scale->SetDateFormat('d-M');
+    $graph->xaxis->scale->SetDateAlign(DAYADJ_1);
+#    $graph->xaxis->SetLabelAngle(90);
+    $graph->yaxis->title->Set("Hours");
+//    $graph->yaxis->scale->SetDateFormat('H:i');
+    $graph->yaxis->SetTitleMargin(40);
+
+    $graph->title->SetFont(FF_FONT1,FS_BOLD);
+    $graph->yaxis->title->SetFont(FF_FONT1,FS_BOLD);
+    $graph->xaxis->title->SetFont(FF_FONT1,FS_BOLD);
+
+    $graph->SetTickDensity(TICKD_NORMAL, TICKD_VERYSPARSE);
+
+//    $graph->xaxis->SetTickLabels($dates);
+//    $graph->xaxis->SetTextTickInterval(1440);
+//    $graph->xaxis->SetTextLabelInterval(2400);
+    $graph->xaxis->scale->ticks->SupressMinorTickMarks(True);
+//    $graph->xaxis->scale->ticks->SupressFirst(True);
+    $graph->xaxis->scale->ticks->SupressLast(True);
+
+// Display the graph to image file
+    $filename=$node.'.png';
+    $graph->Stroke($filename);
+
 }
 #
 #       Generate Graph

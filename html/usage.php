@@ -35,19 +35,70 @@ $submenu_mode="";
 #
 #	WiPi-Heat MASTER Display Page
 #
+#    var_dump($_POST);
+#
 ?>
     <h2>Usage Profile</h2>
     <p>
 <?php
-#    var_dump($_POST);
+    if (!isset($_POST["graph_date"])) {
+
+    $selected_date = html_select_date($menu_mode, $submenu_mode);
+    $node = $hostname;
+    $filename = $node.'.png';
+    echo "<br>";
+
+    $dates = array();
+    $hours_run = array();
+    $status_ok = array();
+    $status_inc = array();
+    $status_nod = array();
+    $status = 0;
+    $base = strtotime("midnight", time());
+
+    for($i = 30; $i > 0 ; $i--) {
 #
+#	Get the Hours Run & form array for display
+#
+	$time = $base - (($i-1)*24*60*60);
+	$date = date('Y-m-d', $time);
+	$hours_run[30-$i] = time_to_decimal(get_hours_run($hostname, $date, $status));
+//	$hours_run[30-$i] = 60*60*(int) get_hours_run($hostname, $date, $status);
+//	$hours_run[30-$i] = $i*60;
+//	echo $date, ">>", $hours_run[30-$i], "<br><br>";
+
+        $dates[]	= $time;
+	$status_ok[]	= ( $status==2 ? 1 : 0);
+	$status_inc[]	= ( $status==1 ? 1 : 0);
+	$status_nod[]	= ( $status==0 ? 1 : 0);
+    }
+#	Add blank cells
+    $dates[] = $base + (24*60*60);
+    $hours_run[] = 0;
+    $status_ok[] = 0;
+    $status_inc[]= 0;
+    $status_nod[]= 0;
+
+#    var_dump($dates);
+#    var_dump($hours_run);
+#    var_dump($status_ok);
+#    var_dump($status_inc);
+#    var_dump($status_nod);
+
+    if (file_exists($filename)) { unlink($filename);}
+    if (generate_run_hours($hostname, $dates, $hours_run, $status_ok, $status_inc, $status_nod) == 0) {
+     ?> <img src=<?php echo $filename ?> height=50% width=100%><?php
+    }
+
+    } else {
+
     $selected_date = html_select_date($menu_mode, $submenu_mode);
     $opmode = getWiPiopmode();
     if ($opmode == '-m') {
 #
 #	Get the Hours Run
 #
-	$hours_run = get_hours_run($hostname, $selected_date);
+	$hours_run = get_hours_run($hostname, $selected_date, $status);
 	echo "<br>Daily total of Hours Run: ", $hours_run, "<br>";
     }
 ?>
@@ -93,6 +144,7 @@ $submenu_mode="";
     </p>
 
 <?php
+    }
     }
 ?>
     <p>
