@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include "timers.h"
 #include "networks.h"
 
-int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len);	// Local procedures
+int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len, unsigned char payload_seq);	// Local procedures
 int	find_live_node(struct in6_addr *src);
 int	add_live_node(struct in6_addr *src);
 void	update_my_ip_details();
@@ -57,6 +57,8 @@ struct net {							// Network descriptior
 	int from;						// State of messages from node
 	char name[HOSTNAME_LEN];				// Node hostname
 	struct in_addr addripv4;				// IPv4 address
+	unsigned char to_seq;					// Payload sequence number ~ to
+	unsigned char from_seq;					// Payload sequence number ~ from
 	};
 
 static int netsock;						// network socket
@@ -88,12 +90,8 @@ struct test_msg {						// Test message format
 	struct in6_addr dest;
 	char src_name[HOSTNAME_LEN];
 	struct in_addr src_addripv4;
+	unsigned char payload_seq;
 	};
-
-//int nodns = 0, af = 3, request_prefix_delegation = 0;
-
-
-
 
 //
 //	Initialise network information
@@ -217,7 +215,7 @@ void	broadcast_network() {
     int i, rc;
 
     i = -1;
-    rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, NULL, 0); // send out a broadcast message to identify networks
+    rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, NULL, 0, 0); // send out a broadcast message to identify networks
     if (rc < 0) { goto SendError; }
     network_warn = 0;
 
@@ -255,7 +253,7 @@ int	check_live_nodes() {
 		    debug(DEBUG_ESSENTIAL, "Link DOWN to node: %s (%s)\n", other_nodes[i].name, ipv4_string);
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
-	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0); // send out a specific message to this node
+	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0); // send out a specific message to this node
 		if (rc < 0) { warn("Ping send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
                 other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
@@ -280,7 +278,7 @@ void	expire_live_nodes() {
 	    ((other_nodes[i].to == MSG_STATE_SENT) | (other_nodes[i].to == MSG_STATE_FAILED))) {
 
 	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
-	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0); // Re-Ping failed node
+	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0); // Re-Ping failed node
 	    add_timer(TIMER_REPLY, 4);
 	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
 	}
@@ -304,8 +302,9 @@ void	display_live_network() {
 	if( memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) { // if an address is defined
             inet_ntop(AF_INET6, &other_nodes[i].address, (char *)&addr_string, 40);
             inet_ntop(AF_INET, &other_nodes[i].addripv4, (char *)&ipv4_string, 40);
-	    debug(DEBUG_DETAIL, "Node %d Address %s of %-12s (%s) state:to:from %2d %2d %2d\n",
-			i, addr_string, other_nodes[i].name, ipv4_string, other_nodes[i].state, other_nodes[i].to, other_nodes[i].from);
+	    debug(DEBUG_DETAIL, "Node %d Address %s of %-12s (%s) state:to:from %2d %2d %2d Payload:%3d:%3d\n",
+			i, addr_string, other_nodes[i].name, ipv4_string, other_nodes[i].state, other_nodes[i].to, other_nodes[i].from,
+			other_nodes[i].to_seq, other_nodes[i].from_seq);
 	}
     }
 }
@@ -349,6 +348,15 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 //    ERRORCHECK( (rc != sizeof(struct test_msg)), "Ill formed packet\n", EndError);
     if ((message->type == MSG_TYPE_PAYLOAD) &&			// if this is a payload packet
 	(*payload_len != 0)) {
+
+	node = get_active_node(message->src_name);		// find which node this is
+	ERRORCHECK(node < 0, "Unidentified payload source", EndError);
+
+	other_nodes[node].from_seq++;
+	if (other_nodes[node].from_seq != message->payload_seq) {
+	    debug(DEBUG_ESSENTIAL, "Payload from %s received out of sequence [%d:%d]\n", message->payload_seq, other_nodes[node].from_seq);
+	}
+
 	memcpy(payload, &full_message[sizeof(struct test_msg)], *payload_len);	// copy it back to the users byffer
 	memcpy(node_name, message->src_name, HOSTNAME_LEN);	// Return Hostname
 	return;							// and return
@@ -384,7 +392,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     case MSG_TYPE_PING:
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
-	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0);	// Send reply
+	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, 0);	// Send reply
 	if (rc > 0) {
 	    other_nodes[node].from = MSG_STATE_OK;		// and note as such
 	}
@@ -403,7 +411,7 @@ ENDERROR;
 //
 //	Send a network message
 //
-int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len) {
+int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len, unsigned char payload_seq) {
     int rc;
     struct iovec iovec[2];
     struct msghdr msg;
@@ -422,8 +430,10 @@ int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload
     memcpy(message->src_name, my_hostname, HOSTNAME_LEN);	// Include Hostname and  allocated IPv4 Address
     memcpy(&message->src_addripv4, &my_ipv4_addr, SIN4_LEN);
 
-    if (payload_len > 0)					// and add payload if appropriate
-	{ memcpy(&full_message[sizeof(struct test_msg)], payload, payload_len); }
+    if (payload_len > 0) {					// and add payload if appropriate
+	message->payload_seq = payload_seq;			// including sequence number
+	memcpy(&full_message[sizeof(struct test_msg)], payload, payload_len);
+    }
 
     iovec[0].iov_base = (void *)full_message;
     iovec[0].iov_len = sizeof(struct test_msg)+payload_len;
@@ -477,6 +487,8 @@ int	add_live_node(struct in6_addr *src) {
     other_nodes[node].state = NET_STATE_UNKNOWN;		// Set link and message states
     other_nodes[node].to = MSG_STATE_UNKNOWN;
     other_nodes[node].from = MSG_STATE_UNKNOWN;
+    other_nodes[node].to_seq = 0;				// Reset Payload to/from sequence numbers
+    other_nodes[node].from_seq = 0;
 ENDERROR;
     return(node);
 }
@@ -571,7 +583,8 @@ int	send_to_node(int node, char *payload, int payload_len) {
     rc = -1;
     ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down", EndError);	// Check Link UP
 
-    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len); // send out a specific message to this node
+    other_nodes[node].from_seq++;
+    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len, other_nodes[node].from_seq); // send out a specific message to this node
     ERRORCHECK( rc < 0, "Network send error", SendError);
 
 ERRORBLOCK(SendError);
