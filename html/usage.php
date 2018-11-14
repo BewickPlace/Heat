@@ -41,7 +41,8 @@ $submenu_mode="";
     <h2>Usage Profile</h2>
     <p>
 <?php
-    if (!isset($_POST["graph_date"])) {
+    $opmode = getWiPiopmode();
+    if ((!isset($_POST["graph_date"])) && ($opmode == '-m')) {
 
     $selected_date = html_select_date($menu_mode, $submenu_mode);
     $node = $hostname;
@@ -93,7 +94,6 @@ $submenu_mode="";
     } else {
 
     $selected_date = html_select_date($menu_mode, $submenu_mode);
-    $opmode = getWiPiopmode();
     if ($opmode == '-m') {
 #
 #	Get the Hours Run

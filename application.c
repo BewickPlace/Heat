@@ -248,8 +248,14 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
 	    (payload->d.setpoint.value > app.setpoint)) {	// and setpoint being raised
 	    boost_stop();					// Cancel the boost
 	}
-	app.setpoint = payload->d.setpoint.value;		// Set new values
-	app.hysteresis = payload->d.setpoint.hysteresis;	// to be picked up at next check
+	if ((app.boost) &&					// If Boost ON
+	    (app.operating_mode == OPMODE_WATCH) &&		// on a Watching node
+	    (payload->d.setpoint.value < app.setpoint)) {	// and setpoint target is to reduce
+								// ignore change whilst boost is active
+	} else {
+	    app.setpoint = payload->d.setpoint.value;		// Set new values
+	    app.hysteresis = payload->d.setpoint.hysteresis;	// to be picked up at next check
+	}
 	break;
 
     case HEAT_CANDIDATES:
