@@ -345,6 +345,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     ERRORCHECK( rc < 2, "Truncated packet", EndError);
     *payload_len = rc - sizeof(struct test_msg);
 
+    ERRORCHECK( (message->version != MSG_VERSION), "Incompatible message version", EndError);
 //    ERRORCHECK( (rc != sizeof(struct test_msg)), "Ill formed packet\n", EndError);
     if ((message->type == MSG_TYPE_PAYLOAD) &&			// if this is a payload packet
 	(*payload_len != 0)) {
@@ -366,7 +367,6 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     ERRORCHECK( (message->type != MSG_TYPE_ECHO) && \
 		(message->type != MSG_TYPE_PING) && \
 		(message->type != MSG_TYPE_REPLY), "Unrecognised message type", EndError);
-    ERRORCHECK( (message->version != MSG_VERSION), "Incompatible message version", EndError);
 
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
     if (node < 0) {						// if unknown
@@ -405,6 +405,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     memcpy(&other_nodes[node].addripv4, &message->src_addripv4, SIN4_LEN);
 ERRORBLOCK(ReadError);
     warn("Read error: error %d errno(%d)", rc, errno);
+    *payload_len = 0;						// Ensure No payload
 ENDERROR;
 }
 
