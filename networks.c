@@ -42,12 +42,11 @@ THE SOFTWARE.
 #include "timers.h"
 #include "networks.h"
 
-int	send_network_msg(struct in6_addr *dest, int type, time_t node_delay, char *payload, int payload_len);	// Local procedures
+int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len);	// Local procedures
 int	find_live_node(struct in6_addr *src);
 int	add_live_node(struct in6_addr *src);
 void	update_my_ip_details();
 void	cancel_reply_timer();
-void	handle_delay_calc(int node, struct timeval t1, struct timeval t2, struct timeval t3, struct timeval t4, time_t remote_delay);
 
 #define	MAX_BUFFER 200						// Maximum  network buffer size
 
@@ -58,8 +57,6 @@ struct net {							// Network descriptior
 	int from;						// State of messages from node
 	char name[HOSTNAME_LEN];				// Node hostname
 	struct in_addr addripv4;				// IPv4 address
-	time_t delay;						// Round trip delay (ms)
-	time_t remote_delay;					// Round trip delay (ms) seen by other node
 	};
 
 static int netsock;						// network socket
@@ -83,18 +80,14 @@ const unsigned char ones[SIN_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0
 #define MSG_TYPE_REPLY	45
 #define MSG_TYPE_ECHO	46
 #define MSG_TYPE_PAYLOAD 50
-#define MSG_VERSION	1
+#define MSG_VERSION	2
 
 struct test_msg {						// Test message format
 	char type;
 	char version;
-	char hops;
-	char total_hops;
 	struct in6_addr dest;
 	char src_name[HOSTNAME_LEN];
 	struct in_addr src_addripv4;
-	struct timeval t1, t2, t3, t4;				// NTP delay calculation timestamps
-	time_t  remotedelay;					// other nodes view of current delay
 	};
 
 //int nodns = 0, af = 3, request_prefix_delegation = 0;
@@ -224,7 +217,7 @@ void	broadcast_network() {
     int i, rc;
 
     i = -1;
-    rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, 0, NULL, 0); // send out a broadcast message to identify networks
+    rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, NULL, 0); // send out a broadcast message to identify networks
     if (rc < 0) { goto SendError; }
     network_warn = 0;
 
@@ -262,7 +255,7 @@ int	check_live_nodes() {
 		    debug(DEBUG_ESSENTIAL, "Link DOWN to node: %s (%s)\n", other_nodes[i].name, ipv4_string);
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
-	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // send out a specific message to this node
+	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0); // send out a specific message to this node
 		if (rc < 0) { warn("Ping send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
                 other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
@@ -287,7 +280,7 @@ void	expire_live_nodes() {
 	    ((other_nodes[i].to == MSG_STATE_SENT) | (other_nodes[i].to == MSG_STATE_FAILED))) {
 
 	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
-	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, 0, NULL, 0); // Re-Ping failed node
+	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0); // Re-Ping failed node
 	    add_timer(TIMER_REPLY, 4);
 	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
 	}
@@ -311,9 +304,8 @@ void	display_live_network() {
 	if( memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) { // if an address is defined
             inet_ntop(AF_INET6, &other_nodes[i].address, (char *)&addr_string, 40);
             inet_ntop(AF_INET, &other_nodes[i].addripv4, (char *)&ipv4_string, 40);
-	    debug(DEBUG_DETAIL, "Node %d Address %s of %-12s (%s) state:to:from %2d %2d %2d  delays %lld(l) %lld(r)\n",
-			i, addr_string, other_nodes[i].name, ipv4_string, other_nodes[i].state, other_nodes[i].to, other_nodes[i].from,
-		    	(long long)other_nodes[i].delay, (long long)other_nodes[i].remote_delay);
+	    debug(DEBUG_DETAIL, "Node %d Address %s of %-12s (%s) state:to:from %2d %2d %2d\n",
+			i, addr_string, other_nodes[i].name, ipv4_string, other_nodes[i].state, other_nodes[i].to, other_nodes[i].from);
 	}
     }
 }
@@ -380,8 +372,6 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	break;
     case MSG_TYPE_REPLY:
 	debug(DEBUG_DETAIL, "Reply message received\n");
-	gettimeofday(&(message->t4), NULL);			// T4 - Received timestamp
-	handle_delay_calc( node, message->t1, message->t2, message->t3, message->t4, message->remotedelay);
 	other_nodes[node].to = MSG_STATE_OK;			// Reply received - to stae is OK
 	if (other_nodes[node].state != NET_STATE_UP) {		// Link state changes
 	    other_nodes[node].state = NET_STATE_UP;		// Set link status UP
@@ -393,9 +383,8 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	break;
     case MSG_TYPE_PING:
 	debug(DEBUG_DETAIL, "Ping message received\n");
-	gettimeofday(&(message->t2), NULL);			// T2 - Received timestamp
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
-	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, other_nodes[node].delay, NULL, 0);	// Send reply - with our view of delay
+	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0);	// Send reply
 	if (rc > 0) {
 	    other_nodes[node].from = MSG_STATE_OK;		// and note as such
 	}
@@ -414,7 +403,7 @@ ENDERROR;
 //
 //	Send a network message
 //
-int	send_network_msg(struct in6_addr *dest, int type, time_t node_delay, char *payload, int payload_len) {
+int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len) {
     int rc;
     struct iovec iovec[2];
     struct msghdr msg;
@@ -429,18 +418,10 @@ int	send_network_msg(struct in6_addr *dest, int type, time_t node_delay, char *p
     memset(message, 0, MAX_BUFFER);
     message->type = type;
     message->version = MSG_VERSION;
-    message->hops = 0;
-    message->total_hops = 0;
     memcpy(&message->dest, dest, SIN_LEN);
     memcpy(message->src_name, my_hostname, HOSTNAME_LEN);	// Include Hostname and  allocated IPv4 Address
     memcpy(&message->src_addripv4, &my_ipv4_addr, SIN4_LEN);
 
-    if (type == MSG_TYPE_PING) {
-	    gettimeofday(&(message->t1), NULL);			// T1 - Sent timestamp
-    } else if (type == MSG_TYPE_REPLY) {
-	    gettimeofday(&(message->t3), NULL);			// T3 - Sent timestamp
-    }
-    message->remotedelay = node_delay;				// include view of the delay
     if (payload_len > 0)					// and add payload if appropriate
 	{ memcpy(&full_message[sizeof(struct test_msg)], payload, payload_len); }
 
@@ -496,8 +477,6 @@ int	add_live_node(struct in6_addr *src) {
     other_nodes[node].state = NET_STATE_UNKNOWN;		// Set link and message states
     other_nodes[node].to = MSG_STATE_UNKNOWN;
     other_nodes[node].from = MSG_STATE_UNKNOWN;
-    other_nodes[node].delay = 0;
-    other_nodes[node].remote_delay = 0;
 ENDERROR;
     return(node);
 }
@@ -592,7 +571,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
     rc = -1;
     ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down", EndError);	// Check Link UP
 
-    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, 0, payload, payload_len); // send out a specific message to this node
+    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len); // send out a specific message to this node
     ERRORCHECK( rc < 0, "Network send error", SendError);
 
 ERRORBLOCK(SendError);
@@ -600,26 +579,4 @@ ERRORBLOCK(SendError);
 
 ENDERROR;
     return(rc);
-}
-
-//
-//	Handle the delay calculation using NTP algorythm
-//
-//	delay = (T4-T1) - (T3-T2)
-//
-
-void	handle_delay_calc(int node, struct timeval t1, struct timeval t2, struct timeval t3, struct timeval t4, time_t remote_delay) {
-
-    time_t delay;
-
-    timersub(&t4, &t1, &t4);				// T4-T1
-    timersub(&t3, &t2, &t3);				// T3-T1
-    timersub(&t4, &t3, &t4);				// Delay in timeval
-
-    delay = (t4.tv_usec);			// convert to ms
-//    delay = (t4.tv_usec / 1000);			// convert to ms
-//    delay = (t4.tv_sec * 1000) + delay;
-
-    other_nodes[node].delay = delay;			// record the delay for this node
-    other_nodes[node].remote_delay = remote_delay;	// and seen by the counterpart node
 }
