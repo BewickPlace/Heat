@@ -49,8 +49,12 @@ struct app {					// Application key Data
     float	hysteresis;			// - hysteresis
     };
 
+#define BN_LEN 6				// Bluetooth name length
+#define BN_CPY(dest, src) memcpy(dest, src, BN_LEN) // Bluetooth name copy 
+
 struct	proximity_block {
     bdaddr_t	bdaddr;
+    char	name[BN_LEN];
     int		timer;
     };
 
