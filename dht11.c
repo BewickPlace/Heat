@@ -84,7 +84,8 @@ void	boost_start() {
     app.boost = 1;				// Signal boost
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 1);
-    if (app.operating_mode != OPMODE_MASTER) { add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after y minutes (not MASTER)
+    if (app.operating_mode == OPMODE_SLAVE) { add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after 2 hours (not MASTER)
+    if (app.operating_mode == OPMODE_WATCH) { add_timer(TIMER_BOOST, (60*240)); } //  Boost timesout after 4 hours (not MASTER)
 };
 
 //
