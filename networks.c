@@ -583,8 +583,8 @@ int	send_to_node(int node, char *payload, int payload_len) {
     rc = -1;
     ERRORCHECK(other_nodes[node].state != NET_STATE_UP, "Send Payload - link down", EndError);	// Check Link UP
 
-    other_nodes[node].from_seq++;
-    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len, other_nodes[node].from_seq); // send out a specific message to this node
+    other_nodes[node].to_seq++;
+    rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len, other_nodes[node].to_seq); // send out a specific message to this node
     ERRORCHECK( rc < 0, "Network send error", SendError);
 
 ERRORBLOCK(SendError);
