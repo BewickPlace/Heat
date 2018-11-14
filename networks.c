@@ -349,16 +349,17 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     if ((message->type == MSG_TYPE_PAYLOAD) &&			// if this is a payload packet
 	(*payload_len != 0)) {
 
-	node = get_active_node(message->src_name);		// find which node this is
+	memcpy(payload, &full_message[sizeof(struct test_msg)], *payload_len);	// copy it back to the users byffer
+	memcpy(node_name, message->src_name, HOSTNAME_LEN);	// Return Hostname
+
+	node = get_active_node(node_name);			// find which node this is
 	ERRORCHECK(node < 0, "Unidentified payload source", EndError);
 
 	other_nodes[node].from_seq++;
 	if (other_nodes[node].from_seq != message->payload_seq) {
-	    debug(DEBUG_ESSENTIAL, "Payload from %s received out of sequence [%d:%d]\n", message->payload_seq, other_nodes[node].from_seq);
+	    warn("Payload from %s received out of sequence [%d:%d]", node_name, message->payload_seq, other_nodes[node].from_seq);
+	    other_nodes[node].from_seq = message->payload_seq;
 	}
-
-	memcpy(payload, &full_message[sizeof(struct test_msg)], *payload_len);	// copy it back to the users byffer
-	memcpy(node_name, message->src_name, HOSTNAME_LEN);	// Return Hostname
 	return;							// and return
     }
 
