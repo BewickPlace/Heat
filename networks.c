@@ -358,9 +358,10 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 
 	other_nodes[node].from_seq++;
 	if (other_nodes[node].from_seq != message->payload_seq) {
-	    warn("Payload from %s received out of sequence [%d:%d]", node_name, message->payload_seq, other_nodes[node].from_seq);
+	    debug(DEBUG_TRACE, "Payload from %s received out of sequence [%d:%d]\n", node_name, message->payload_seq, other_nodes[node].from_seq);
 	    other_nodes[node].from_seq = message->payload_seq;
 	}
+	debug(DEBUG_DETAIL,"Payload from %s of type %d seq [%3d]\n", node_name, *(int *)payload, other_nodes[node].from_seq);
 	return;							// and return
     }
 
@@ -588,6 +589,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
     other_nodes[node].to_seq++;
     rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len, other_nodes[node].to_seq); // send out a specific message to this node
     ERRORCHECK( rc < 0, "Network send error", SendError);
+    debug(DEBUG_DETAIL,"Payload to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
 
 ERRORBLOCK(SendError);
     warn("Payload send error: Node %d, send error %d errno(%d)", node, rc, errno);
