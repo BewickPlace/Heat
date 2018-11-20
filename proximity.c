@@ -48,7 +48,6 @@ static int	bluetooth_sock;			// Bluetooth socket
 #define BLUE_ADDRESS	19			// Address length
 
 #define OVERALL_TIMER	(60*BLUETOOTH_CANDIDATES)// Overall cycle of actions
-#define IDENTIFY_TIMER	(60*60)			// Identify potential candidates
 #define MAINT_TIMER	(60)			// Maintain visibility checks
 #define VISIBLE_PERIOD	7			// Num of maintenance period
 #define VISIBLE_CHECK	4			// How often to check
@@ -136,14 +135,35 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 }
 
 //
+//	Calculate cycle timer
+//
+int get_cycle_timer(int adj, int candidate) {
+    int cycle_timer;
+
+    cycle_timer = (time(NULL)%60) + (60-40) + 1;	// Timer set to the currrent time  & aligned to 40sec
+    cycle_timer = cycle_timer - adj;			// allow minor adjustment for randomised start
+    cycle_timer = cycle_timer % 60;
+    cycle_timer = cycle_timer + (candidate * MAINT_TIMER);  // include factor for which candidate
+    cycle_timer = cycle_timer % OVERALL_TIMER;		// make sure we stay in range
+
+//debug(DEBUG_ESSENTIAL,"Get cycle timer %d adj %d, candidate %d >> %d\n", (time(NULL)%60), adj, candidate, cycle_timer);
+
+    return(cycle_timer);
+}
+
+//
 //	Bluetooth Proximity Process
 //
 
 void proximity_process()	{
-    int	cycle_timer;
+    int	cycle_timer;					// Cycle timer
+    int adj;						// Adjustment factor
 
     srand(time(NULL));					// Seed a differing start position
-    cycle_timer = rand() % OVERALL_TIMER;		// Kick off processes after srandom delay
+    adj = rand() % 10;					// Have a slight variance between devices
+
+							// Kick off processes after srandom delay
+    cycle_timer = get_cycle_timer(adj, rand() % BLUETOOTH_CANDIDATES); // with random candidate
 
     ERRORCHECK( !app.bluetooth_enabled, "Bluetooth Proximity detection DISABLED on this node", EndError);
 
@@ -155,7 +175,7 @@ void proximity_process()	{
 	delay( 1000 );
 
 	maintain_candidates(cycle_timer, bluetooth.candidates); // Maintain list of visible candidates
-        cycle_timer = ((cycle_timer+1) % OVERALL_TIMER);
+	cycle_timer = get_cycle_timer(adj, (cycle_timer+1)/MAINT_TIMER);// Maintain timer relative to target alignment
     }
     close(bluetooth_sock);
 
