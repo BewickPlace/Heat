@@ -137,7 +137,7 @@ void display_process() {
 			    (newtemp > 0)) {						// and temperature valid
 			    callsat = (network.zones[zone].nodes[node].callsat ? 1 : callsat);
 			    if (temp > 0) {
-				temp = (newtemp < temp ? newtemp : temp);		// take the lower of te zone - ignore 0.0
+//				temp = (newtemp < temp ? newtemp : temp);		// take the lower of te zone - ignore 0.0
 			    } else {
 				temp = newtemp;
 			    }
@@ -173,8 +173,10 @@ void display_process() {
 		    sprintf(string, "Set:%0.1f", app.setpoint);
 		}
 	    } else {					// WATCH Mode
-		if (app.boost) {			// Boosting
+		if (app.boost==1) {			// Boosting
 		    sprintf(string, "Set:%0.1f", app.setpoint);
+		} else if (app.boost>1) {		// extra Boosting
+		    sprintf(string, "Fix:%0.1f", app.setpoint);
 		} else {
 		    sprintf(string, "Watch:%0.1f", app.setpoint);
 		}

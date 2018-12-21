@@ -245,10 +245,11 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
     case HEAT_SETPOINT:
 	debug(DEBUG_TRACE, "Heat @ %s Setpoint %0.1f:%0.1f\n", node_name, payload->d.setpoint.value, payload->d.setpoint.hysteresis);
 	if ((app.boost) &&					// If Boost ON
+	    (app.operating_mode == OPMODE_SLAVE) &&		// on a Slave node
 	    (payload->d.setpoint.value > app.setpoint)) {	// and setpoint being raised
 	    boost_stop();					// Cancel the boost
 	}
-	if ((app.boost) &&					// If Boost ON
+	if ((app.boost>1) &&					// If Boost ON Fix mode
 	    (app.operating_mode == OPMODE_WATCH) &&		// on a Watching node
 	    (payload->d.setpoint.value < app.setpoint)) {	// and setpoint target is to reduce
 								// ignore change whilst boost is active

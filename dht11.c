@@ -85,7 +85,7 @@ void	boost_start() {
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 1);
     if (app.operating_mode == OPMODE_SLAVE) { add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after 2 hours (not MASTER)
-    if (app.operating_mode == OPMODE_WATCH) { add_timer(TIMER_BOOST, (60*240)); } //  Boost timesout after 4 hours (not MASTER)
+						// Watch node in basic boost will NOT timeout
 };
 
 //
@@ -103,11 +103,11 @@ void	boost_stop() {
 //
 //	Flash button
 //
-void	flash_button() {
+void	flash_button(int n) {
     int i;
     int flash = 1;
 
-    for(i=0; i< 10; i++) {			// repeat x times (even finishes off
+    for(i=0; i< n; i++) {			// repeat x times (even finishes off
 	digitalWrite(BUTTON_WRITE_PIN, flash);  // Flash the button
 
 	flash = ( flash ? 0 : 1);		// Toggle the output
@@ -151,6 +151,8 @@ void	Button_interrupt() {
 		   (app.boost)) {			// when already boosting
 	    debug(DEBUG_TRACE, "Button - Longer Press\n");
 	    app.boost++;
+	    flash_button(5);			// briefly flash button to signal extra boost
+	    if (app.operating_mode == OPMODE_WATCH) { add_timer(TIMER_BOOST, (60*240)); } //  Boost timesout after 4 hours (not MASTER)
 
 	} else if (button_press >= BUTTON_EXTRALONG_PRESS) {	// Extra Long press - Shutdown
 	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
@@ -433,7 +435,7 @@ void monitor_process()	{
     rc = wiringPiISR(BUTTON_READ_PIN, INT_EDGE_BOTH, &Button_interrupt);  // Interrupt on rise or fall of DHT Pin
     ERRORCHECK( rc < 0, "DHT Error - Pi ISR problem", EndError);
 
-    flash_button();				// Flash button to signal start
+    flash_button(10);				// Flash button to signal start
     set_dht_threshold();			// Set the threshold for DHT data values
 
     while ( !heat_shutdown )	{
@@ -458,7 +460,7 @@ void monitor_process()	{
 	cycle_time =( cycle_time + 1) % DHT11_OVERALL;
     }
     boost_stop();				// Tidy up with no boost
-    flash_button();				// Flash button to signal shutdown
+    flash_button(10);				// Flash button to signal shutdown
 
 ENDERROR;
     return;
