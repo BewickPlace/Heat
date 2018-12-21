@@ -302,7 +302,7 @@ $password = "";
 #	Contruct output line
      $line = "";
      $share =    str_replace(" ", "\\040", $share);
-     if ($delete !== TRUE) {$line = sprintf("//%s.local/%s /mnt/network cifs user=\"%s\",password=\"%s\",users,rw,file_mode=0777,dir_mode=0777 0 0\n", $host, $share, $user, $password); };
+     if ($delete !== TRUE) {$line = sprintf("//%s.local/%s /mnt/network cifs vers=1.0,user=\"%s\",password=\"%s\",users,rw,file_mode=0777,dir_mode=0777 0 0\n", $host, $share, $user, $password); };
 #	Identify locations for replace
      $a = strpos($filedata, $key1);
      if ($a !== FALSE) {
