@@ -287,7 +287,10 @@ ENDERROR;
 int	parse_bluetooth(char **haystack) {
     char	*p, *block_end = NULL;;
     int		i;
-    char	addr[19];		// Bluetooth address string
+    char	bluetooth_entry[BN_LEN+19+2];	// Full bluetooth entry string
+    char	name[BN_LEN+1];
+    char	addr[19];			// Bluetooth address string
+    char	string[100];
 
     p = find_block(*haystack, "bluetooth {");
     ERRORCHECK( p == NULL, "Bluetooth Block not found", EndError);
@@ -295,8 +298,11 @@ int	parse_bluetooth(char **haystack) {
     ERRORCHECK( block_end == NULL, "Bluetooth Block end not found", EndError);
 
     for (i = 0; i < BLUETOOTH_CANDIDATES; i++) { 	// find as many devices as defined
-	p = find_key(p, "device", addr, block_end);	// extract devic addres string
+//	p = find_key(p, "device", addr, block_end);	// extract devic addres string
+	p = find_key(p, "device", bluetooth_entry, block_end);	// extract full entry string string
 	if (p == NULL) { break; }
+	sscanf(bluetooth_entry, "%[^,],%s", name, addr); // parse name & address
+	BN_CPY(bluetooth.candidates[i].name, name);
 	str2ba(addr, &bluetooth.candidates[i].bdaddr);	// and save as bluetooth address
 	bluetooth.candidates[i].timer = -1;		// and default timer
     }

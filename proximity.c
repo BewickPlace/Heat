@@ -241,12 +241,15 @@ ENDERROR;
 void	display_candidates() {
     int 	i;
     char	addr[BLUE_ADDRESS];
+    char	name[BN_LEN+1];
     char	string[100];
 
+    name[BN_LEN] = 0;
     for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
 
+	BN_CPY(name, bluetooth.candidates[i].name);
 	ba2str(&bluetooth.candidates[i].bdaddr, addr);
-	sprintf(string, "[%d] %s (%2d)\n", i, addr, bluetooth.candidates[i].timer);
+	sprintf(string, "[%d] %6s [%s] (%2d)\n", i, name, addr, bluetooth.candidates[i].timer);
 	debug(DEBUG_DETAIL, string);
     }
 }
