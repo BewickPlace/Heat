@@ -419,6 +419,9 @@ function get_logstate_zone($node, $selected_date, $zone) {
 function get_logstate_at_home($node, $selected_date) {
     return(get_log_info($node, $selected_date,4));
 }
+function get_logstate_network($node, $selected_date) {
+    return(get_log_info($node, $selected_date,5));
+}
 
 #
 #

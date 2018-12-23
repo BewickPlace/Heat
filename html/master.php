@@ -92,6 +92,8 @@ Bluetooth At Home:
 
     </div>
 
+    <?php $netstate = get_logstate_network($hostname, $date); ?>
+
     <div class="container">
     <?php for($i = 0; $i < count($zones); $i++) { ?>
     <?php if (get_logstate_zone($hostname, $date, $i) == 0) { ?>
@@ -105,16 +107,24 @@ Zone: <?php echo $zones[$i] ?>
     </div>
 
     <div class=container>
-<?php foreach($zones as $zone) { ?>
+    <?php $z = 0; ?>
+    <?php foreach($zones as $zone) { ?>
 
+    <?php $found = 0; ?>
     <?php for($i = 0; $i < count($nodes); $i++) { ?>
     <?php if($nodezone[$i] == $zone) { ?>
-    	<div id="circle-zone" class="circle">
-        <?php echo '<a href="http://' . $nodes[$i] . '.local">' . $nodes[$i] . '</a>'; ?>
+	<?php if ($netstate & (((1 << ($z*4)) <<  $found))) { ?>
+	    <div id="circle-zone-up" class="circle">
+	<?php } else { ?>
+	    <div id="circle-zone-down" class="circle">
+	<?php } ?>
+	<?php echo '<a href="http://' . $nodes[$i] . '.local">' . $nodes[$i] . '</a>'; ?>
         </div>
+	<?php $found++; ?>
     <?php } ?>
     <?php } ?>
-<?php } ?>
+    <?php $z++; ?>
+    <?php } ?>
     </div>
 
 

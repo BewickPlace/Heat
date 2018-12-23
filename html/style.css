@@ -147,7 +147,14 @@ ol#toc1 a:hover {
   border: 10px solid red;
 }
 		
-#circle-zone {
+#circle-zone-up {
+  width: 125px;
+  height: 125px;
+  line-height: 125px;
+  background: CornflowerBlue;
+}
+
+#circle-zone-down {
   width: 125px;
   height: 125px;
   line-height: 125px;

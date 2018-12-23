@@ -48,6 +48,8 @@ THE SOFTWARE.
 #include "application.h"
 #include "dht11.h"
 
+int	get_network_mask();
+
 //
 //	Callback on Link Up status change
 //
@@ -56,6 +58,7 @@ void	notify_link_up(char *name) {
 	app.active_node = find_active_node();				// record which node is active
 
 	add_timer(TIMER_CONTROL, 16);					// trigger a review of control actions
+	if (app.operating_mode == OPMODE_MASTER) { perform_logging(); }	// Maintain network status
     }
 
 //
@@ -66,6 +69,7 @@ void	notify_link_down(char *name) {
     app.active_node = find_active_node();				// record if any is active
     if (app.operating_mode == OPMODE_MASTER) { manage_SAT(name, 0.0, 0);// reset Master record of temp etc.
     } else { app.callsat = 0; }	  					// Maintain local callsat status
+    if (app.operating_mode == OPMODE_MASTER) { perform_logging(); }	// Maintain network status
     }
 
 //
@@ -185,7 +189,7 @@ ENDERROR;
 }
 
 //
-//	Perform Temperature Logging (SLAVE)
+//	Perform Temperature Logging
 //
 void	perform_logging() {
     char 	logfile[50];			// Log file
@@ -209,8 +213,11 @@ void	perform_logging() {
     ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
 
     if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE/WATCH
-	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home\n"); }
-	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d\n", info->tm_hour, info->tm_min, get_run_clock()/3600, (get_run_clock()/60) % 60, check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home());
+	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home, Network\n"); }
+	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d\n", info->tm_hour, info->tm_min,
+		get_run_clock()/3600, (get_run_clock()/60) % 60,
+		check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home(),
+		get_network_mask());
 
     } else {
 	if (exists == 0) { fprintf(log, "Time,Temperture,Septpoint,Boost,Hysteresis\n"); }
@@ -348,3 +355,29 @@ void	handle_app_timer(int timer) {
     }
 
 }
+
+//
+//	Get Network Mask
+//
+
+int	get_network_mask() {
+    int mask, result;;
+    int zone, node;
+    char *node_name;
+
+    mask = 0;							// Initialise mask
+    result = 0;
+
+    for (zone = 0; zone < NUM_ZONES; zone++) {			// Check each Zone
+	mask = 1 << (zone * 4);					// Allow 4 bits per Zone
+
+	for (node = 0; node < NUM_NODES_IN_ZONE; node++) {	// and all Nodes in Zone
+	    node_name = network.zones[zone].nodes[node].name;
+	    if ((*node_name != 0) &&				// If node exists and is currently UP
+	       (get_active_node(node_name) > -1)) { result = result + mask; }  // Add to result mask
+	    mask = mask << 1;					// Move mask on
+	}
+    }
+    return(result);
+}
+
