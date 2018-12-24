@@ -41,6 +41,7 @@ require 'manage_menu.php';
     $zones = get_zone_names();
     $nodes = get_node_names();
     $nodezone = get_node_zone();
+    $bluedev = get_bluetooth_info();
 ?>
     <h2><?php echo $system[0]?></h2>
     <h2>Temperature Control System</h2>
@@ -65,7 +66,7 @@ Bluetooth At Home:
     </div>
     <div>
     <?php
-    print("<table style=\"with:40%; text-align:center\">");
+    print("<table style=\"width:15%; text-align:center\">");
     print("<tr>");
 	print("<th>Device</th>");
 	print("<th>Status</th>");
@@ -75,9 +76,10 @@ Bluetooth At Home:
     for($device = 0; $device <(5+1); $device++) {
 	print("<tr>");
 	    if ($device == 0) {
-		print("<td>Override</td>");
+		print("<td align=\"left\">Override</td>");
 	    } else {
-		print("<td>$device</td>");
+		$devicename = substr($bluedev[$device-1],0 ,strpos($bluedev[$device-1], ','));
+		print("<td align=\"left\">$devicename</td>");
 	    }
 	    if(($at_home & $mask)== 0) {
 		print("<td>-</td>");

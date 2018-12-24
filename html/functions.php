@@ -369,6 +369,9 @@ function get_node_zone() {
 function get_node_profiledelta() {
     return(get_names('node {', 'delta'));
 }
+function get_bluetooth_info() {
+    return(get_names('device', '='));
+}
 
 #
 #
