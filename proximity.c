@@ -93,14 +93,16 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
     int i, rc;
     char	name[BLUE_NAME];
     char	addr[BLUE_ADDRESS];
+    char	device[BN_LEN+1];
     int		found =0;
 
     if (heat_shutdown) return;
 
     if ((timer % MAINT_TIMER)==0) {
 
-
     i = (timer/MAINT_TIMER) % BLUETOOTH_CANDIDATES;			// Only process one Candidate each Interval
+    device[BN_LEN] = 0;
+    BN_CPY(device, list[i].name);
     debug(DEBUG_TRACE, "Bluetooth Maintenance: %d (%d/%d)\n", app.at_home, timer, i);
     if (bacmp(&list[i].bdaddr, BDADDR_ANY) != 0) {
 	if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
@@ -108,7 +110,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	    debug(DEBUG_TRACE, "Bluetooth check candidate %d\n", i);
 	    rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
 	    if (rc > -1) {						// if identified ...
-		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %s\n", addr, name);
+		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %-6s (%s)\n", addr, device, name);
 		    list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
 		}
 	    }
@@ -118,7 +120,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	(bacmp(&list[i].bdaddr, BDADDR_ANY) != 0)) {
 	ba2str(&list[i].bdaddr, addr);
 
-	debug(DEBUG_ESSENTIAL, "[%s] Not Home: -\n", addr);
+	debug(DEBUG_ESSENTIAL, "[%s] Not Home: %s\n", addr, device);
 	list[i].timer = -1;
     }
 //    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
@@ -217,6 +219,7 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
     for( i=0; i < BLUETOOTH_CANDIDATES; i++) {
 	if (check_candidate_list(new_candidates, &bluetooth.candidates[i].bdaddr) < 0) {
 	    bacpy(&bluetooth.candidates[i].bdaddr, BDADDR_ANY);
+	    BN_CPY(bluetooth.candidates[i].name, "");
 	    bluetooth.candidates[i].timer = 0;
 	    debug(DEBUG_DETAIL, "Remove slot: %d\n", i);
 	}
@@ -228,6 +231,7 @@ void	manage_candidates(struct proximity_block new_candidates[]) {
 	    ERRORCHECK(new_slot < 0, "Error Merging bluetooth candidate lists\n", EndError);
 	    debug(DEBUG_DETAIL, "Add slot: %d in %d\n", i, new_slot);
 	    bacpy(&bluetooth.candidates[new_slot].bdaddr, &new_candidates[i].bdaddr);
+	    BN_CPY(bluetooth.candidates[new_slot].name, new_candidates[i].name);
 	    bluetooth.candidates[new_slot].timer = -1;
 	}
     }

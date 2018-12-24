@@ -290,7 +290,6 @@ int	parse_bluetooth(char **haystack) {
     char	bluetooth_entry[BN_LEN+19+2];	// Full bluetooth entry string
     char	name[BN_LEN+1];
     char	addr[19];			// Bluetooth address string
-    char	string[100];
 
     p = find_block(*haystack, "bluetooth {");
     ERRORCHECK( p == NULL, "Bluetooth Block not found", EndError);
