@@ -66,7 +66,7 @@ Bluetooth At Home:
     </div>
     <div>
     <?php
-    print("<table style=\"width:15%; text-align:center\">");
+    print("<table style=\"width:17%; text-align:center\">");
     print("<tr>");
 	print("<th>Device</th>");
 	print("<th>Status</th>");
