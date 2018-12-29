@@ -370,8 +370,10 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 		(message->type != MSG_TYPE_REPLY), "Unrecognised message type", EndError);
 
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
-    if (node < 0) {						// if unknown
+    if ((node < 0) &&						// if unknown source
+        (message->type = MSG_TYPE_ECHO)) {			// and first Broadcast received
 	node = add_live_node(&sin6.sin6_addr);			// Add the source as a valid node
+	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO, NULL, 0, 0);	// Send specific broadcast response
 	add_timer(TIMER_PING, 1);				// initiate PINGs
     }
     ERRORCHECK( node < 0, "Network node unknown", EndError);
@@ -571,7 +573,7 @@ void	cancel_reply_timer() {
 
     for(i=0; i < NO_NETWORKS; i++) {				// Check all valid nodes for outstanding reply
 	if ((memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) &&
-	    (other_nodes[i].to == MSG_STATE_SENT)) { goto EndError; } // if we find one - bottle out
+	    ((other_nodes[i].to == MSG_STATE_SENT) | (other_nodes[i].to == MSG_STATE_FAILED))) { goto EndError; } // if we find one - bottle out
     }
     cancel_timer(TIMER_REPLY);					// None found we can cancel the timer
 
