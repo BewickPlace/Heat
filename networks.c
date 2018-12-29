@@ -371,7 +371,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
     if ((node < 0) &&						// if unknown source
-        (message->type = MSG_TYPE_ECHO)) {			// and first Broadcast received
+        (message->type == MSG_TYPE_ECHO)) {			// and first Broadcast received
 	node = add_live_node(&sin6.sin6_addr);			// Add the source as a valid node
 	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO, NULL, 0, 0);	// Send specific broadcast response
 	add_timer(TIMER_PING, 1);				// initiate PINGs
