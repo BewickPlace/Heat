@@ -81,6 +81,7 @@ const unsigned char ones[SIN_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0
 #define MSG_TYPE_PING	44
 #define MSG_TYPE_REPLY	45
 #define MSG_TYPE_ECHO	46
+#define MSG_TYPE_ECHO_REPLY 47
 #define MSG_TYPE_PAYLOAD 50
 #define MSG_VERSION	2
 
@@ -365,24 +366,24 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	return;							// and return
     }
 
-    ERRORCHECK( (message->type != MSG_TYPE_ECHO) && \
-		(message->type != MSG_TYPE_PING) && \
-		(message->type != MSG_TYPE_REPLY), "Unrecognised message type", EndError);
-
     node = find_live_node(&sin6.sin6_addr);			// Check if this node is known
-    if ((node < 0) &&						// if unknown source
-        (message->type == MSG_TYPE_ECHO)) {			// and first Broadcast received
-	node = add_live_node(&sin6.sin6_addr);			// Add the source as a valid node
-	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO, NULL, 0, 0);	// Send specific broadcast response
-	add_timer(TIMER_PING, 1);				// initiate PINGs
-    }
-    ERRORCHECK( node < 0, "Network node unknown", EndError);
 
     switch (message->type) {					// Handle different message types
     case MSG_TYPE_ECHO:
-	debug(DEBUG_DETAIL, "Broadcast message received\n");	// Nothing else to do as have added live  node
+    case MSG_TYPE_ECHO_REPLY:
+	debug(DEBUG_DETAIL, "Broadcast message received\n");	// Manage creation of live node
+
+	if (node < 0) {						// if unknown source
+	    node = add_live_node(&sin6.sin6_addr);		// Add the source as a valid node
+
+	    if (message->type == MSG_TYPE_ECHO) {		// and first Broadcast received
+		rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO_REPLY, NULL, 0, 0); // Send specific broadcast response
+	    }
+	    add_timer(TIMER_PING, 1);				// initiate PINGs
+	}
 	break;
     case MSG_TYPE_REPLY:
+	ERRORCHECK( node < 0, "Network node unknown (REPLY)", EndError);
 	debug(DEBUG_DETAIL, "Reply message received\n");
 	other_nodes[node].to = MSG_STATE_OK;			// Reply received - to stae is OK
 	if (other_nodes[node].state != NET_STATE_UP) {		// Link state changes
@@ -394,6 +395,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	cancel_reply_timer();					// Cancel reply timer if all now received
 	break;
     case MSG_TYPE_PING:
+	ERRORCHECK( node < 0, "Network node unknown (PING)", EndError);
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
 	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, 0);	// Send reply
