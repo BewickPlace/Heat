@@ -329,7 +329,7 @@ void	handle_app_timer(int timer) {
     case TIMER_SETPOINT:
         debug(DEBUG_INFO, "Handle Setpoint timeout\n");
 	check_heating_setpoint();	// Go check temperature against setpoint
-	add_timer(TIMER_SETPOINT, 15);	// wait for another go" in y seconds
+	add_timer(TIMER_SETPOINT, timetosec(15)); // wait for another go" in y seconds
 	break;
 
     case TIMER_BOOST:			// Noost Timeout

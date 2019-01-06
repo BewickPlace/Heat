@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
 
     case OPMODE_SLAVE:
     case OPMODE_WATCH:
-	add_timer(TIMER_SETPOINT, 20);			// Set to refresh setpoint in y seconds
+	add_timer(TIMER_SETPOINT, timetosec(15));	// Set to refresh setpoint in y seconds
 	break;
     }
     add_timer(TIMER_DISPLAY, 75);			// and timeout the screen in z seconds
@@ -270,8 +270,7 @@ int main(int argc, char **argv) {
 
 	case TIMER_PING:
 	    if (check_live_nodes()) {			// On Ping check the network
-//		add_timer(TIMER_REPLY, 2);		// Expire replies if not received within x secoonds
-		add_timer(TIMER_REPLY, 5);		// Expire replies if not received within x secoonds
+		add_timer(TIMER_REPLY, 8);		// Expire replies if not received within x secoonds
 		add_timer(TIMER_PING, timetosec(20)+1);	// and set to Ping again in y seconds
 	    }
 	    break;

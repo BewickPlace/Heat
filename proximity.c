@@ -142,7 +142,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 int get_cycle_timer(int adj, int candidate) {
     int cycle_timer;
 
-    cycle_timer = (time(NULL)%60) + (60-40) + 1;	// Timer set to the currrent time  & aligned to 40sec
+    cycle_timer = (time(NULL)%60) + (60-50) + 1;	// Timer set to the currrent time & aligned to 50sec
     cycle_timer = cycle_timer - adj;			// allow minor adjustment for randomised start
     cycle_timer = cycle_timer % 60;
     cycle_timer = cycle_timer + (candidate * MAINT_TIMER);  // include factor for which candidate
@@ -162,7 +162,8 @@ void proximity_process()	{
     int adj;						// Adjustment factor
 
     srand(time(NULL));					// Seed a differing start position
-    adj = rand() % 10;					// Have a slight variance between devices
+//    adj = rand() % 10;					// Have a slight variance between devices
+    adj = 0;						// No variance between devices - minimise bluetooth interference
 
 							// Kick off processes after srandom delay
     cycle_timer = get_cycle_timer(adj, rand() % BLUETOOTH_CANDIDATES); // with random candidate
