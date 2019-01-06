@@ -58,6 +58,7 @@ struct network {				// Overall Network data
     time_t	on;
     time_t	off;
     float	at_home_delta;
+    float	at_home_delta_out, at_home_delta_away;
     struct zone zones[NUM_ZONES];
     };
 

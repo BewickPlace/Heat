@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
 
     switch (app.operating_mode) {
     case OPMODE_MASTER:					// Only Master nodes are responsible for broadcasting
-	add_timer(TIMER_BROADCAST, 20);			// Set to refresh network in y seconds
+	add_timer(TIMER_BROADCAST, timeto1min());	// Set to refresh network in y seconds
 	break;
 
     case OPMODE_SLAVE:
@@ -265,13 +265,14 @@ int main(int argc, char **argv) {
 
 	case TIMER_BROADCAST:				// On Broadcast timer
 	    broadcast_network();			// send out broadcast message to contact other nodes
-	    add_timer(TIMER_BROADCAST, 20);		// and set to broadcast again in y seconds
+	    add_timer(TIMER_BROADCAST, timeto1min());	// and set to broadcast again in y seconds
 	    break;
 
 	case TIMER_PING:
 	    if (check_live_nodes()) {			// On Ping check the network
-		add_timer(TIMER_REPLY, 2);		// Expire replies if not received within x secoonds
-		add_timer(TIMER_PING, 20);		// and set to Ping again in y seconds
+//		add_timer(TIMER_REPLY, 2);		// Expire replies if not received within x secoonds
+		add_timer(TIMER_REPLY, 5);		// Expire replies if not received within x secoonds
+		add_timer(TIMER_PING, timetosec(20)+1);	// and set to Ping again in y seconds
 	    }
 	    break;
 

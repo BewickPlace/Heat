@@ -184,7 +184,8 @@ int	parse_network(char **haystack) {
     p = find_time(p, "off", &network.off, block_end);
     ERRORCHECK(p == NULL, "Network: Off Block not found", EndError);
     p = find_key(p, "delta", &string[0], block_end);
-    sscanf(string, "%f", &network.at_home_delta);
+    sscanf(string, "%f,%f", &network.at_home_delta_out, &network.at_home_delta_away);
+    network.at_home_delta = network.at_home_delta_out;
 
     *haystack = block_end;
     return(1);

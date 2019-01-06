@@ -169,6 +169,11 @@ void	midnight_processing() {
     if (!((info->tm_hour == 0) && (info->tm_min == 0))) return;	// Exit if not Midnight
     debug(DEBUG_TRACE, "Midnight precessing....\n");
 
+    if (!check_any_at_home()) {				// If nobody at home
+	network.at_home_delta = network.at_home_delta_away; // switch to AWAY mode
+	debug(DEBUG_ESSENTIAL, "Bluetooth Proximity  switch to AWAY mode\n");
+    }
+
     // Delete old Track files - beyond 30 days, 7 day window
 
     for (i = 0 ; i < 7; i++) {

@@ -55,3 +55,5 @@ int	dayoftheweek();
 
 int	timeto15min();
 int	timeto5min();
+int	timeto1min();
+int	timetosec(int n);
