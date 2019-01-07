@@ -190,4 +190,8 @@ int timetoXmin(int X) {
 int	timeto15min() { return(timetoXmin(15)); }
 int	timeto5min()  { return(timetoXmin(5)); }
 int	timeto1min()  { return(timetoXmin(1)); }
-int	timetosec(int n) { return((timeto1min() % n) + n); }
+int	timetosec(int n) {
+    int x = timeto1min() % n;
+    x = (x==0 ? n : x);
+    return (x);
+}
