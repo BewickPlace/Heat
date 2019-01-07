@@ -380,6 +380,12 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 		rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO_REPLY, NULL, 0, 0); // Send specific broadcast response
 	    }
 	    add_timer(TIMER_PING, 1);				// initiate PINGs
+	} else if (other_nodes[node].state == NET_STATE_DOWN) {
+	    other_nodes[node].state = NET_STATE_UNKNOWN;	// Set link and message states as though new
+	    other_nodes[node].to = MSG_STATE_UNKNOWN;
+	    other_nodes[node].from = MSG_STATE_UNKNOWN;
+	    other_nodes[node].to_seq = 0;			// Reset Payload to/from sequence numbers
+	    other_nodes[node].from_seq = 0;
 	}
 	break;
     case MSG_TYPE_REPLY:
