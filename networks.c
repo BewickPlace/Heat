@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <arpa/inet.h>
 #include <net/if.h>
 
+#include <wiringPi.h>
 #include "errorcheck.h"
 #include "timers.h"
 #include "networks.h"
@@ -426,6 +427,7 @@ ENDERROR;
 //
 int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len, unsigned char payload_seq) {
     int rc;
+    int retry;
     struct iovec iovec[2];
     struct msghdr msg;
     struct sockaddr_in6 sin6;
@@ -433,7 +435,7 @@ int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload
     char full_message[MAX_BUFFER];				// Full buffer
     struct test_msg *message = (struct test_msg*)full_message;	// Our Test Msg mapped over full buffer
 
-    inet_ntop(AF_INET6, dest, (char *)&addr_string, 40);
+    if ((inet_ntop(AF_INET6, dest, (char *)&addr_string, 40)) == NULL) {return(-1);}
     debug(DEBUG_DETAIL, "Send message - Address %s Type %d\n", addr_string, type);
 
     memset(message, 0, MAX_BUFFER);
@@ -464,7 +466,18 @@ int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload
     msg.msg_name = &sin6;
     msg.msg_namelen = sizeof(sin6);
 
-    rc = sendmsg( netsock, &msg, 0);
+    for( retry = 0; retry < 40 ; retry++) {			// Loop for a Maxmimum of n retries
+	rc = sendmsg( netsock, &msg, 0);
+
+	if((rc < 0) &&						// If network error
+	   ((errno == ENETUNREACH) ||				// Network Unreachable
+	    (errno == EADDRNOTAVAIL))) {			// Address Mot Available
+	    delay(100);						// delay for 100ms before we try again
+	} else {
+	    break;
+	}
+    }
+    if (retry > 0) { warn("Network instability for %d msec", retry * 100); }
     return(rc);
 }
 
@@ -598,7 +611,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
 
     other_nodes[node].to_seq++;
     rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD, payload, payload_len, other_nodes[node].to_seq); // send out a specific message to this node
-    ERRORCHECK( rc < 0, "Network send error", SendError);
+    if (rc < 0) { goto SendError; }
     debug(DEBUG_DETAIL,"Payload to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
 
 ERRORBLOCK(SendError);
