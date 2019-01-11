@@ -251,7 +251,7 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
     if( payload_len == 0) { return; }		// skip out if nothing to do
     switch(payload-> type) {
     case PAYLOAD_TYPE:
-	debug(DEBUG_ESSENTIAL, "Payload Received from %s of type %d %s, len %d\n", node_name, payload->type, payload->d.data, payload_len);
+	debug(DEBUG_TRACE, "Payload Received from %s of type %d %s, len %d\n", node_name, payload->type, payload->d.data, payload_len);
 	break;
 
     case HEAT_SETPOINT:
