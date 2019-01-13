@@ -118,11 +118,11 @@ void	check_heating_setpoint() {
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
 	} else if (((app.operating_mode == OPMODE_SLAVE)  &&
-		    (app.temp < (app.setpoint + app.boost - app.hysteresis))) // SLAVE - include Boost in calculation
+		    (app.temp <= (app.setpoint + app.boost - app.hysteresis))) // SLAVE - include Boost in calculation
 		||
 		   ((app.operating_mode == OPMODE_WATCH)  &&		// WATCH - require Boost to activate
 		    (app.boost) &&
-		    (app.temp < (app.setpoint - app.hysteresis)))) {
+		    (app.temp <= (app.setpoint - app.hysteresis)))) {
 	    app.callsat = 1;						// Maintain local callsat status
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;
