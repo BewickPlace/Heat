@@ -103,11 +103,11 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
     i = (timer/MAINT_TIMER) % BLUETOOTH_CANDIDATES;			// Only process one Candidate each Interval
     device[BN_LEN] = 0;
     BN_CPY(device, list[i].name);
-    debug(DEBUG_TRACE, "Bluetooth Maintenance: %d (%d/%d)\n", app.at_home, timer, i);
+    debug(DEBUG_INFO, "Bluetooth Maintenance: %d (%d/%d)\n", app.at_home, timer, i);
     if (bacmp(&list[i].bdaddr, BDADDR_ANY) != 0) {
 	if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
 	    (list[i].timer < VISIBLE_CHECK)) {			// or every interval if mising!
-	    debug(DEBUG_TRACE, "Bluetooth check candidate %d\n", i);
+	    debug(DEBUG_TRACE, "Bluetooth check candidate %d @ timer %d\n", i, timer);
 	    rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
 	    if (rc > -1) {						// if identified ...
 		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %-6s (%s)\n", addr, device, name);
@@ -132,7 +132,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
     }
     display_candidates();
     app.at_home = found;						// Update applicatio at home status
-    debug(DEBUG_TRACE, "Bluetooth Maintenance Complete\n");
+    debug(DEBUG_INFO, "Bluetooth Maintenance Complete\n");
     }
 }
 
