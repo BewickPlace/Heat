@@ -195,12 +195,12 @@ void	advise_bluetooth_candidates() {
     app_data.type = HEAT_CANDIDATES;			// Contruct CANDIDATES packet to be sent to slave
     memcpy(app_data.d.candidates, bluetooth.candidates, (sizeof(struct proximity_block) * BLUETOOTH_CANDIDATES));
 
+    debug(DEBUG_TRACE,"Advise Bluetooth Candidates to all\n");
     for ( zone = 0; zone < NUM_ZONES; zone++) {		//Check each Zone
 	for ( node = 0; node <  NUM_NODES_IN_ZONE; node++) { // and configured nodes
 	    if (strcmp(network.zones[zone].nodes[node].name, "") != 0) { // with valid name
 		network_id = get_active_node(network.zones[zone].nodes[node].name); //find if it is currently active
 		if (network_id >= 0) {
-		    debug(DEBUG_TRACE, "Heat Bluetooth Candidates for %s\n", network.zones[zone].nodes[node].name);
 		    send_to_node(network_id, (char *) &app_data, SIZE_CANDIDATES);
 		}
 	    }
