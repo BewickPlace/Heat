@@ -256,7 +256,7 @@ int	check_live_nodes() {
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
             	}
 	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0); // send out a specific message to this node
-		if (rc < 0) { warn("Ping send error: Node %d, send error %d errno(%d)", i, rc, errno); }
+		if (rc < 0) { warn("PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
                 other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
 		sent = 1;
@@ -273,6 +273,7 @@ int	check_live_nodes() {
 //
 void	expire_live_nodes() {
     int i;
+    int rc;
 
     for (i=0; i < NO_NETWORKS; i++) {				// For each of the networks
 	if ((memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) && // if an address is defined
@@ -280,7 +281,8 @@ void	expire_live_nodes() {
 	    ((other_nodes[i].to == MSG_STATE_SENT) | (other_nodes[i].to == MSG_STATE_FAILED))) {
 
 	    other_nodes[i].to = MSG_STATE_FAILED;		// mark this node as failed
-	    send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0); // Re-Ping failed node
+	    rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0); // Re-Ping failed node
+	    if (rc < 0) { warn("Re-PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	    add_timer(TIMER_REPLY, 3);
 	    debug(DEBUG_TRACE, "Link to %s timed out, retry ping\n", other_nodes[i].name);
 	}
@@ -341,7 +343,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     *payload_len = 0;						// No payload yet
 
     rc = recvmsg(netsock, &msg, 0);
-    if (rc < EAGAIN) { goto EndError; }				//  If EAGAIN, skip to end without Warning message
+    if ((rc < 0) && (errno== EAGAIN)) { goto EndAgain; }	//  If EAGAIN, skip to end without Warning message
     ERRORCHECK( rc < 0, "Read message failed", ReadError);
 
     ERRORCHECK( rc < 2, "Truncated packet", EndError);
@@ -379,6 +381,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 
 	    if (message->type == MSG_TYPE_ECHO) {		// and first Broadcast received
 		rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO_REPLY, NULL, 0, 0); // Send specific broadcast response
+		if (rc < 0) { warn("ECHO REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 	    }
 	    add_timer(TIMER_PING, 1);				// initiate PINGs
 	} else if (other_nodes[node].state == NET_STATE_DOWN) {
@@ -402,13 +405,13 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	cancel_reply_timer();					// Cancel reply timer if all now received
 	break;
     case MSG_TYPE_PING:
-	ERRORCHECK( node < 0, "Network node unknown (PING)", EndError);
+	if (node < 0) goto EndError;
+
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
 	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, 0);	// Send reply
-	if (rc > 0) {
-	    other_nodes[node].from = MSG_STATE_OK;		// and note as such
-	}
+	if (rc < 0) { warn("REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
+	else {other_nodes[node].from = MSG_STATE_OK; }		// and note as such
 	break;
     default:
 	warn("Neither Ping nor Replay received");
@@ -418,6 +421,8 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 ERRORBLOCK(ReadError);
     warn("Read error: error %d errno(%d)", rc, errno);
     *payload_len = 0;						// Ensure No payload
+ERRORBLOCK(EndAgain);
+    debug(DEBUG_ESSENTIAL, "EAGAIN error %d:%d\n", rc, errno);
 ENDERROR;
 }
 
