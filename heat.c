@@ -247,6 +247,7 @@ int main(int argc, char **argv) {
 	add_timer(TIMER_SETPOINT, timetosec(15));	// Set to refresh setpoint in y seconds
 	break;
     }
+    add_timer(TIMER_STATS, timeto1hour());		// Report Network Efficiency stats hourly
     add_timer(TIMER_DISPLAY, 75);			// and timeout the screen in z seconds
     add_timer(TIMER_LOGGING, 15);			// atart off the logging process
     add_timer(TIMER_CONTROL, 15);			// Set to perform Master & slabe control actions in y seconds
@@ -277,6 +278,11 @@ int main(int argc, char **argv) {
 
 	case TIMER_REPLY:
 	    expire_live_nodes();			// Expire other nodes where reply has timed out
+	    break;
+
+	case TIMER_STATS:
+	    report_network_stats();			// Report network efficiency statistics
+	    add_timer(TIMER_STATS, timeto1hour());	// Set to refresh network in 1 hour
 	    break;
 
 	default:
