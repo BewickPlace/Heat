@@ -143,6 +143,10 @@ require 'manage_menu.php';
 	break;
     }
     }
+    if(isset($_POST['txpower'])) {
+	updatetxpower(test_input($_POST["txpower"]));
+	$changesmade = TRUE;
+    }
   }
   $numberofnetworks = count($networks)/3;
   $hostIPaddress = $_SERVER['SERVER_ADDR'];
@@ -168,7 +172,7 @@ require 'manage_menu.php';
    #  Only perform for the non-default networks
    if ($i > 0) {
    ?>
-      BSSID: <input type="text" name="networks[<?php (3*$i)+2 ?>]" value="<?php echo $networks[(3*$i)+2]?>" <?php echo $r ?> size=18 maxlength=17  pattern="^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$"  title="MAC address">
+      BSSID: <input tpe="text" name="networks[<?php (3*$i)+2 ?>]" value="<?php echo $networks[(3*$i)+2]?>" <?php echo $r ?> size=18 maxlength=17 pattern="^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$"  title="MAC address">
    <?php
    } else {
    ?>
@@ -234,6 +238,7 @@ require 'manage_menu.php';
 	$opmodeS = ((getWiPiopmode() == "-s")? "checked":"unchecked");
 	$opmodeW = ((getWiPiopmode() == "-w")? "checked":"unchecked");
 	$proximity = ((getWiPibluetooth() == "-b")? "checked":"unchecked");
+	$txpower = getTxPower();
    ?>
 	</form>
         </p>
@@ -245,6 +250,7 @@ require 'manage_menu.php';
 	                   SLAVE : <input type="radio" name="opmode"    Value="SLAVE" <?php echo $opmodeS    ?> onchange="this.form.submit()">
 	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()"> <br>
 	Bluetooth Proximiity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
+	Radio TX Power:            <input type="text" name="txpower"  Value= <?php echo $txpower?> size="2" maxlength="2" pattern="[0-9]+" required title ="Numeric only" onchange="this.form.submit()"> <br>
 	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>
 	</form>
         </p>
