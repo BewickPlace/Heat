@@ -346,10 +346,10 @@ void	report_network_stats() {
 													// pings already include missed replies
 	    ping_err =  (other_nodes[i].ping_sent - other_nodes[i].ping_seen);
 	    reply_err = (other_nodes[i].ping_seen - other_nodes[i].reply_seen);
-	    ping_rate = ((ping_err + reply_err) * 100) / other_nodes[i].ping_sent;
+	    ping_rate = ((ping_err + reply_err) * 100) / (other_nodes[i].ping_sent + other_nodes[i].ping_seen);
 	    payload_rate = (other_nodes[i].payload_err * 100)/other_nodes[i].payload_recv;
-	    if ((ping_rate > 1) | (payload_rate > 1)) {
-		debug(DEBUG_ESSENTIAL, "Network Stats %-12s, tx:rx[%d:%d] Ping:[%d of %d] Reply[%d of %d] Pay:[%d of %d]\n",
+	    if ((ping_rate > 3) | (payload_rate > 2)) {
+		debug(DEBUG_ESSENTIAL, "Network Stats %-12s tx:rx[%d:%d] Ping:[%d of %d] Reply[%d of %d] Pay:[%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].tx,
 		other_nodes[i].rx,
@@ -360,7 +360,7 @@ void	report_network_stats() {
 		other_nodes[i].payload_err,
 		other_nodes[i].payload_recv);
 	    } else {
-		debug(DEBUG_ESSENTIAL, "Network Stats %-12s, tx:rx[%d:%d] Ping:[%d of %d] Reply[%d of %d] Pay:[%d of %d]\n",
+		debug(DEBUG_TRACE, "Network Stats %-12s tx:rx[%d:%d] Ping:[%d of %d] Reply[%d of %d] Pay:[%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].tx,
 		other_nodes[i].rx,
