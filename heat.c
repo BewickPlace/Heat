@@ -45,6 +45,7 @@ THE SOFTWARE.
 //#include <netinet/ip.h>
 //#include <arpa/inet.h>
 //#include <net/if.h>
+#include <wiringPi.h>
 
 #include "heat.h"
 #include "errorcheck.h"
@@ -223,6 +224,8 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv);				// Parse command line parameters
     open_logfile();					// Open correct logfile
+    debug(DEBUG_TRACE, "Allow Network Time to Sync...\n");
+    delay(20000);					// Insert delay to allow Network Time Sync
     debug(DEBUG_ESSENTIAL, "Heat starting in %s mode\n", (app.operating_mode == OPMODE_MASTER ? "MASTER" :app.operating_mode == OPMODE_SLAVE ? "SLAVE" : "WATCH"));
 
     initialise_network(sizeof(struct payload_pkt),notify_link_up, notify_link_down);	// Initialise the network details with callbacks
