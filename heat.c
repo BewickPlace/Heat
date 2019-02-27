@@ -288,6 +288,10 @@ int main(int argc, char **argv) {
 	    add_timer(TIMER_STATS, timeto1hour());	// Set to refresh network in 1 hour
 	    break;
 
+	case TIMER_PAYLOAD_ACK:				// Timeout on late/missing Payload ACK
+	    timeout_payload();
+	    break;
+
 	default:
 	    handle_app_timer(timer);			// ask application to handle all other timers
 	    break;
