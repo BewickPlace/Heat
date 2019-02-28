@@ -345,7 +345,7 @@ void	handle_app_timer(int timer) {
 	break;
 
     case TIMER_LOGGING:
-        debug(DEBUG_TRACE, "Handle Logging timeout\n");
+        debug(DEBUG_DETAIL, "Handle Logging timeout\n");
 
 	midnight_processing();		// Perform Midnight processing if appropriate
 
