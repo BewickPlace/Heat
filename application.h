@@ -113,7 +113,7 @@ void	handle_app_timer(int timer);
 
 void	perform_logging();
 
-void    load_configuration_data();              // Main process
+int	load_configuration_data();              // Main process
 int	match_node(char *name, int zone);
 
 void	setpoint_control_process();
@@ -124,6 +124,7 @@ void	manage_CLOSE();
 
 void	proximity_process();			// Bluetooth proximity process
 void	advise_bluetooth_candidates();		// advise candidates
+void	advise_node_bluetooth_candidates(char *name);	// advise candidates
 void	manage_candidates(struct proximity_block[]); // Manage new candidates list from Master
 
 void	stop_run_clock();			// Stop the run time (CALL) clock

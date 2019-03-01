@@ -58,7 +58,10 @@ void	notify_link_up(char *name) {
 	app.active_node = find_active_node();				// record which node is active
 
 	add_timer(TIMER_CONTROL, 16);					// trigger a review of control actions
-	if (app.operating_mode == OPMODE_MASTER) { perform_logging(); }	// Maintain network status
+	if (app.operating_mode == OPMODE_MASTER) {
+	    advise_node_bluetooth_candidates(name);			// Advise of the latest Bluetooth Candidates
+	    perform_logging(); 						// Maintain network status
+	}
     }
 
 //
@@ -317,8 +320,9 @@ void	handle_app_timer(int timer) {
         debug(DEBUG_INFO, "Handle Control timeout\n");
 
 	if (app.operating_mode == OPMODE_MASTER) {
-	    load_configuration_data();
-	    advise_bluetooth_candidates();
+	    if (load_configuration_data()) {		// Check if new configuration available
+		advise_bluetooth_candidates();		// Advise candidates in case of change
+	    }
 	    setpoint_control_process();
 	} else {
 		// no actions yet"

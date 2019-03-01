@@ -207,6 +207,22 @@ void	advise_bluetooth_candidates() {
 	}
     }
 }
+//
+//	Advise Single node of bluetooth candicates
+//
+void	advise_node_bluetooth_candidates(char *name) {
+    int network_id;
+    struct payload_pkt	app_data;			// Packet information
+
+    app_data.type = HEAT_CANDIDATES;			// Contruct CANDIDATES packet to be sent to slave
+    memcpy(app_data.d.candidates, bluetooth.candidates, (sizeof(struct proximity_block) * BLUETOOTH_CANDIDATES));
+
+    network_id = get_active_node(name); 		//find if it is currently active
+    if (network_id >= 0) {
+	debug(DEBUG_INFO,"Advise Bluetooth Candidates to %-12s\n", name);
+	send_to_node(network_id, (char *) &app_data, SIZE_CANDIDATES);
+    }
+}
 
 //
 //	Manage Candidates

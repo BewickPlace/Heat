@@ -342,7 +342,7 @@ static time_t	last_mtime = 0;				// Time config was last modified
 //
 //	Load configuration data
 //
-void load_configuration_data() {
+int load_configuration_data() {
     FILE	*fp;					// File Descriptor
     struct stat file_info;				// File status info
     char	file_data[MAX_CONFIG_DATA][ENTRIES];	// Buffer for file data
@@ -368,7 +368,7 @@ void load_configuration_data() {
     initialise_configuration();				// Re-initialise all elements of the config
 
     size = fread(file_data, MAX_CONFIG_DATA, ENTRIES, fp);	// Read the file into memory
-    ERRORCHECK( size < 0, "Configuration Read Error", EndError);
+    ERRORCHECK( size < 0, "Configuration Read Error", ParseError);
 
     unprocessed_data = (char *)file_data;		// start at the beggining of the data
 
@@ -389,17 +389,22 @@ void load_configuration_data() {
 
     debug(DEBUG_ESSENTIAL, "Load Configuration Complete\n");
     fclose(fp);
+    return(1);
 
 ERRORBLOCK(OpenError);
     debug(DEBUG_ESSENTIAL, "File: %s\n", conf_file);
+    return(0);
 
 ERRORBLOCK(StatEnd);
     fclose(fp);
+    return(0);
 
 ERRORBLOCK(ParseError);
     fclose(fp);
+    return(0);
 
 ENDERROR;
+    return(1);
 }
 
 //
