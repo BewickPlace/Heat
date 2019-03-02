@@ -349,6 +349,7 @@ void	report_network_stats() {
     int ping_err;
     int reply_err;
     int payload_rate;
+    int resend_rate;
 
     for (i=0; i < NO_NETWORKS; i++) {					// For each of the networks
 	if( memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) { 	// if an address is defined
@@ -358,8 +359,9 @@ void	report_network_stats() {
 	    ping_err =  (other_nodes[i].ping_sent - other_nodes[i].ping_seen);
 	    reply_err = (other_nodes[i].ping_seen - other_nodes[i].reply_seen);
 	    ping_rate = ((ping_err + reply_err) * 100) / (other_nodes[i].ping_sent + other_nodes[i].ping_seen);
-	    payload_rate = (other_nodes[i].payload_recv? (other_nodes[i].payload_err * 100)/other_nodes[i].payload_recv : 0);
-	    if ((ping_rate > 3) | (payload_rate > 2)) {
+	    payload_rate = (other_nodes[i].payload_recv ? (other_nodes[i].payload_err * 100)/other_nodes[i].payload_recv : 0);
+	    resend_rate = (other_nodes[i].payload_sent ? other_nodes[i].payload_resent / other_nodes[i].payload_sent : 0);
+	    if ((ping_rate > 3) | (payload_rate > 2) | (resend_rate > 5)) {
 		debug(DEBUG_ESSENTIAL, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].tx,
@@ -459,19 +461,19 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 		// normal sequence of messages
 
 	} else if (previous_from_seq == message->payload_seq) { // ignore duplicate packets
-	    debug(DEBUG_ESSENTIAL, "Payload from %s duplicate [%d]\n", node_name, message->payload_seq);
+	    debug(DEBUG_INFO, "Payload from %-12s duplicate [%d]\n", node_name, message->payload_seq);
 	    other_nodes[node].from_seq = message->payload_seq;	// Reset next expected sequence number
 	    *payload_len = 0;					// ignore duplicate packet
 	    other_nodes[node].payload_dup++;
 
 	} else {
-	    debug(DEBUG_ESSENTIAL, "Payload from %s received out of sequence [%d:%d]\n", node_name, message->payload_seq, other_nodes[node].from_seq);
+	    debug(DEBUG_TRACE, "Payload from %-12s received out of sequence [%d:%d]\n", node_name, message->payload_seq, other_nodes[node].from_seq);
 	    error_count = message->payload_seq - other_nodes[node].from_seq;	// Calculate number of missed packets
 	    other_nodes[node].from_seq = message->payload_seq;			// Reset next expected sequence number
 	    other_nodes[node].payload_err =					// Maintain sequence error count
 		other_nodes[node].payload_err + (error_count < 0 ? 1 : error_count); // add missed packets or for advance packets just 1
 	}
-	debug(DEBUG_DETAIL,"Payload from %s of type %d seq [%3d]\n", node_name, *(int *)payload, other_nodes[node].from_seq);
+	debug(DEBUG_INFO,"Payload from %s of type %d seq [%3d]\n", node_name, *(int *)payload, other_nodes[node].from_seq);
 	rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD_ACK, 0, 0, 0, other_nodes[node].from_seq); // send out a ACK
 	if (rc < 0) { warn("PAYLOAD ACK send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 	return;							// and return
@@ -516,8 +518,10 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     case MSG_TYPE_REPLY:
 	ERRORCHECK( node < 0, "Network node unknown (REPLY)", EndError);
 	other_nodes[node].rx++;
-	other_nodes[node].ping_seen = message->seen;
-	other_nodes[node].reply_seen++;
+	if (message->seen) {
+	    other_nodes[node].ping_seen = message->seen;
+	    other_nodes[node].reply_seen++;
+	}
 
 	debug(DEBUG_DETAIL, "Reply message received\n");
 	other_nodes[node].to = MSG_STATE_OK;			// Reply received - to stae is OK
@@ -525,6 +529,11 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	    other_nodes[node].state = NET_STATE_UP;		// Set link status UP
             inet_ntop(AF_INET, &message->src_addripv4, (char *)&ipv4_string, 40);
 	    debug(DEBUG_ESSENTIAL, "Link UP   to node: %-12s (%s)\n", message->src_name, ipv4_string);
+	    rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, other_nodes[node].reply_tx,0);	// Force remote Link Up
+	    if (rc < 0) { warn("REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
+	    else {other_nodes[node].from = MSG_STATE_OK; }		// and note as such
+	    other_nodes[node].tx++;
+
 	    if (link_up_callback != NULL) link_up_callback(message->src_name);	// run callback if defined
 	}
 	cancel_reply_timer();					// Cancel reply timer if all now received
@@ -532,13 +541,13 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     case MSG_TYPE_PING:
 	if (node < 0) goto EndError;
 	other_nodes[node].rx++;
-	other_nodes[node].reply_tx++;;
 
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
 	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, other_nodes[node].reply_tx,0);	// Send reply
 	if (rc < 0) { warn("REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 	else {other_nodes[node].from = MSG_STATE_OK; }		// and note as such
+	other_nodes[node].reply_tx++;;
 	other_nodes[node].tx++;
 	break;
     case MSG_TYPE_PAYLOAD_ACK:
@@ -766,7 +775,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
     if (rc < 0) { goto SendError; }
     other_nodes[node].tx++;
     other_nodes[node].payload_sent++;
-    debug(DEBUG_DETAIL,"Payload to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
+    debug(DEBUG_INFO,"Payload to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
     save_payload(node, payload, payload_len);		// save payload
     add_timer(TIMER_PAYLOAD_ACK, 2);			// and wait for ACK
 
@@ -812,8 +821,7 @@ int	resend_payload(int node, char *payload, int payload_len) {
     if (rc < 0) { goto SendError; }
     other_nodes[node].tx++;
     other_nodes[node].payload_resent++;
-    debug(DEBUG_ESSENTIAL,"Payload resent to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
-    delete_payload(node);				// remove payload now resent
+    debug(DEBUG_TRACE,"Payload resent to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
 
 ERRORBLOCK(SendError);
     warn("Payload send error: Node %d, send error %d errno(%d)", node, rc, errno);
@@ -826,13 +834,18 @@ ENDERROR;
 //	Timeout Payload
 //
 void	timeout_payload() {
-int node;
+    int node;
+    int found = 0;
 
     debug(DEBUG_TRACE,"Timeout payloads\n");
     for(node = 0; node < NO_NETWORKS; node++) {
 	if (other_nodes[node].payload != NULL) {
 	    resend_payload(node, other_nodes[node].payload, other_nodes[node].payload_len);
+	    found = 1;
 	}
+    }
+    if (found == 1) {				// If resent set ACK timer
+	add_timer(TIMER_PAYLOAD_ACK, 2);
     }
 }
 
