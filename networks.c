@@ -529,7 +529,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	    other_nodes[node].state = NET_STATE_UP;		// Set link status UP
             inet_ntop(AF_INET, &message->src_addripv4, (char *)&ipv4_string, 40);
 	    debug(DEBUG_ESSENTIAL, "Link UP   to node: %-12s (%s)\n", message->src_name, ipv4_string);
-	    rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, other_nodes[node].reply_tx,0);	// Force remote Link Up
+	    rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, 0, 0);	// Force remote Link Up
 	    if (rc < 0) { warn("REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 	    else {other_nodes[node].from = MSG_STATE_OK; }		// and note as such
 	    other_nodes[node].tx++;
