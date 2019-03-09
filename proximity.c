@@ -57,20 +57,20 @@ void	display_candidates();
 //
 //	Check Bluetooth name
 //
-int check_bluetooth_name(bdaddr_t bdaddr, char *name, char *addr) {
+int check_bluetooth_name(bdaddr_t bdaddr, char *name, char *addr, int timeout) {
     int rc;
     struct timeval t1, t2, res;
 
     gettimeofday(&t1, NULL);
 
-    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, 1200);
+    rc = hci_read_remote_name(bluetooth_sock, &bdaddr, BLUE_NAME, name, timeout);
     if (rc < 0) strcpy(name, "[unknown]");
 
     gettimeofday(&t2, NULL);
     timersub(&t2, &t1, &res);
 
     ba2str(&bdaddr, addr);
-    debug(DEBUG_INFO, "Checked %s %s in %d.%d\n", addr, name, res.tv_sec, res.tv_usec);
+    debug(DEBUG_INFO, "Checked %s %s in %d of %d\n", addr, name, (res.tv_sec*1000)+(res.tv_usec/1000), timeout);
     return(rc);
 }
 
@@ -108,7 +108,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	if (((list[i].timer % VISIBLE_CHECK) == 0) |		// every x  period check is device visible
 	    (list[i].timer < VISIBLE_CHECK)) {			// or every interval if mising!
 	    debug(DEBUG_TRACE, "Bluetooth check candidate %d @ timer %d\n", i, timer);
-	    rc = check_bluetooth_name(list[i].bdaddr, name, addr);	// look for the device
+	    rc = check_bluetooth_name(list[i].bdaddr, name, addr, (list[i].timer < 0 ? 1200 : 2400));	// look for the device
 	    if (rc > -1) {						// if identified ...
 		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %-6s (%s)\n", addr, device, name);
 		    list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
