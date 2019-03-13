@@ -34,6 +34,13 @@ THE SOFTWARE.
 #define TIMER_DISPLAY 	9				// Display screen timout
 #define TIMER_LOGGING 	10				// Logging timeout
 
+#define AT_STATS	(timeto1hour())			// at 0:00
+#define AT_CONTROL	(timeto15min())			// at 0:00
+#define AT_SETPOINT	(timetosec(15)+5)		// at 0:05, 0:20, 0:35, 0:50
+#define AT_PING		(timetosec(15)+10)		// at 0:10, 0:25, 0:40, 0:55
+#define AT_BROADCAST	(timeto1min()+30)		// at 0:30
+#define AT_PROXIMITY	(45)				// at 0:45
+
 struct timer_list {					// Timer datastructure
 		struct timeval timers[NO_TIMERS];	// Array of individual timers
 		struct timeval wait_time;		// wait timer

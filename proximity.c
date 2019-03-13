@@ -142,7 +142,7 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 int get_cycle_timer(int adj, int candidate) {
     int cycle_timer;
 
-    cycle_timer = (time(NULL)%60) + (60-50) + 1;	// Timer set to the currrent time & aligned to 50sec
+    cycle_timer = (time(NULL)%60) + (60-45) + 1;	// Timer set to the currrent time & aligned to AT_PROXIMITY (45) sec
     cycle_timer = cycle_timer - adj;			// allow minor adjustment for randomised start
     cycle_timer = cycle_timer % 60;
     cycle_timer = cycle_timer + (candidate * MAINT_TIMER);  // include factor for which candidate

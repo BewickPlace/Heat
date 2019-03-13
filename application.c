@@ -57,7 +57,7 @@ int	get_network_mask();
 void	notify_link_up(char *name) {
 	app.active_node = find_active_node();				// record which node is active
 
-	add_timer(TIMER_CONTROL, 16);					// trigger a review of control actions
+	add_timer(TIMER_CONTROL, 12);					// trigger a review of control actions
 	if (app.operating_mode == OPMODE_MASTER) {
 	    advise_node_bluetooth_candidates(name);			// Advise of the latest Bluetooth Candidates
 	    perform_logging(); 						// Maintain network status
@@ -327,13 +327,13 @@ void	handle_app_timer(int timer) {
 	} else {
 		// no actions yet"
 	}
-	add_timer(TIMER_CONTROL, timeto15min()); // wait for the next 15 minute boundry
+	add_timer(TIMER_CONTROL, AT_CONTROL); // wait for the next 15 minute boundry
 	break;
 
     case TIMER_SETPOINT:
         debug(DEBUG_INFO, "Handle Setpoint timeout\n");
 	check_heating_setpoint();	// Go check temperature against setpoint
-	add_timer(TIMER_SETPOINT, timetosec(15)); // wait for another go" in y seconds
+	add_timer(TIMER_SETPOINT, AT_SETPOINT); // wait for another go" in y seconds
 	break;
 
     case TIMER_BOOST:			// Noost Timeout

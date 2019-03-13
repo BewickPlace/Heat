@@ -467,6 +467,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	other_nodes[node].payload_recv++;
 	if ((other_nodes[node].from_seq) == message->payload_seq) {
 		// normal sequence of messages
+		other_nodes[node].skip_ping = 1;		// Valid Payload received - we can skip the next Ping as redundant
 
 	} else if (previous_from_seq == message->payload_seq) { // ignore duplicate packets
 	    debug(DEBUG_INFO, "Payload from %-12s duplicate [%d]\n", node_name, message->payload_seq);
@@ -503,7 +504,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 		if (rc < 0) { warn("ECHO REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 		other_nodes[node].tx++;
 	    }
-	    add_timer(TIMER_PING, 1);				// initiate PINGs
+	    add_timer(TIMER_PING, 2);				// initiate PINGs
 	} else if (other_nodes[node].state == NET_STATE_DOWN) {
 	    other_nodes[node].state = NET_STATE_UNKNOWN;	// Set link and message states as though new
 	    other_nodes[node].to = MSG_STATE_UNKNOWN;
