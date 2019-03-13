@@ -62,6 +62,7 @@ struct net {							// Network descriptior
 	int from;						// State of messages from node
 	char name[HOSTNAME_LEN];				// Node hostname
 	struct in_addr addripv4;				// IPv4 address
+	int skip_ping;						// Skip PING flag (ACK received)
 	unsigned char to_seq;					// Payload sequence number ~ to
 	unsigned char from_seq;					// Payload sequence number ~ from
 	char *payload;						// Saved payload
@@ -238,6 +239,7 @@ void	broadcast_network() {
     int i, rc;
 
     i = -1;
+    debug(DEBUG_INFO, "Broadcast sent\n");
     rc = send_network_msg(&multicast_address , MSG_TYPE_ECHO, NULL, 0, 0, 0); // send out a broadcast message to identify networks
     if (rc < 0) { goto SendError; }
     network_warn = 0;
@@ -277,13 +279,19 @@ int	check_live_nodes() {
 		    if (link_down_callback != NULL) link_down_callback(other_nodes[i].name);	// run callback if defined
 		    delete_payload(i);				// Delete any saved payload
             	}
-	        rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0, 0); // send out a specific message to this node
-		if (rc < 0) { warn("PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
-	        other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
-                other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
+		if (other_nodes[i].skip_ping) {
+                    debug(DEBUG_INFO, "Ping to %-12s skipped\n", other_nodes[i].name);
+		    other_nodes[i].skip_ping = 0;		// Enforce the next PING unless ACK received
+		} else {
+		    debug(DEBUG_INFO, "Ping to %-12s sent\n", other_nodes[i].name);
+		    rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0, 0); // send out a specific message to this node
+		    if (rc < 0) { warn("PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
+	            other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
+                    other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
 
-		other_nodes[i].tx++;
-		other_nodes[i].ping_sent++;
+		    other_nodes[i].tx++;
+		    other_nodes[i].ping_sent++;
+		}
 		sent = 1;
 	    }
 	}
@@ -358,7 +366,7 @@ void	report_network_stats() {
 													// pings already include missed replies
 	    ping_err =  (other_nodes[i].ping_sent - other_nodes[i].ping_seen);
 	    reply_err = (other_nodes[i].ping_seen - other_nodes[i].reply_seen);
-	    ping_rate = ((ping_err + reply_err) * 100) / (other_nodes[i].ping_sent + other_nodes[i].ping_seen);
+	    ping_rate = ((other_nodes[i].ping_sent + other_nodes[i].ping_seen) ? ((ping_err + reply_err) * 100) / (other_nodes[i].ping_sent + other_nodes[i].ping_seen) : 0);
 	    payload_rate = (other_nodes[i].payload_recv ? (other_nodes[i].payload_err * 100)/other_nodes[i].payload_recv : 0);
 	    resend_rate = (other_nodes[i].payload_sent ? other_nodes[i].payload_resent / other_nodes[i].payload_sent : 0);
 	    if ((ping_rate > 3) | (payload_rate > 2) | (resend_rate > 5)) {
@@ -541,13 +549,13 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     case MSG_TYPE_PING:
 	if (node < 0) goto EndError;
 	other_nodes[node].rx++;
+	other_nodes[node].reply_tx++;;
 
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
 	rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_REPLY, NULL, 0, other_nodes[node].reply_tx,0);	// Send reply
 	if (rc < 0) { warn("REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
 	else {other_nodes[node].from = MSG_STATE_OK; }		// and note as such
-	other_nodes[node].reply_tx++;;
 	other_nodes[node].tx++;
 	break;
     case MSG_TYPE_PAYLOAD_ACK:
@@ -556,6 +564,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 
 	debug(DEBUG_DETAIL, "ACK message from %-12s received[%d]\n", message->src_name, message->payload_seq);
 	ack_payload(node, message->payload_seq);
+	other_nodes[node].skip_ping = 1;			// ACK received - we can skip the next Ping as redundant
 	break;
     default:
 	warn("Neither Ping nor Replay received");
