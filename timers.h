@@ -36,10 +36,14 @@ THE SOFTWARE.
 
 #define AT_STATS	(timeto1hour())			// at 0:00
 #define AT_CONTROL	(timeto15min())			// at 0:00
-#define AT_SETPOINT	(timetosec(15)+5)		// at 0:05, 0:20, 0:35, 0:50
-#define AT_PING		(timetosec(15)+10)		// at 0:10, 0:25, 0:40, 0:55
-#define AT_BROADCAST	(timeto1min()+30)		// at 0:30
-#define AT_PROXIMITY	(45)				// at 0:45
+#define AT_PING		(timetosec(20)+4)		// at 0:04, 0:24, 0:44
+#define AT_SETPOINT	(timetosec(20)+8)		// at 0:08, 0:28, 0:48
+#define AT_BROADCAST	(timeto1min()+52)		// at 0:52
+#define AT_PROXIMITY	(32)				// at 0:32
+
+#define AT_REPLY	3				// Timeout for PING and REPING
+#define AT_PAYLOAD	3				// Timeout for initial Payload ACK
+#define AT_PAYLOAD_ACK	3				// Timeout for su8bseqent ACKs
 
 struct timer_list {					// Timer datastructure
 		struct timeval timers[NO_TIMERS];	// Array of individual timers

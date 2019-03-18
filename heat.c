@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
 
 	case TIMER_PING:
 	    if (check_live_nodes()) {			// On Ping check the network
-		add_timer(TIMER_REPLY, 5);		// Expire replies if not received within x secoonds
+		add_timer(TIMER_REPLY, AT_REPLY);	// Expire replies if not received within x secoonds
 		add_timer(TIMER_PING, AT_PING);		// and set to Ping again in y seconds
 	    }
 	    break;

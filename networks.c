@@ -318,7 +318,7 @@ void	expire_live_nodes() {
 	    if (rc < 0) { warn("Re-PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
 	    other_nodes[i].tx++;
 	    other_nodes[i].ping_sent++;
-	    add_timer(TIMER_REPLY, 3);
+	    add_timer(TIMER_REPLY, AT_REPLY);
 	    debug(DEBUG_TRACE, "Link to %-12s timed out, retry ping\n", other_nodes[i].name);
 	}
     }
@@ -384,7 +384,8 @@ void	report_network_stats() {
 		other_nodes[i].payload_dup,
 		other_nodes[i].payload_recv);
 	    } else {
-		debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+//		debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+		debug(DEBUG_ESSENTIAL, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].tx,
 		other_nodes[i].rx,
@@ -787,7 +788,7 @@ int	send_to_node(int node, char *payload, int payload_len) {
     other_nodes[node].payload_sent++;
     debug(DEBUG_INFO,"Payload to %s of type %d seq [%3d]\n", other_nodes[node].name, *(int *)payload, other_nodes[node].to_seq);
     save_payload(node, payload, payload_len);		// save payload
-    add_timer(TIMER_PAYLOAD_ACK, 2);			// and wait for ACK
+    add_timer(TIMER_PAYLOAD_ACK, AT_PAYLOAD);		// and wait for ACK
 
 ERRORBLOCK(SendError);
     warn("Payload send error: Node %d, send error %d errno(%d)", node, rc, errno);
@@ -855,7 +856,7 @@ void	timeout_payload() {
 	}
     }
     if (found == 1) {				// If resent set ACK timer
-	add_timer(TIMER_PAYLOAD_ACK, 2);
+	add_timer(TIMER_PAYLOAD_ACK, AT_PAYLOAD_ACK);
     }
 }
 
