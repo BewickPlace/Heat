@@ -96,6 +96,9 @@ def if_connected(ifname1, ifname2):
     global networkerror
     global networktimer
 
+#   Do not check network status
+    return True
+
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     try:
