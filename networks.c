@@ -363,6 +363,7 @@ void	report_network_stats() {
 	if( memcmp(&other_nodes[i].address, &zeros, SIN_LEN) != 0) { 	// if an address is defined
 									// Report statistics
 	    other_nodes[i].payload_recv = other_nodes[i].payload_recv + other_nodes[i].payload_err;	// add back in missed packets to total
+	    other_nodes[i].payload_sent = other_nodes[i].payload_sent + other_nodes[i].payload_resent;	// add back in resent packets to total
 													// pings already include missed replies
 	    ping_err =  (other_nodes[i].ping_sent - other_nodes[i].ping_seen);
 	    reply_err = (other_nodes[i].ping_seen - other_nodes[i].reply_seen);
@@ -384,8 +385,7 @@ void	report_network_stats() {
 		other_nodes[i].payload_dup,
 		other_nodes[i].payload_recv);
 	    } else {
-//		debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
-		debug(DEBUG_ESSENTIAL, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+		debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].tx,
 		other_nodes[i].rx,
