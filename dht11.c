@@ -446,7 +446,8 @@ void monitor_process()	{
 
 	    if(cycle_time == 0) {
 	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
-		if (efficiency < 70.0) {
+//		if (efficiency < 70.0) {
+		if ((efficiency < 70.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
 		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]", efficiency, read_count, success_count, crc_count, dht_threshold);
 		} else {
 		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold);
