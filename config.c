@@ -212,11 +212,13 @@ int	parse_zone(char **haystack) {
 
 	for (i = 0; i < 7; i++) {		// find the daily profiles
 	    p = find_key(p, "profile", &name[0], block_end); // get the name of profiles in this block
+	    ERRORCHECK( p == NULL, "Zone Profile not found", EndError);
 	    network.zones[zone].profiles[i] = match_profile(name);
 	}
 	zone++;
+	*haystack = block_end;
+	p = find_block(*haystack, "zone {");	// Look for next Zone
     }
-    *haystack = block_end;
     return(1);
 ENDERROR;
     return(0);}
