@@ -871,7 +871,7 @@ void	ack_payload(int node, unsigned int payload_seq) {
 	delete_payload(node);			// then we can delete our copy
     }
     for (i = 0; i < NO_NETWORKS;  i++) {	// Check if further ACKs expeceted
-	if (other_nodes[node].payload != NULL) {
+	if (other_nodes[i].payload != NULL) {
 	    found = 1;
 	    break;
 	}
