@@ -200,9 +200,11 @@ Checks:
 	perform_logging();					// Log the fact
     }
     if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
-	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now At Home - revise setpoints\n"); // Note
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now AT HOME - revise setpoints\n"); // Note
 	network.at_home_delta = network.at_home_delta_out;	// revert to OUT mode
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
+    } else if (!SIGNAL_AT_HOME(this_time) && SIGNAL_AT_HOME(last_time)) { // if are now noone at home
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now OUT\n"); // Note
     }
     last_time = this_time;					// Save signals Bit mask for next time
     } else {							// Network Control OFF
@@ -254,9 +256,11 @@ Checks:
 	perform_logging();					// Log the fact
     }
     if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
-	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now At Home - revise setpoints\n"); // Note
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now AT HOME - revise setpoints\n"); // Note
 	network.at_home_delta = network.at_home_delta_out;	// revert to OUT mode
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
+    } else if (!SIGNAL_AT_HOME(this_time) && SIGNAL_AT_HOME(last_time)) { // if are now noone at home
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now OUT\n"); // Note
     }
     last_time = this_time;					// Save signals Bit mask for next time
 
@@ -309,9 +313,11 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
 	perform_logging();					// Log the fact
     }
     if (SIGNAL_AT_HOME(this_time) && !SIGNAL_AT_HOME(last_time)) { // if are now signalling at home
-	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now At Home - revise setpoints\n"); // Note
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now AT HOME - revise setpoints\n"); // Note
 	network.at_home_delta = network.at_home_delta_out;	// revert to OUT mode
 	add_timer(TIMER_CONTROL, 1);				// and trigger setpoint reassessment
+    } else if (!SIGNAL_AT_HOME(this_time) && SIGNAL_AT_HOME(last_time)) { // if are now noone at home
+	debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now OUT\n"); // Note
     }
     last_time = this_time;					// Save signals Bit mask for next time
     } else {

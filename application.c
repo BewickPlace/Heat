@@ -187,7 +187,7 @@ void	midnight_processing() {
     if (app.operating_mode == OPMODE_MASTER) {		// Only applicable on MASTER
 	if (!check_any_at_home()) {			// If nobody at home
 	    network.at_home_delta = network.at_home_delta_away; // switch to AWAY mode
-	    debug(DEBUG_ESSENTIAL, "Bluetooth Proximity switch to AWAY mode\n");
+	    debug(DEBUG_ESSENTIAL, "Bluetooth Candidates Now AWAY\n");
 	}
 
 	reset_run_clock();				// reset CALL run timer
