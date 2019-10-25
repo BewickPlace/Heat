@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include "application.h"
 #include "dht11.h"
 
+void	perform_daily_log();
 int	get_network_mask();
 
 //
@@ -166,6 +167,7 @@ void	midnight_processing() {
         (app.operating_mode == OPMODE_MASTER)) {	// Only applicable on MASTER
 	debug(DEBUG_TRACE, "Pre-Midnight precessing....\n");
 
+	perform_daily_log();				// Record key daily summary
 	perform_logging();				// force a final log
     }
 
@@ -196,6 +198,77 @@ void	midnight_processing() {
 ENDERROR;
 }
 
+//
+//	Load Run Clock
+//
+void	load_run_clock() {
+    char 	logfile[50];			// Log file
+    time_t	seconds;
+    struct tm	*info;
+    FILE	*log;
+    int		zone, call, home, network;
+    time_t	hours, minutes;
+
+    if ((app.operating_mode != OPMODE_MASTER) ||	// On MASTER only
+        (app.trackdir == NULL)) { goto EndError; }	// Do NOT log is directory not specified
+    seconds = time(NULL);				// get the time
+    info = localtime(&seconds);				// convert into strctured time
+    sprintf(logfile,"%s%s_%04d-%02d-%02d.csv", app.trackdir, my_name(), info->tm_year + 1900, info->tm_mon + 1, info->tm_mday);
+    ERRORCHECK( strlen(logfile) > sizeof(logfile), "Tracking filename too long", TrackError);
+
+    log = fopen(logfile, "r");				// Open  the file
+    if (log != NULL) {					// if file exists
+
+	fscanf(log, "%*[^\n]\n");			// Skip header
+	while (fscanf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d\n", &info->tm_hour, &info->tm_min,
+						&hours, &minutes, &zone, &call, &home, &network) >0) {
+	}
+	app.run_time = (hours * 3600) + (minutes *60);	// update Run Time
+	debug(DEBUG_ESSENTIAL, "Run clock updated, %02ld:%02ld\n", hours, minutes);
+	fclose(log);
+    }
+
+ERRORBLOCK(TrackError);
+    debug(DEBUG_ESSENTIAL, "Size: %d:%d %s\n", strlen(logfile), sizeof(logfile), logfile);
+ENDERROR;
+}
+//
+//	Perform Daily Logging
+//
+void	perform_daily_log() {
+    char 	logfile[50];			// Log file
+    time_t	seconds;
+    struct tm	*info;
+    FILE	*log;
+    int	exists = 0;
+
+    if ((app.operating_mode != OPMODE_MASTER) ||	// On MASTER only
+        (app.trackdir == NULL)) { goto EndError; }	// Do NOT log is directory not specified
+
+    seconds = time(NULL);				// get the time
+    info = localtime(&seconds);				// convert into strctured time
+    sprintf(logfile,"%s%s_%04d.csv", app.trackdir, my_name(), info->tm_year + 1900);
+    ERRORCHECK( strlen(logfile) > sizeof(logfile), "Tracking filename too long", TrackError);
+
+    log = fopen(logfile, "r");			// Open  the file
+    if (log != NULL) {				// if file exists
+	exists = 1;
+	fclose(log);
+    }
+    log = fopen(logfile, "a"); 				// open Tracking file for Append
+    ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
+
+    if (exists == 0) { fprintf(log, "Date, Run Clock\n"); }
+    fprintf(log, "%02d-%02d,%02ld:%02ld\n", info->tm_mday, (info->tm_mon+1),
+							get_run_clock()/3600, (get_run_clock()/60) % 60);
+    fclose(log);
+ERRORBLOCK(TrackError);
+    debug(DEBUG_ESSENTIAL, "Size: %d:%d %s\n", strlen(logfile), sizeof(logfile), logfile);
+
+ERRORBLOCK(OpenError);
+    debug(DEBUG_ESSENTIAL, "Logfile %s Append errno: %d\n2", logfile, errno);
+ENDERROR;
+}
 //
 //	Perform Temperature Logging
 //

@@ -47,6 +47,118 @@ function expand_array($time1, $time2, $source) {
     return($out);
 }
 #
+#	Get Monthly Average
+#
+function get_monthly_avg($node, $year, $month) {
+    $avg = 0;
+    $count = 0;
+
+    $logfile = '/mnt/storage/Heat/'.$node.'_'.$year.'.csv';
+    if (file_exists($logfile)) {
+	$csv = array_map('str_getcsv', file($logfile));
+	$dates = array_column($csv, 0);
+	$run_hours = array_column($csv, 1);
+	array_shift($dates);
+	array_shift($run_hours);
+
+	$i = 0;
+	foreach ($run_hours as $time) {
+	    $match = strtok($dates[$i], "-");
+	    $match = strtok("\n");
+
+	    if($match == $month) {
+		$minutes = strtok($time, ":") * 60;
+		$minutes = $minutes + strtok("\n");
+		$avg = $avg + $minutes;
+		$count++;
+	    }
+	    $i++;
+	}
+    }
+    $avg = round((($count > 0)? $avg/$count : 0), 0);
+    $avg = $avg/60;
+    return($avg);
+}
+#
+#	Generate Run Hours Monthly Graph
+#
+function generate_run_hours_monthly($node, $selected_date) {
+    $dates = array();
+    $run_hours = array();
+
+    $year = strtok($selected_date, "-");
+    $month = strtok("-");
+
+    $time = strtotime($selected_date);
+    $base = date("Y-m-01", $time);
+
+    $year--;
+    for($i=0; $i<=12; $i++) {
+	$date = $base." -".(12-$i)." month";
+	$time = strtotime($date);
+
+	$dates[] = $time;
+	$run_hours[] = get_monthly_avg($node, $year, $month);
+
+	$month = $month + 1;
+	if($month > 12) { $month = 1; $year++; }
+    }
+    $date = $base." + 1 month";
+    $time = strtotime($date);
+    $dates[] = $time;
+    $run_hours[] = 0;
+
+// Create the graph. These two calls are always required
+    $graph = new Graph(1600,400);
+    $graph->clearTheme();
+    $graph->SetScale("datint");
+    $graph->yaxis->scale->SetAutoMin(0);
+
+//    $graph->SetClipping(TRUE);
+
+    $graph->SetShadow();
+    $graph->img->SetMargin(60,30,20,40);
+
+// Create the bar plots
+    $lplot = new LinePlot($run_hours, $dates);
+//    $lplot->SetBarCenter();
+    $lplot->SetStepStyle();
+    $lplot->SetColor("orange");
+    $lplot->SetFillColor("orange");
+
+//    $lplot->SetWidth(1.0);
+
+// ...and add it to the graPH
+    $graph->Add($lplot);
+
+    $title = "Average Run Hours per Month for last year";
+    $graph->title->Set($title);
+    $graph->xaxis->title->Set("Month");
+    $graph->xaxis->scale->SetDateFormat('M');
+    $graph->xaxis->scale->SetDateAlign(MONTHADJ_1, MONTHADJ_1);
+#    $graph->xaxis->SetLabelAngle(90);
+    $graph->yaxis->title->Set("Hours");
+    $graph->yaxis->SetTitleMargin(40);
+
+    $graph->title->SetFont(FF_FONT1,FS_BOLD);
+    $graph->yaxis->title->SetFont(FF_FONT1,FS_BOLD);
+    $graph->xaxis->title->SetFont(FF_FONT1,FS_BOLD);
+
+    $graph->SetTickDensity(TICKD_NORMAL, TICKD_VERYSPARSE);
+
+//    $graph->xaxis->SetTickLabels($dates);
+//    $graph->xaxis->SetTextTickInterval(1440);
+//    $graph->xaxis->SetTextLabelInterval(2400);
+    $graph->xaxis->scale->ticks->SupressMinorTickMarks(True);
+    $graph->xaxis->scale->ticks->SupressFirst(True);
+    $graph->xaxis->scale->ticks->SupressLast(True);
+
+// Display the graph to image file
+    $filename=$node.'1.png';
+    $graph->Stroke($filename);
+    return(0);
+}
+#
 #	Gerenrate Run Hours Graph
 #
 function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, $status_nod) {
@@ -73,7 +185,7 @@ function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, 
 
 // Create Controls Line plots
     $lplot2 = new LinePlot($status_ok, $dates);
-//    $lplot2->SetBarCenter();
+    $lplot2->SetBarCenter();
     $lplot2->SetStepStyle();
     $lplot2->SetColor("green");
     $lplot2->SetFillColor("green");
