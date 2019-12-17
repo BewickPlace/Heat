@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
     initialise_GPIO();					// initialise wiringPi
     rc = load_configuration_data();			// Load the Configuration on MASTER node
     ERRORCHECK( rc == 0, "Configuration Error", EndError);
+    load_run_clock();					// Load run clock data from Tracking file if available
 
     pthread_create(&monitor_thread, NULL, (void *) monitor_process, NULL);	// create Monitor thread
     ERRORCHECK( monitor_thread == 0, "Monitor thread creation failed\n", EndError);

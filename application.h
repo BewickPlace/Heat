@@ -127,6 +127,7 @@ void	advise_bluetooth_candidates();		// advise candidates
 void	advise_node_bluetooth_candidates(char *name);	// advise candidates
 void	manage_candidates(struct proximity_block[]); // Manage new candidates list from Master
 
+void	load_run_clock();			// Load the Run Clock from tracking file if available
 void	stop_run_clock();			// Stop the run time (CALL) clock
 void	reset_run_clock();			// Reset run time for CALL clock
 time_t	get_run_clock();			// Get the total time run(CALL) for today

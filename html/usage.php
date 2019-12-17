@@ -87,7 +87,18 @@ $submenu_mode="";
 #    var_dump($status_nod);
 
     if (file_exists($filename)) { unlink($filename);}
+#	Generate first graph - Hours Run per day
     if (generate_run_hours($hostname, $dates, $hours_run, $status_ok, $status_inc, $status_nod) == 0) {
+     ?> <img src=<?php echo $filename ?> height=50% width=100%><?php
+    }
+?>
+    </p>
+    <p>
+<?php
+#	Generate second graph - Hours Run (avg) by month
+    $filename = $node.'1.png';
+    if (file_exists($filename)) { unlink($filename);}
+    if (generate_run_hours_monthly($hostname, $selected_date) == 0) {
      ?> <img src=<?php echo $filename ?> height=50% width=100%><?php
     }
 
