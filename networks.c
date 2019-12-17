@@ -369,36 +369,45 @@ void	report_network_stats() {
 	    reply_err = (other_nodes[i].ping_seen - other_nodes[i].reply_seen);
 	    ping_rate = ((other_nodes[i].ping_sent + other_nodes[i].ping_seen) ? ((ping_err + reply_err) * 100) / (other_nodes[i].ping_sent + other_nodes[i].ping_seen) : 0);
 	    payload_rate = (other_nodes[i].payload_recv ? (other_nodes[i].payload_err * 100)/other_nodes[i].payload_recv : 0);
-	    resend_rate = (other_nodes[i].payload_sent ? other_nodes[i].payload_resent / other_nodes[i].payload_sent : 0);
-	    if ((ping_rate > 3) | (payload_rate > 2) | (resend_rate > 5)) {
-		debug(DEBUG_ESSENTIAL, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+	    resend_rate = (other_nodes[i].payload_sent ? (other_nodes[i].payload_resent * 100) / other_nodes[i].payload_sent : 0);
+
+
+	    if (ping_rate > 3) {
+		debug(DEBUG_ESSENTIAL, "%-12s Errors:  Ping[%d of %d] Reply[%d of %d]\n",
 		other_nodes[i].name,
-		other_nodes[i].tx,
-		other_nodes[i].rx,
 		ping_err,
 		other_nodes[i].ping_sent,
 		reply_err,
-		other_nodes[i].ping_seen,
-		other_nodes[i].payload_resent,
-		other_nodes[i].payload_sent,
-		other_nodes[i].payload_err,
-		other_nodes[i].payload_dup,
-		other_nodes[i].payload_recv);
-	    } else {
-		debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+		other_nodes[i].ping_seen);
+	    }
+	    if (resend_rate > 0) {
+		debug(DEBUG_ESSENTIAL, "%-12s Payload: Resent[%d of %d]\n",
 		other_nodes[i].name,
-		other_nodes[i].tx,
-		other_nodes[i].rx,
-		ping_err,
-		other_nodes[i].ping_sent,
-		reply_err,
-		other_nodes[i].ping_seen,
 		other_nodes[i].payload_resent,
-		other_nodes[i].payload_sent,
+		other_nodes[i].payload_sent);
+	    }
+	    if (payload_rate > 0) {
+		debug(DEBUG_ESSENTIAL, "%-12s Payload: Lost:Dup[%d:%d of %d]\n",
+		other_nodes[i].name,
 		other_nodes[i].payload_err,
 		other_nodes[i].payload_dup,
 		other_nodes[i].payload_recv);
 	    }
+
+	    debug(DEBUG_TRACE, "%-12s tx:rx[%d:%d] Ping[%d of %d] Reply[%d of %d] PayTx[%d of %d] PayRx[%d:%d of %d]\n",
+	    other_nodes[i].name,
+	    other_nodes[i].tx,
+	    other_nodes[i].rx,
+	    ping_err,
+	    other_nodes[i].ping_sent,
+	    reply_err,
+	    other_nodes[i].ping_seen,
+	    other_nodes[i].payload_resent,
+	    other_nodes[i].payload_sent,
+	    other_nodes[i].payload_err,
+	    other_nodes[i].payload_dup,
+	    other_nodes[i].payload_recv);
+
 	    other_nodes[i].tx = 0;				// Reset Network statistics
 	    other_nodes[i].rx = 0;
 	    other_nodes[i].ping_sent = 0;

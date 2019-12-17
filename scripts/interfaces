@@ -16,6 +16,7 @@ iface wlan0 inet manual
     wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
     wireless-power off
     wireless-txpower 22
+    wireless-retry short 30
 
 allow-hotplug wlan1
 iface wlan1 inet manual
