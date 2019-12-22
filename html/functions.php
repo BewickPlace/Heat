@@ -401,7 +401,7 @@ function get_hours_run($node, $selected_date, &$status) {
 	$timestamp = array_column($csv, 0);
 	$hours_run = array_column($csv, 1);
 
-	if (end($timestamp) === "23:55") {
+	if (time_to_decimal(end($timestamp)) >=  time_to_decimal("23:55")) {
 	    $status = 2;
 	    return(end($hours_run));
 	} else {
