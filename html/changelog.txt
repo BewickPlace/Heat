@@ -6,6 +6,7 @@
 Version  Date         Kernel    Changes
 =======  ====         ======    =======
 
+3.1      22-12-2019   4.14.71+  Network retries & tuning
 3.0      29-05-2019   4.14.71+  Operational confirmation
 2.3      28-02-2019   4.14.71+  Network Resilience (Payload ACK)
 2.2      30-01-2019   4.14.71+  Network statistics & tuning

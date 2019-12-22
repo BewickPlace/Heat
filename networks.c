@@ -380,7 +380,7 @@ void	report_network_stats() {
 		reply_err,
 		other_nodes[i].ping_seen);
 	    }
-	    if (resend_rate > 0) {
+	    if (resend_rate > 2) {
 		debug(DEBUG_ESSENTIAL, "%-12s Payload: Resent[%d of %d]\n",
 		other_nodes[i].name,
 		other_nodes[i].payload_resent,
