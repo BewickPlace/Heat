@@ -152,7 +152,7 @@ void	Button_interrupt() {
 	    debug(DEBUG_TRACE, "Button - Longer Press\n");
 	    app.boost++;
 	    flash_button(5);			// briefly flash button to signal extra boost
-	    if (app.operating_mode == OPMODE_WATCH) { add_timer(TIMER_BOOST, (60*240)); } //  Boost timesout after 4 hours (not MASTER)
+	    if (app.operating_mode == OPMODE_WATCH) { add_timer(TIMER_BOOST, (60*360)); } //  Boost times out after 6 hours (not MASTER)
 
 	} else if (button_press >= BUTTON_EXTRALONG_PRESS) {	// Extra Long press - Shutdown
 	    debug(DEBUG_TRACE, "Button - Extra Long Press\n");
