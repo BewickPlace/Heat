@@ -105,11 +105,11 @@ void	check_heating_setpoint() {
 
     if (app.active_node != -1) {					// As long as we have a controller to talk to
 	if (((app.operating_mode == OPMODE_SLAVE) &&
-	     (app.temp  > (app.setpoint + app.boost + app.hysteresis)))	// SLAVE - include Boost in calculation
+	     (app.temp  >= (app.setpoint + app.boost + app.hysteresis)))	// SLAVE - include Boost in calculation
 		||
 	    ((app.operating_mode == OPMODE_WATCH) &&			// WATCH - require Boost to activate
 	     (app.boost) &&
-	     (app.temp  > (app.setpoint + app.hysteresis)))) {
+	     (app.temp  >= (app.setpoint + app.hysteresis)))) {
 
 	    app.callsat = 0;						// Maintain local callsat status
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
