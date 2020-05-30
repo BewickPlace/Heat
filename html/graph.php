@@ -6,6 +6,7 @@ require_once ('jpgraph/jpgraph.php');
 require_once ('jpgraph/jpgraph_bar.php');
 require_once ('jpgraph/jpgraph_line.php');
 require_once ('jpgraph/jpgraph_date.php');
+require_once ('jpgraph/jpgraph_utils.inc.php');
 #
 #	Include this as not available within Jesiie PHP and required by JPGraph
 #
@@ -92,9 +93,11 @@ function generate_run_hours_monthly($node, $selected_date) {
     $time = strtotime($selected_date);
     $base = date("Y-m-01", $time);
 
-    $year--;
-    for($i=0; $i<=12; $i++) {
-	$date = $base." -".(12-$i)." month";
+    if($month > 6) { $month = $month - 6; $year--; }
+    else	   { $month = $month + 6; $year--; $year--;}
+
+    for($i=0; $i<=18; $i++) {
+	$date = $base." -".(18-$i)." month";
 	$time = strtotime($date);
 
 	$dates[] = $time;
@@ -108,10 +111,21 @@ function generate_run_hours_monthly($node, $selected_date) {
     $dates[] = $time;
     $run_hours[] = 0;
 
+// Now get labels at the start of each month
+    $dateUtils = new DateScaleUtils();
+    list($tickPositions,$minTickPositions) = $dateUtils->GetTicks($dates);
+
+// We add some grace to the end of the X-axis scale so that the first and last
+// data point isn't exactly at the very end or beginning of the scale
+    $grace = 000000;
+    $xmin = $dates[0]-$grace;
+    $xmax = $dates[19]+$grace;
+
 // Create the graph. These two calls are always required
     $graph = new Graph(1600,400);
     $graph->clearTheme();
-    $graph->SetScale("datint");
+//    $graph->SetScale("datint");
+    $graph->SetScale("intint", 0, 0, $xmin, $xmax );
     $graph->yaxis->scale->SetAutoMin(0);
 
 //    $graph->SetClipping(TRUE);
@@ -131,14 +145,19 @@ function generate_run_hours_monthly($node, $selected_date) {
 // ...and add it to the graPH
     $graph->Add($lplot);
 
-    $title = "Average Run Hours per Month for last year";
+    $title = "Average Run Hours per Month for 18 months";
     $graph->title->Set($title);
     $graph->xaxis->title->Set("Month");
-    $graph->xaxis->scale->SetDateFormat('M');
-    $graph->xaxis->scale->SetDateAlign(MONTHADJ_1, MONTHADJ_1);
-#    $graph->xaxis->SetLabelAngle(90);
+#    $graph->xaxis->scale->SetDateFormat('M');
+#    $graph->xaxis->scale->SetDateAlign(MONTHADJ_1, MONTHADJ_1);
     $graph->yaxis->title->Set("Hours");
     $graph->yaxis->SetTitleMargin(40);
+#
+    $graph->xaxis->SetPos('min');
+
+// Now set the tic positions
+    $graph->xaxis->SetTickPositions($tickPositions,$minTickPositions);
+    $graph->xaxis->SetLabelFormatString('M',true);
 
     $graph->title->SetFont(FF_FONT1,FS_BOLD);
     $graph->yaxis->title->SetFont(FF_FONT1,FS_BOLD);
@@ -146,11 +165,7 @@ function generate_run_hours_monthly($node, $selected_date) {
 
     $graph->SetTickDensity(TICKD_NORMAL, TICKD_VERYSPARSE);
 
-//    $graph->xaxis->SetTickLabels($dates);
-//    $graph->xaxis->SetTextTickInterval(1440);
-//    $graph->xaxis->SetTextLabelInterval(2400);
-    $graph->xaxis->scale->ticks->SupressMinorTickMarks(True);
-    $graph->xaxis->scale->ticks->SupressFirst(True);
+#    $graph->xaxis->scale->ticks->SupressFirst(True);
     $graph->xaxis->scale->ticks->SupressLast(True);
 
 // Display the graph to image file

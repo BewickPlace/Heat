@@ -303,6 +303,8 @@ int	parse_bluetooth(char **haystack) {
 //	p = find_key(p, "device", addr, block_end);	// extract devic addres string
 	p = find_key(p, "device", bluetooth_entry, block_end);	// extract full entry string string
 	if (p == NULL) { break; }
+	ERRORCHECK( sizeof(bluetooth_entry) < strlen(bluetooth_entry), "Bluetooth Entry Oversized", EndError);
+
 	sscanf(bluetooth_entry, "%[^,],%s", name, addr); // parse name & address
 	BN_CPY(bluetooth.candidates[i].name, name);
 	str2ba(addr, &bluetooth.candidates[i].bdaddr);	// and save as bluetooth address
