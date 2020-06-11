@@ -6,6 +6,7 @@
 Version  Date         Kernel    Changes
 =======  ====         ======    =======
 
+4.0      11-06-2020   4.19.118+ OS Lite (Buster) Baseline
 3.2      07-04-2020   4.14.71+  Operational tweaks plus hysteresis mod
 3.1      22-12-2019   4.14.71+  Network retries & tuning
 3.0      29-05-2019   4.14.71+  Operational confirmation
