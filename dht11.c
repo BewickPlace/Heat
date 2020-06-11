@@ -224,16 +224,21 @@ void	dht_signal_read_request() {
 void	display_timings() {
     int i;
     char string[(30+3*(MAX_PULSE_TIMINGS/2))];	// Risky string length - CAREFUL  if you change strings
+    char reading[5];				// Reading: 2 digits + ":" + NULL + 1 spare
 
     debug(DEBUG_TRACE, "Pulse: %d\n", pulse_count);
     sprintf(string, "Timings:   Low - ");
-    for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
-    sprintf(string, "%s\n", string);
+//    for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
+    for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(reading, "%2d:", timings[i]); strcat(string, reading); }
+//    sprintf(string, "%s\n", string);
+    strcat(string, "\n");
     debug(DEBUG_TRACE, string);
 
     sprintf(string, "           High- ");
-    for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
-    sprintf(string, "%s\n", string);
+//    for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
+    for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(reading, "%2d:", timings[i]); strcat(string, reading); }
+//    sprintf(string, "%s\n", string);
+    strcat(string, "\n");
     debug(DEBUG_TRACE, string);
 }
 

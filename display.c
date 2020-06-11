@@ -55,7 +55,7 @@ static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
 
 
 void display_process() {
-    char	string[10];
+    char	string[20];
     int		old_mode = 0;
     int		zone, node;
     int		line, horiz;

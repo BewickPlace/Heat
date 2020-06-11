@@ -50,7 +50,7 @@ struct app {					// Application key Data
     };
 
 #define BN_LEN 6				// Bluetooth name length
-#define BN_CPY(dest, src) memcpy(dest, src, BN_LEN) // Bluetooth name copy 
+#define BN_CPY(dest, src) memcpy(dest, src, sizeof(src)) // Bluetooth name copy 
 
 struct	proximity_block {
     bdaddr_t	bdaddr;

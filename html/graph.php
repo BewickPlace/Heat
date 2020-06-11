@@ -10,9 +10,9 @@ require_once ('jpgraph/jpgraph_utils.inc.php');
 #
 #	Include this as not available within Jesiie PHP and required by JPGraph
 #
-function imageantialias($image, $enabled){
-        return true;
-    }
+#function imageantialias($image, $enabled){
+#        return true;
+#    }
 #
 #	Simplify Array
 #
