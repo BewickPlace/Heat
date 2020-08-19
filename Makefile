@@ -37,7 +37,7 @@ endif
 ifeq ($(wildcard /etc/network/interfaces),)
 	install -m 666 scripts/interfaces /etc/network/interfaces
 endif
-ifeq ($(wildcard /home/pi/monitor.py),)
+ifeq ($(wildcard /etc/wpa_supplicant/wpa_supplicant.conf),)
 	install -m 666 scripts/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 endif
 
@@ -50,6 +50,7 @@ clear:
 	rm -f /etc/network/interfaces
 	rm -f /etc/wpa_supplicant/wpa_supplicant.conf
 	rm -f /var/log/heat.log
+	rm -f /var/log/monitor.log
 
 release: clear
 	$(MAKE) install
