@@ -120,7 +120,7 @@ Zone: <?php echo $zones[$i] ?>
 	<?php } else { ?>
 	    <div id="circle-zone-down" class="circle">
 	<?php } ?>
-	<?php echo '<a href="http://' . $nodes[$i] . '.local">' . $nodes[$i] . '</a>'; ?>
+	<?php echo '<a href="http://' . $nodes[$i] . '.local" target="_blank">' . $nodes[$i] . '</a>'; ?>
         </div>
 	<?php $found++; ?>
     <?php } ?>
