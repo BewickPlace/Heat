@@ -46,6 +46,7 @@ THE SOFTWARE.
 int	send_network_msg(struct in6_addr *dest, int type, char *payload, int payload_len, unsigned int seen, unsigned int payload_seq);	// Local procedures
 int	find_live_node(struct in6_addr *src);
 int	add_live_node(struct in6_addr *src);
+void	reset_live_node(int node);
 void	update_my_ip_details();
 void	cancel_reply_timer();
 void	save_payload(int node, char *payload, int payload_len);
@@ -82,6 +83,7 @@ struct net {							// Network descriptior
 	};
 
 static int netsock;						// network socket
+static char if_name[IF_NAMESIZE];				// interface name
 static void (*link_up_callback)(char *name), (*link_down_callback)(char *name);		// Link callback functions
 static char my_hostname[HOSTNAME_LEN];				// My hostname
 struct in_addr my_ipv4_addr;					// & IPv4 address
@@ -137,8 +139,14 @@ int	initialise_network(int max_payload_len, void (*up_callback)(char *name), voi
 
     FD_ZERO(&readfds);
 
-    ifindex = if_nametoindex("wlan0");			// Use the wireless network interface
-    ERRORCHECK( ifindex <=0, "uknown interface type", die);
+    strncpy(if_name, "wlan0", IF_NAMESIZE-1);
+    ifindex = if_nametoindex(if_name);			// Use the wireless network interface
+    if (ifindex <=0) {
+	strncpy(if_name, "eth0", IF_NAMESIZE-1);	// otherwise use LAN network interface
+	ifindex = if_nametoindex(if_name);
+    }
+    ERRORCHECK( ifindex <=0, "unknown interface type", die);
+    debug(DEBUG_ESSENTIAL, "Using interface %s\n", if_name);
 
     rc = inet_pton(AF_INET6, MULTICAST, &multicast_address);
     ERRORCHECK( rc < 0, "Protocol Group error", die);
@@ -286,8 +294,8 @@ int	check_live_nodes() {
 		    debug(DEBUG_INFO, "Ping to %-12s sent\n", other_nodes[i].name);
 		    rc = send_network_msg(&other_nodes[i].address, MSG_TYPE_PING, NULL, 0, 0, 0); // send out a specific message to this node
 		    if (rc < 0) { warn("PING send error: Node %d, send error %d errno(%d)", i, rc, errno); }
-	            other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
-                    other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
+		    other_nodes[i].to = MSG_STATE_SENT;			// mark this node as having send a message
+		    other_nodes[i].from = MSG_STATE_UNKNOWN;		// and received status unknown
 
 		    other_nodes[i].tx++;
 		    other_nodes[i].ping_sent++;
@@ -470,7 +478,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	memcpy(node_name, message->src_name, HOSTNAME_LEN);	// Return Hostname
 
 	node = get_active_node(node_name);			// find which node this is
-	ERRORCHECK(node < 0, "Unidentified payload source", EndError);
+	if (node < 0) {goto EndError;}
 
 	previous_from_seq = other_nodes[node].from_seq++;
 	other_nodes[node].rx++;
@@ -495,6 +503,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	debug(DEBUG_INFO,"Payload from %s of type %d seq [%3d]\n", node_name, *(int *)payload, other_nodes[node].from_seq);
 	rc = send_network_msg(&other_nodes[node].address, MSG_TYPE_PAYLOAD_ACK, 0, 0, 0, other_nodes[node].from_seq); // send out a ACK
 	if (rc < 0) { warn("PAYLOAD ACK send error: Node %d, send error %d errno(%d)", node, rc, errno); }
+	other_nodes[node].tx++;
 	return;							// and return
     }
 
@@ -503,7 +512,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     switch (message->type) {					// Handle different message types
     case MSG_TYPE_ECHO:
     case MSG_TYPE_ECHO_REPLY:
-	debug(DEBUG_DETAIL, "Broadcast message received\n");	// Manage creation of live node
+	debug(DEBUG_DETAIL, "Broadcast message received %d\n", node);	// Manage creation of live node
 
 	if (node < 0) {						// if unknown source
 	    node = add_live_node(&sin6.sin6_addr);		// Add the source as a valid node
@@ -516,22 +525,15 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
 	    }
 	    add_timer(TIMER_PING, 2);				// initiate PINGs
 	} else if (other_nodes[node].state == NET_STATE_DOWN) {
-	    other_nodes[node].state = NET_STATE_UNKNOWN;	// Set link and message states as though new
-	    other_nodes[node].to = MSG_STATE_UNKNOWN;
-	    other_nodes[node].from = MSG_STATE_UNKNOWN;
-	    other_nodes[node].to_seq = 0;			// Reset Payload to/from sequence numbers
-	    other_nodes[node].from_seq = 0;
-	    other_nodes[node].tx = 0;				// Reset Network statistics
-	    other_nodes[node].rx = 0;
-	    other_nodes[node].ping_sent = 0;
-	    other_nodes[node].ping_seen = 0;
-	    other_nodes[node].reply_seen = 0;
-	    other_nodes[node].reply_tx = 0;
-	    other_nodes[node].payload_sent = 0;
-	    other_nodes[node].payload_resent = 0;
-	    other_nodes[node].payload_recv = 0;
-	    other_nodes[node].payload_dup = 0;
-	    other_nodes[node].payload_err = 0;
+	    reset_live_node(node);				// Reset counters and states
+
+	    other_nodes[node].rx++;
+	    if (message->type == MSG_TYPE_ECHO) {		// and first Broadcast received
+		rc = send_network_msg(&sin6.sin6_addr, MSG_TYPE_ECHO_REPLY, NULL, 0, 0, 0); // Send specific broadcast response
+		if (rc < 0) { warn("ECHO REPLY send error: Node %d, send error %d errno(%d)", node, rc, errno); }
+		other_nodes[node].tx++;
+	    }
+	    add_timer(TIMER_PING, 2);				// initiate PINGs
 	}
 	break;
     case MSG_TYPE_REPLY:
@@ -560,7 +562,7 @@ void	handle_network_msg(char *node_name, char *payload, int *payload_len) {
     case MSG_TYPE_PING:
 	if (node < 0) goto EndError;
 	other_nodes[node].rx++;
-	other_nodes[node].reply_tx++;;
+	other_nodes[node].reply_tx++;
 
 	debug(DEBUG_DETAIL, "Ping message received\n");
 	other_nodes[node].from = MSG_STATE_RECEIVED;		// Ping request
@@ -680,6 +682,16 @@ int	add_live_node(struct in6_addr *src) {
     ERRORCHECK( node < 0, "Node list full!!", EndError);
 
     memcpy(&other_nodes[node].address, src, SIN_LEN);		// Record address &
+    reset_live_node(node);					// reset counters and states
+
+ENDERROR;
+    return(node);
+}
+
+//
+//	Reset a node in the node list
+//
+void	reset_live_node(int node) {
     other_nodes[node].state = NET_STATE_UNKNOWN;		// Set link and message states
     other_nodes[node].to = MSG_STATE_UNKNOWN;
     other_nodes[node].from = MSG_STATE_UNKNOWN;
@@ -696,8 +708,6 @@ int	add_live_node(struct in6_addr *src) {
     other_nodes[node].payload_recv = 0;
     other_nodes[node].payload_dup = 0;
     other_nodes[node].payload_err = 0;
-ENDERROR;
-    return(node);
 }
 
 //
@@ -742,7 +752,7 @@ void	update_my_ip_details() {
     fd = socket(AF_INET, SOCK_DGRAM, 0);			// find IPv4 socket
     ERRORCHECK(fd < 0, "IPv4 Socket error", ErrnoError);
     ifr.ifr_addr.sa_family = AF_INET;
-    strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
+    strncpy(ifr.ifr_name, if_name, IFNAMSIZ-1);
 
     rc = ioctl(fd, SIOCGIFADDR, &ifr);
     if ((rc < 0) && (errno == EADDRNOTAVAIL)) { goto IOCTLError; }
@@ -857,7 +867,7 @@ void	timeout_payload() {
     int node;
     int found = 0;
 
-    debug(DEBUG_TRACE,"Timeout payloads\n");
+    debug(DEBUG_INFO,"Timeout payloads\n");
     for(node = 0; node < NO_NETWORKS; node++) {
 	if (other_nodes[node].payload != NULL) {
 	    resend_payload(node, other_nodes[node].payload, other_nodes[node].payload_len);
