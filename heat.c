@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
 
     switch (app.operating_mode) {
     case OPMODE_MASTER:					// Only Master nodes are responsible for broadcasting
-	add_timer(TIMER_BROADCAST, AT_BROADCAST);	// Set to refresh network in y seconds
+	add_timer(TIMER_BROADCAST, 30);			// Set to refresh network in y seconds
 	break;
 
     case OPMODE_SLAVE:
