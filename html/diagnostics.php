@@ -64,7 +64,10 @@ require 'manage_about_submenu.php';
 	  case "Delete Logfile":
 #	    $logfile = ($Heatselect =="checked" ? $Heatlogfile : $logfile);
 #	    $logfile = ($Shutdownselect  =="checked" ? $Shutdownlogfile  : $logfile);
-	    if (unlink($logfile) == 0) {echo "<font color='red'>Delete (",$logfile,") failed - check permissions<font color='black'><br><br>";}
+	    $cmd = '"cat /dev/null >'.$logfile.'"';
+	    $cmd = 'sudo sh -c '.$cmd;
+	    exec($cmd, $out, $ret);
+	    if ($ret!= 0) {echo "<font color='red'>Delete (",$logfile,") failed - check permissions<font color='black'><br><br>";}
 	    break;
 	  }
 	  }
@@ -113,7 +116,7 @@ case "system":
 	# Display available networks
 	#
         echo "Wireless networks scan:", "<br>";
-        exec('iwlist wlan0 scan | grep -A 8 Address', $iwout, $iwret);
+        exec('sudo iwlist wlan0 scan | grep -A 8 Address', $iwout, $iwret);
 	echo "<pre>";
         foreach ($iwout as $value) { echo $value, "<br>"; }
 	echo "</pre>";
