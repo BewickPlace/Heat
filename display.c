@@ -57,7 +57,11 @@ static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
 void display_process() {
     char	string[20];
     int		old_mode = 0;
+    int		i;
+    char	device[BN_LEN+1];
+    char	devname[2];
     int		zone, node;
+    int		at_home, signal;
     int		line, horiz;
     float	temp, newtemp;
     int		callsat;
@@ -100,6 +104,7 @@ void display_process() {
 
 			    callsat = network.zones[zone].nodes[node].callsat;
 			    temp = network.zones[zone].nodes[node].temp;
+if (temp >0.0) { debug(DEBUG_ESSENTIAL,"Display first temp %d, %.01f\n", app.active_node, temp);}
 			    if (temp <= 0.0) { sprintf(string, " n/a"); }
 			    else { sprintf(string, "%.01f", temp); }
 			    Print_text(string, normal, RIGHT(strlen(string)), line, (callsat ? Red : Cyan));
@@ -109,14 +114,11 @@ void display_process() {
 		    } //efor nodes in zones
 		}
 	    } // efor Zone
-	    while (line <= width) {
-		Display_clearline(line);
-		line = line +8;
-	    }
+	    Display_clearlinesto(line, height);
 
 
 	} else if ((app.operating_mode == OPMODE_MASTER) && 	// MASTER Mode
-		   (app.display_mode != 1)) {			// Display mode 0
+		   (app.display_mode == 0)) {			// Display mode 0
 
 	    Print_time(normal, CENTRE(9), 0, White);
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
@@ -154,6 +156,52 @@ void display_process() {
 	    sprintf(string, "Run: %02ld:%02ld\n", run_time/3600, (run_time/60)%60);
 	    Display_clearline(56);
 	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
+
+	} else if ((app.operating_mode == OPMODE_MASTER) && 	// MASTER Mode
+		   (app.display_mode == 2)) {			// Display mode 2
+
+	    Print_time(normal, CENTRE(9), 0, White);
+	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
+
+	    line = 16;
+	    Display_clearline(line);
+	    line = line + 8;
+	    for(i = 0; i < BLUETOOTH_CANDIDATES; i++){				// Look at each of the Bluetooth candidates
+		device[BN_LEN] = 0;
+		BN_CPY(device, bluetooth.candidates[i].name);
+		if(strcmp(device, "") !=0){
+		    Display_clearline(line);
+		    Print_text(device, normal, LEFT(), line, White);		// Name
+		    line = line + 8;
+		}
+	    }
+	    Display_clearlinesto(line, height);
+
+	    horiz = 40;
+	    devname[1] = 0;
+	    for (zone=0; zone < NUM_ZONES; zone++) {				// For all Zones
+		if (strcmp(network.zones[zone].name, "") != 0) { 		// if Zone defined - print details
+
+		    line = 16;
+		    devname[0] = network.zones[zone].name[0];
+		    Print_text(devname, normal, horiz, line, DarkGrey);		// Name
+		    line = line +8;
+
+		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {		// All defined nodes
+			at_home = network.zones[zone].nodes[node].at_home;
+			if (at_home > 0) {
+			    signal = 2;
+			    for (i=0; i < BLUETOOTH_CANDIDATES; i++){
+				if (at_home & signal) {Print_icon(BLUETOOTH_ICON, horiz, line, Blue);}
+				line = line + 8;
+				signal = signal << 1;
+			    }
+			horiz = horiz + 6;
+			}
+		    } //efor nodes in zones
+		}
+		horiz = horiz + 6;
+	    } // efor Zones
 
 	} else {					// SLAVE or WATCH Mode
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!app.at_home)? Red: Blue);
