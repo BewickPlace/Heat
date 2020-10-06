@@ -104,7 +104,6 @@ void display_process() {
 
 			    callsat = network.zones[zone].nodes[node].callsat;
 			    temp = network.zones[zone].nodes[node].temp;
-if (temp >0.0) { debug(DEBUG_ESSENTIAL,"Display first temp %d, %.01f\n", app.active_node, temp);}
 			    if (temp <= 0.0) { sprintf(string, " n/a"); }
 			    else { sprintf(string, "%.01f", temp); }
 			    Print_text(string, normal, RIGHT(strlen(string)), line, (callsat ? Red : Cyan));
