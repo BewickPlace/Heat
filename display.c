@@ -153,8 +153,8 @@ void display_process() {
 
 	    run_time = get_run_clock();
 	    sprintf(string, "Run: %02ld:%02ld\n", run_time/3600, (run_time/60)%60);
-	    Display_clearline(56);
-	    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
+	    Display_clearline(55);
+	    Print_text(string, normal, CENTRE(strlen(string)), 55, White);
 
 	} else if ((app.operating_mode == OPMODE_MASTER) && 	// MASTER Mode
 		   (app.display_mode == 2)) {			// Display mode 2
@@ -162,7 +162,7 @@ void display_process() {
 	    Print_time(normal, CENTRE(9), 0, White);
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
-	    line = 16;
+	    line = 12;
 	    Display_clearline(line);
 	    line = line + 8;
 	    for(i = 0; i < BLUETOOTH_CANDIDATES; i++){				// Look at each of the Bluetooth candidates
@@ -181,9 +181,9 @@ void display_process() {
 	    for (zone=0; zone < NUM_ZONES; zone++) {				// For all Zones
 		if (strcmp(network.zones[zone].name, "") != 0) { 		// if Zone defined - print details
 
-		    line = 16;
+		    line = 12;
 		    devname[0] = network.zones[zone].name[0];
-		    Print_text(devname, normal, horiz, line, DarkGrey);		// Name
+		    Print_text(devname, normal, horiz+2, line, DarkGrey);	// Name
 		    line = line +8;
 
 		    for (node = 0; node < NUM_NODES_IN_ZONE; node++) {		// All defined nodes
