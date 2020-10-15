@@ -228,16 +228,12 @@ void	display_timings() {
 
     debug(DEBUG_TRACE, "Pulse: %d\n", pulse_count);
     sprintf(string, "Timings:   Low - ");
-//    for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     for ( i = 0; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(reading, "%2d:", timings[i]); strcat(string, reading); }
-//    sprintf(string, "%s\n", string);
     strcat(string, "\n");
     debug(DEBUG_TRACE, string);
 
     sprintf(string, "           High- ");
-//    for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(string, "%s%2d:", string, timings[i]); }
     for ( i = 1; i < MAX_PULSE_TIMINGS; i+=2 ) { sprintf(reading, "%2d:", timings[i]); strcat(string, reading); }
-//    sprintf(string, "%s\n", string);
     strcat(string, "\n");
     debug(DEBUG_TRACE, string);
 }
@@ -258,6 +254,7 @@ struct devblock	devices[NUMDEV] =	{{"0008",    13},
 static int	dht_threshold;			// High/Low threshold
 static int 	min_high = MAX_PULSE_WIDTH;	// Lowest of the high signal pulse widths
 static int 	max_low = 0;			// Highest of the low signal pulse widths
+static int 	tot_max_low = 0;		// Sum of max_lows used to provide average
 //
 //	Set DHT threshold
 //
@@ -333,6 +330,7 @@ int	dht_interpret_data() {
     }
     if (!good) goto CRCError;			// If still no good CRC error
     success_count++;
+    tot_max_low = tot_max_low + max_low;
 
 ERRORBLOCK(ReadError);
     debug(DEBUG_INFO, "DHT11 Incomplete Read data, count[%d/%d]\n", pulse_count, MAX_PULSE_TIMINGS);
@@ -427,7 +425,7 @@ void monitor_process()	{
     int	rc = -1;
     int cycle_time = DHT11_OVERALL;
     float efficiency;
-
+    int new_dht_threshold;
 
     read_count = 0;				// Initialise read status
     success_count = 0;
@@ -446,20 +444,25 @@ void monitor_process()	{
     while ( !heat_shutdown )	{
 	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
 	    (app.operating_mode != OPMODE_MASTER)) {	// and only on slave
-
 	    read_dht11();
 
 	    if(cycle_time == 0) {
 	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
-//		if (efficiency < 70.0) {
+						// Adjust the DHT threshold based on the
+						// average of successful reads low threshold
+						// adjusted
+		new_dht_threshold = ((success_count>0) ? (tot_max_low/success_count)+4 : dht_threshold);
 		if ((efficiency < 70.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
-		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]", efficiency, read_count, success_count, crc_count, dht_threshold);
+		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
 		} else {
-		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold);
+		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
 		}
+		if (dht_threshold != new_dht_threshold) {debug(DEBUG_ESSENTIAL, "Adjust DHT threshold [%d>>%d]\n", dht_threshold, new_dht_threshold);}
+		dht_threshold = new_dht_threshold;
 		read_count = 0;
 		success_count = 0;
 		crc_count = 0;
+		tot_max_low = 0;
 	    }
 	}
 	delay( 1000 );
