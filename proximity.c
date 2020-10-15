@@ -111,21 +111,18 @@ void	maintain_candidates(int timer, struct proximity_block list[]) {
 	    rc = check_bluetooth_name(list[i].bdaddr, name, addr, (list[i].timer < 0 ? 1200 : 2400));	// look for the device
 	    if (rc > -1) {						// if identified ...
 		if (list[i].timer < 0) debug(DEBUG_ESSENTIAL, "[%s]  At Home: %-6s (%s)\n", addr, device, name);
-		    list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
-		}
+		list[i].timer = VISIBLE_PERIOD+1;			// ...reset visibility timer
 	    }
-	    if (list[i].timer > 0) list[i].timer--;			// Decrement visibity timer
 	}
-    if ((list[i].timer == 0) && 					// if timer has expired 
+	if (list[i].timer > 0) list[i].timer--;				// Decrement visibity timer
+    }
+    if ((list[i].timer == 0) && 					// if timer has expired
 	(bacmp(&list[i].bdaddr, BDADDR_ANY) != 0)) {
 	ba2str(&list[i].bdaddr, addr);
 
 	debug(DEBUG_ESSENTIAL, "[%s] Not Home: %s\n", addr, device);
 	list[i].timer = -1;
     }
-//    for (i=0; i < BLUETOOTH_CANDIDATES; i++) {
-//	if (list[i].timer > 0) found= 1;				// Mark Visible device still in list
-//    }
     for (i = BLUETOOTH_CANDIDATES-1; i >= 0; i--) {			// Formulate bitmap of At Home devices
 	if (list[i].timer > 0) found = found + 1;			// Mark Visible device still in list
 	found = found << 1;

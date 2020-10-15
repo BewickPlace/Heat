@@ -135,7 +135,7 @@ void	Button_interrupt() {
 
 	    if ((app.operating_mode == OPMODE_MASTER) && 	// On MASTER
 		(app.display)) {				// If display already visible
-		app.display_mode = !app.display_mode;		// Toggle display mode
+		app.display_mode = ((app.display_mode+1)%3);	// Toggle display mode
 	    }
 
 	} else if (button_press < BUTTON_LONGER_PRESS) {	// Long press - Boost
