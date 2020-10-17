@@ -457,7 +457,7 @@ void monitor_process()	{
 		} else {
 		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
 		}
-		if (dht_threshold != new_dht_threshold) {debug(DEBUG_ESSENTIAL, "Adjust DHT threshold [%d>>%d]\n", dht_threshold, new_dht_threshold);}
+		if (dht_threshold != new_dht_threshold) {debug(DEBUG_TRACE, "Adjust DHT threshold [%d>>%d]\n", dht_threshold, new_dht_threshold);}
 		dht_threshold = new_dht_threshold;
 		read_count = 0;
 		success_count = 0;
