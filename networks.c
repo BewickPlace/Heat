@@ -146,7 +146,7 @@ int	initialise_network(int max_payload_len, void (*up_callback)(char *name), voi
 	ifindex = if_nametoindex(if_name);
     }
     ERRORCHECK( ifindex <=0, "unknown interface type", die);
-    debug(DEBUG_ESSENTIAL, "Using interface %s\n", if_name);
+    debug(DEBUG_ESSENTIAL, "Network Started Using Interface: %s\n", if_name);
 
     rc = inet_pton(AF_INET6, MULTICAST, &multicast_address);
     ERRORCHECK( rc < 0, "Protocol Group error", die);

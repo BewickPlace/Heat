@@ -40,7 +40,8 @@ THE SOFTWARE.
 #define AT_SETPOINT	(timetosec(20)+8)		// at 0:08, 0:28, 0:48
 #define AT_BROADCAST	(((timeto1min()+51)%60)+1)	// at 0:52
 #define AT_PROXIMITY	(32)				// at 0:32
-
+#define AT_STARTUP	(30)				// Startup Delay - interval between 2 PINGS and BROADCAST + 2
+							// Ensures links are DOWN on app restart
 #define AT_REPLY	3				// Timeout for PING and REPING
 #define AT_PAYLOAD	3				// Timeout for initial Payload ACK
 #define AT_PAYLOAD_ACK	3				// Timeout for su8bseqent ACKs

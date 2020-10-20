@@ -452,7 +452,7 @@ void monitor_process()	{
 						// average of successful reads low threshold
 						// adjusted
 		new_dht_threshold = ((success_count>0) ? (tot_max_low/success_count)+4 : dht_threshold);
-		if ((efficiency < 70.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
+		if ((efficiency < 65.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
 		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
 		} else {
 		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
