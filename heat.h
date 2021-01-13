@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define	OPMODE_MASTER	0			// Application operating modes
 #define OPMODE_SLAVE	1			// Master (controller)/ Slave (Sensor)
 #define OPMODE_WATCH	2			// Watch (Sensor) - monitoring only
+#define OPMODE_HOTWATER	3			// Monitor the Hot Water as a special Zone
 
 #define BLUETOOTH_CANDIDATES 5			// Number of bluetooth devices for proximity checking
 struct app {					// Application key Data

@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define MAX_TIME_BLOCKS 10			// time change blocks in a profile
 #define MAX_PROFILES	10			// total number of profiles
 #define NUM_NODES_IN_ZONE 3			// Max nodes per zone
-#define NUM_ZONES	2			// Max zones supported
+#define NUM_ZONES	3			// Max zones supported (first Zone is Hot Water
 
 struct	timeblock {				// Setpoint  Change Time  Block
     time_t	time;

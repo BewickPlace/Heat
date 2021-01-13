@@ -124,7 +124,7 @@ void display_process() {
 
 	    line = 12;
 	    horiz = 10;
-	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
+	    for (zone=1; zone < NUM_ZONES; zone++) {		// For all Zones
 		if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
 		    Print_text(network.zones[zone].name, normal, ((line == 12) ? LEFT() : RIGHT(strlen(network.zones[zone].name))), line, DarkGrey);	// Name
 		    line = line +8;

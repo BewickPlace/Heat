@@ -69,6 +69,8 @@ void usage(char *progname) {
     printf("    -h, --help          show this help\n");
     printf("    -m, --master        Master operating mode\n");
     printf("    -s, --slave         Slave operating mode\n");
+    printf("    -w, --watch         Watch operating mode\n");
+    printf("    -x, --hotwater      Hot Water operating mode\n");
     printf("    -b, --bluetooth     Bluetppth proximity enabled\n");
 
     printf("    -c, --config=DIR    Network Configuration file directory\n");
@@ -109,6 +111,9 @@ int parse_options(int argc, char **argv) {
                 break;
             case 'w':
 		app.operating_mode = OPMODE_WATCH;			// Set Node as Watch (non-cotrolling Slave
+                break;
+            case 'x':
+		app.operating_mode = OPMODE_HOTWATER;			// Set Node as Watch (non-cotrolling Slave
                 break;
             case 'b':
                 app.bluetooth_enabled = 1;				// Enable procimity checking on this node
@@ -225,7 +230,7 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv);				// Parse command line parameters
     open_logfile();					// Open correct logfile
-    debug(DEBUG_ESSENTIAL, "Heat starting in %s mode%s\n", (app.operating_mode == OPMODE_MASTER ? "MASTER" :app.operating_mode == OPMODE_SLAVE ? "SLAVE" : "WATCH"),
+    debug(DEBUG_ESSENTIAL, "Heat starting in %s mode%s\n", (app.operating_mode == OPMODE_MASTER ? "MASTER" :app.operating_mode == OPMODE_SLAVE ? "SLAVE" : app.operating_mode == OPMODE_WATCH ? "WATCH" : "HOT WATER"),
 							   (app.bluetooth_enabled ? " with Proximity detection": ""));
     debug(DEBUG_TRACE, "Allow Network Time to Sync...\n");
     delay(AT_STARTUP * 1000);				// Insert delay to allow Network Time Sync
@@ -251,6 +256,7 @@ int main(int argc, char **argv) {
 
     case OPMODE_SLAVE:
     case OPMODE_WATCH:
+    case OPMODE_HOTWATER:
 	add_timer(TIMER_SETPOINT, AT_SETPOINT);	// Set to refresh setpoint in y seconds
 	break;
     }

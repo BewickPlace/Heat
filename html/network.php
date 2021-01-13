@@ -131,6 +131,9 @@ require 'manage_menu.php';
     case "WATCH":
 	updateWiPiopmode("-w");
 	break;
+    case "HOTWATER":
+	updateWiPiopmode("-x");
+	break;
     }
     }
     if(isset($_POST['proximity'])) {
@@ -237,6 +240,7 @@ require 'manage_menu.php';
 	$opmodeM = ((getWiPiopmode() == "-m")? "checked":"unchecked");
 	$opmodeS = ((getWiPiopmode() == "-s")? "checked":"unchecked");
 	$opmodeW = ((getWiPiopmode() == "-w")? "checked":"unchecked");
+	$opmodeX = ((getWiPiopmode() == "-x")? "checked":"unchecked");
 	$proximity = ((getWiPibluetooth() == "-b")? "checked":"unchecked");
 	$txpower = getTxPower();
    ?>
@@ -248,7 +252,8 @@ require 'manage_menu.php';
 	<input type="hidden" name="proximity" value="FALSE">
 	Operational Mode - MASTER: <input type="radio" name="opmode"    Value="MASTER" <?php echo $opmodeM    ?> onchange="this.form.submit()">
 	                   SLAVE : <input type="radio" name="opmode"    Value="SLAVE" <?php echo $opmodeS    ?> onchange="this.form.submit()">
-	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()"> <br>
+	                   WATCH : <input type="radio" name="opmode"    Value="WATCH" <?php echo $opmodeW    ?> onchange="this.form.submit()">
+	               HOT WATER : <input type="radio" name="opmode"    Value="HOTWATER" <?php echo $opmodeX    ?> onchange="this.form.submit()"> <br>
 	Bluetooth Proximiity:      <input type="checkbox" name="proximity" Value="TRUE" <?php echo $proximity ?> onchange="this.form.submit()"> <br>
 	Radio TX Power:            <input type="text" name="txpower"  Value= <?php echo $txpower?> size="2" maxlength="2" pattern="[0-9]+" required title ="Numeric only" onchange="this.form.submit()"> <br>
 	<input type="hidden" name="menuselect" value=<?php echo $menu_mode ?>>

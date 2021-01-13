@@ -53,7 +53,7 @@ static volatile pin Button_pin;			// Button related pin details
 //
 //	CALL?SAT  Heating Control Output Pin Mapping
 //
-static int zone_pin_map[2] = { 11, 13};		// Pin mapping maximum 2 zones
+static int zone_pin_map[NUM_ZONES] = { 15, 11, 13}; // Pin mapping maximum all zones
 //
 //	DHT11 device variables
 //

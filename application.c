@@ -297,7 +297,7 @@ void	perform_logging() {
 	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home, Network\n"); }
 	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d\n", info->tm_hour, info->tm_min,
 		get_run_clock()/3600, (get_run_clock()/60) % 60,
-		check_any_CALL_in_zone(0), check_any_CALL_in_zone(1), check_any_at_home(),
+		check_any_CALL_in_zone(1), check_any_CALL_in_zone(2), check_any_at_home(),
 		get_network_mask());
 
     } else {
