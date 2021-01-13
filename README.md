@@ -21,8 +21,8 @@ All pins can be changed in the .h header definitions, however the base setup is 
                      ---------
                      | 1 | 2 |
                      | 3 | 4 | +5v
-    Switch Write Pin | 5 | 6 | GRND
-     Switch Read Pin | 7 | 8 | DHT11 Read/Write Data
+     Switch Read Pin | 5 | 6 | GRND
+    Switch Wtite Pin | 7 | 8 | DHT11 Read/Write Data
                GRND  | 9 |   |
        Zone 1 Write  | 11|   |
        Zone 2 Write  | 13| 14| GRND
