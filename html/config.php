@@ -35,10 +35,27 @@ require 'manage_menu.php';
 ?>
 
  <div id="body">
+
+	<h2>Configuration Details:</h2>
+	<p>
+
   <?php
 $opmode = getWiPiopmode();
 
-echo "Page under construstion";
+	$cmd = "cat /etc/heating.conf";
+	exec($cmd , $detail, $ret);
+
+	switch (count($detail))
+	{
+	case 0:
+	  echo "No configuration file available", "<br>";
+	  break;
+	default:
+	  echo "<br>", "<pre>";
+	  foreach ($detail as $value) { echo $value, "<br>"; }
+	  echo "</pre><br>";
+	}
+
 
 #	Obtain configuration data from files or returned POST
 
