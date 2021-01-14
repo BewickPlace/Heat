@@ -89,7 +89,7 @@ void display_process() {
 	    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
 	    line =  12;
-	    for (zone=0; zone < NUM_ZONES; zone++) {		// For all Zones
+	    for (zone=1; zone < NUM_ZONES; zone++) {		// For all Zones
 		if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
 		    Display_clearline(line);
 		    Print_text(network.zones[zone].name, normal, LEFT(), line, DarkGrey);	// Name

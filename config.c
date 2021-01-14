@@ -318,17 +318,24 @@ ENDERROR;
 }
 
 //
-//	Initialise Internal Configuration Data
+//	#Initialise Internal Configuration Data
 //
 
 void	initialise_configuration() {
     int	i;
+    int profile;
 
     memset(&network,0, sizeof(network));		// Seroise internal configuration data
     network.fresh = 1;					// Signal this is a fresh copy of configuration
     stop_run_clock();					// Ensure Run Clock has been stopped
     for( i=0; i < NUM_ZONES; i++) {			// For each zone
 	callsat(i, 0);					// Ensure output is off
+    }
+
+    for (profile=0; profile < MAX_PROFILES; profile++){ // Scan thropugh all Profiles
+	for(i=0; i < MAX_TIME_BLOCKS; i++) {		// and each time block
+	    profiles[profile].blocks[i].setpoint = -0.1; // initialise block as invalid
+	}
     }
 
     for (i=0; i < BLUETOOTH_CANDIDATES; i++) {		// Setup  default candidate list overwriting previous
@@ -339,7 +346,7 @@ void	initialise_configuration() {
 }
 
 #define MAX_CONFIG_DATA 500
-#define ENTRIES		6
+#define ENTRIES		7
 
 static time_t	last_mtime = 0;				// Time config was last modified
 
