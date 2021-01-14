@@ -300,9 +300,9 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		$boost	= array_column($csv,3);
 		$time2	= array_column($csv2,0);
 		if ($zone_id == 0) {
-		    $zoned  = expand_array($time, $time2, array_column($csv2,2));
+		    $zoned = 0;
 		} else {
-		    $zoned  = expand_array($time, $time2, array_column($csv2,3));
+		    $zoned  = expand_array($time, $time2, array_column($csv2,$zone_id+1));
 		}
 		$athome = expand_array($time, $time2, array_column($csv2,4));
 		data_graph($node, $time, $temp, $setpoint, $boost, $zoned, $athome);
@@ -348,7 +348,12 @@ function data_graph($node, $time, $temp, $setpoint, $boost, $zone, $athome) {
     $graph = new Graph(1600,400);
     $graph->clearTheme();
     $graph->SetScale("textlin");
-    $graph->yaxis->scale->SetAutoMin(14);
+    if ($setpoint[0] > 14) {
+	$graph->yaxis->scale->SetAutoMin(14);
+    } else {
+	$graph->yaxis->scale->SetAutoMax(1.5);
+	$graph->yaxis->scale->SetAutoMin(0);
+    }
 
     $graph->SetClipping(TRUE);
 

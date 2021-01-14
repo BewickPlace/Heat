@@ -87,6 +87,7 @@ int parse_options(int argc, char **argv) {
         {"master",  no_argument,        NULL, 'm'},
         {"slave",   no_argument,        NULL, 's'},
         {"watch",   no_argument,        NULL, 'w'},
+        {"hotwater",no_argument,        NULL, 'x'},
 
         {"config",  required_argument,  NULL, 'c'},
         {"log",     required_argument,  NULL, 'l'},
@@ -96,7 +97,7 @@ int parse_options(int argc, char **argv) {
     int opt;
 
     while ((opt = getopt_long(argc, argv,
-                              "+hmswbvc:l:t:",
+                              "+hmswxbvc:l:t:",
                               long_options, NULL)) > 0) {
         switch (opt) {
             default:
@@ -226,7 +227,7 @@ int main(int argc, char **argv) {
     char 	node_name[HOSTNAME_LEN];			// Node name
     signal_setup();					// Set up signal handling
 
-    app.setpoint = 18.0;				// Start with dummy setpoint
+    app.setpoint = 0.0;					// Start with dummy setpoint
 
     parse_options(argc, argv);				// Parse command line parameters
     open_logfile();					// Open correct logfile

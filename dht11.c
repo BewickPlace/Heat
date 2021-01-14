@@ -54,6 +54,8 @@ static volatile pin Button_pin;			// Button related pin details
 //	CALL?SAT  Heating Control Output Pin Mapping
 //
 static int zone_pin_map[NUM_ZONES] = { 15, 11, 13}; // Pin mapping maximum all zones
+#define HOTWATER_READ_PIN	10		// Read pin for Hot Water
+#define HOTWATER_WRITE_PIN	12		// Write pin for Hot Water
 //
 //	DHT11 device variables
 //
@@ -432,6 +434,8 @@ void monitor_process()	{
     crc_count = 0;
 
     boost_stop();				// Initialise with no boost
+    pinMode(HOTWATER_READ_PIN, INPUT );		// Hot Water Read pin
+    pinMode(HOTWATER_WRITE_PIN, OUTPUT );	// Hot Water write pin
 
     Button_pin.last_pin_state = HIGH;		// last known pin state
     Button_pin.edge1 = millis();		// record starting edge timestamp
@@ -444,25 +448,33 @@ void monitor_process()	{
     while ( !heat_shutdown )	{
 	if (((cycle_time % DHT11_READ) == 0) &&		// Every x seconds
 	    (app.operating_mode != OPMODE_MASTER)) {	// and only on slave
-	    read_dht11();
 
-	    if(cycle_time == 0) {
-	    	efficiency = ((float)success_count/ (float)read_count)* 100.0;
+	    if(app.operating_mode == OPMODE_HOTWATER) {	// Hotwater node - check via GPIO
+		digitalWrite(HOTWATER_WRITE_PIN, 1);	// Raise the write pin
+		app.temp = (digitalRead(HOTWATER_READ_PIN) ? 1.0 : 0.0); // set temperature if  signal found
+		digitalWrite(HOTWATER_WRITE_PIN, 0);	// Lower the write pin
+
+	    } else {					// Temperature node - check via DHT11/22
+		read_dht11();
+
+		if(cycle_time == 0) {
+	    	    efficiency = ((float)success_count/ (float)read_count)* 100.0;
 						// Adjust the DHT threshold based on the
 						// average of successful reads low threshold
 						// adjusted
-		new_dht_threshold = ((success_count>0) ? (tot_max_low/success_count)+4 : dht_threshold);
-		if ((efficiency < 65.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
-		    warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
-		} else {
-		    debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
+		    new_dht_threshold = ((success_count>0) ? (tot_max_low/success_count)+4 : dht_threshold);
+		    if ((efficiency < 65.0)&& (!(app.temp < 0.0))) {	// report poor DHT effeciency unless we have persistent failure
+			warn("DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
+		    } else {
+			debug(DEBUG_TRACE, "DHT11 efficiency %2.0f%, read[%d], ok[%d], crc[%d] L/H[%d>>%d]\n", efficiency, read_count, success_count, crc_count, dht_threshold, new_dht_threshold);
+		    }
+		    if (dht_threshold != new_dht_threshold) {debug(DEBUG_TRACE, "Adjust DHT threshold [%d>>%d]\n", dht_threshold, new_dht_threshold);}
+		    dht_threshold = new_dht_threshold;
+		    read_count = 0;
+		    success_count = 0;
+		    crc_count = 0;
+		    tot_max_low = 0;
 		}
-		if (dht_threshold != new_dht_threshold) {debug(DEBUG_TRACE, "Adjust DHT threshold [%d>>%d]\n", dht_threshold, new_dht_threshold);}
-		dht_threshold = new_dht_threshold;
-		read_count = 0;
-		success_count = 0;
-		crc_count = 0;
-		tot_max_low = 0;
 	    }
 	}
 	delay( 1000 );
