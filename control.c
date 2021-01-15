@@ -274,11 +274,13 @@ ENDERROR;
 void 	manage_CLOSE() {
     int	zone;
 
-    if (app.operating_mode == OPMODE_MASTER) {
     debug(DEBUG_TRACE, "Zone controls shut down\n");
-    for( zone = 0; zone < NUM_ZONES; zone++) {			// check what zone and node we match
-	callsat(zone, 0);
-    }
+    if (app.operating_mode == OPMODE_MASTER) {
+	for( zone = 1; zone < NUM_ZONES; zone++) {		// check what zone and node we match
+	    callsat(zone, 0);
+	}
+    } else if (app.operating_mode == OPMODE_HOTWATER) {
+	callsat(0, 0);
     }
 }
 //

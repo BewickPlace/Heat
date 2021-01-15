@@ -105,11 +105,15 @@ void	check_heating_setpoint() {
 
     if (app.active_node != -1) {					// As long as we have a controller to talk to
 	if (((app.operating_mode == OPMODE_SLAVE) &&
-	     (app.temp  >= (app.setpoint + app.boost + app.hysteresis)))	// SLAVE - include Boost in calculation
+	     (app.temp  >= (app.setpoint + app.boost + app.hysteresis)))// SLAVE - include Boost in calculation
 		||
-	    ((app.operating_mode == OPMODE_WATCH) &&			// WATCH - require Boost to activate
-	     (app.boost) &&
-	     (app.temp  >= (app.setpoint + app.hysteresis)))) {
+	    ((app.operating_mode == OPMODE_WATCH) && (app.boost) &&	// WATCH - require Boost to activate
+	     (app.temp  >= (app.setpoint + app.hysteresis)))
+		||
+	    ((app.operating_mode == OPMODE_HOTWATER) &&			// HOT WATER
+	     (app.temp >= (app.setpoint + app.boost)))
+	   ) {
+	    if (app.operating_mode == OPMODE_HOTWATER) { callsat(0, 0); }
 
 	    app.callsat = 0;						// Maintain local callsat status
 	    app_data.type = HEAT_SAT;					// When temp above then SATisfied
@@ -121,12 +125,18 @@ void	check_heating_setpoint() {
 	    debug(DEBUG_INFO, "Heat SATisfied %0.1f:%.01f:%0.1f:%d\n", app.temp, app.setpoint, app.hysteresis, app.boost);
 	    send_to_node(app.active_node, (char *) &app_data, SIZE_SAT);
 
-	} else if (((app.operating_mode == OPMODE_SLAVE)  &&
-		    (app.temp <= (app.setpoint + app.boost - app.hysteresis))) // SLAVE - include Boost in calculation
+	} else if (
+	     ((app.operating_mode == OPMODE_SLAVE)  &&
+	      (app.temp <= (app.setpoint + app.boost - app.hysteresis))) // SLAVE - include Boost in calculation
 		||
-		   ((app.operating_mode == OPMODE_WATCH)  &&		// WATCH - require Boost to activate
-		    (app.boost) &&
-		    (app.temp <= (app.setpoint - app.hysteresis)))) {
+	      ((app.operating_mode == OPMODE_WATCH)  && (app.boost) &&    // WATCH - require Boost to activate
+	       (app.temp <= (app.setpoint - app.hysteresis)))
+		||
+	      ((app.operating_mode == OPMODE_HOTWATER) &&		// HOT WATER
+	       (app.temp <  (app.setpoint + app.boost)))
+	   ) {
+	    if (app.operating_mode == OPMODE_HOTWATER) { callsat(0, 1); }
+
 	    app.callsat = 1;						// Maintain local callsat status
 	    app_data.type = HEAT_CALL;					// When temp below then CALL for heat
 	    app_data.d.callsat.temp  = app.temp;
@@ -333,7 +343,8 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
     case HEAT_SETPOINT:
 	debug(DEBUG_TRACE, "Heat @ %s Setpoint %0.1f:%0.1f\n", node_name, payload->d.setpoint.value, payload->d.setpoint.hysteresis);
 	if ((app.boost) &&					// If Boost ON
-	    (app.operating_mode == OPMODE_SLAVE) &&		// on a Slave node
+	    ((app.operating_mode == OPMODE_SLAVE) ||		// on a Slave node
+	    (app.operating_mode == OPMODE_HOTWATER)) &&		// or HOTWATER node
 	    (payload->d.setpoint.value > app.setpoint)) {	// and setpoint being raised
 	    boost_stop();					// Cancel the boost
 	}

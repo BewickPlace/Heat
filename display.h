@@ -42,11 +42,13 @@ typedef struct alt_font {
 		SSD1331_SetFontSize(size);	\
 		SSD1331_print(text)
 #define Print_time(size, x, y, colour)		\
+	   {					\
 	   time_t seconds;			\
 	   char Time[10];			\
 		seconds = time(NULL);		\
 		strftime(Time,40,"%H:%M %a", localtime(&seconds));	\
-		Print_text(Time, size, x, y, colour);
+		Print_text(Time, size, x, y, colour);\
+	   }
 #define	Display_on()	\
 		SSD1331_on()
 #define	Display_off()	\

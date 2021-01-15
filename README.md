@@ -19,14 +19,14 @@ Pin Usage
 All pins can be changed in the .h header definitions, however the base setup is as follows:
 
                      ---------
-                     | 1 | 2 |
-                     | 3 | 4 | +5v
-     Switch Read Pin | 5 | 6 | GRND
+                     | 1 | 2 | Zone  +5v
+                     | 3 | 4 | DHT11 +5v
+     Switch Read Pin | 5 | 6 | DHT11 GRND
     Switch Write Pin | 7 | 8 | DHT11 Read/Write Data
-               GRND  | 9 |   |
-       Zone 1 Write  | 11|   |
-       Zone 2 Write  | 13| 14| GRND
-                     |   |   |
+         Switch GRND | 9 | 10| HW Read
+       Zone 1 Write  | 11| 12| HW Write
+       Zone 2 Write  | 13| 14| Zone GRND
+       Zone 0 Write  | 15|   |
        O       +3.3v | 17| 18| DC        W
       Br    SDA/MOSI | 19|   |
                      |   | 22| RES/RET  Bl
