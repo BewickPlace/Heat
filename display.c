@@ -240,8 +240,8 @@ void display_hotwater(char *name, float temp, int callsat, float setpoint, int b
     if (temp < 0.0)  		  { sprintf(string, "  n/a  "); }
     Print_text(string, high, CENTRE(strlen(string)), line, (callsat ? Red : Cyan));
 
-    if (setpoint == 0.0) {sprintf(string, "H/W: OFF");}
-    if (setpoint == 1.0) {sprintf(string, "H/W: ON");}
+    if (setpoint == 0.0) {sprintf(string, "HW: OFF");}
+    if (setpoint == 1.0) {sprintf(string, "HW: ON");}
     if (boost)		 {sprintf(string, "H/W: Boost");}
 
     Display_clearline(56);
@@ -283,16 +283,19 @@ void display_process() {
 		break;
 
 	    case 2:
-		Print_time(normal, CENTRE(9), 0, White);
-		Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
+		if (strcmp(network.zones[0].nodes[0].name, "") != 0) { 		// if HW node defined - print details
+		    Print_time(normal, CENTRE(9), 0, White);
+		    Print_icon(BLUETOOTH_ICON, RIGHT(2)+3, 0, (!check_any_at_home())? Red: Blue);
 
-	        display_hotwater(network.zones[0].name,
-				 network.zones[0].nodes[0].temp,
-				 network.zones[0].nodes[0].callsat,
-//				 network.zones[0].nodes[0].setpoint,
-//				 network.zones[0].nodes[0].boost);
-				-0.1, 0);
-		break;
+		    display_hotwater(network.zones[0].name,
+				     network.zones[0].nodes[0].temp,
+				     network.zones[0].nodes[0].callsat,
+				     network.zones[0].nodes[0].setpoint,
+				     network.zones[0].nodes[0].boost);
+		    break;
+	        } else {
+		    app.display_mode++;						// move to next display (fall through switch)
+		}
 
 	    case 3:
 		Print_time(normal, CENTRE(9), 0, White);

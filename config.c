@@ -323,6 +323,7 @@ ENDERROR;
 
 void	initialise_configuration() {
     int	i;
+    int zone, node;
     int profile;
 
     memset(&network,0, sizeof(network));		// Seroise internal configuration data
@@ -332,6 +333,11 @@ void	initialise_configuration() {
 	callsat(i, 0);					// Ensure output is off
     }
 
+    for (zone=0; zone < NUM_ZONES; zone++) {		// Initialise all temps to invalid
+	for (node=0; node < NUM_NODES_IN_ZONE; node++) {
+	    network.zones[zone].nodes[node].temp = -0.01;
+	}
+    }
     for (profile=0; profile < MAX_PROFILES; profile++){ // Scan thropugh all Profiles
 	for(i=0; i < MAX_TIME_BLOCKS; i++) {		// and each time block
 	    profiles[profile].blocks[i].setpoint = -0.1; // initialise block as invalid

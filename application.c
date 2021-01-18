@@ -71,7 +71,7 @@ void	notify_link_up(char *name) {
 
 void	notify_link_down(char *name) {
     app.active_node = find_active_node();				// record if any is active
-    if (app.operating_mode == OPMODE_MASTER) { manage_SAT(name, 0.0, 0);// reset Master record of temp etc.
+    if (app.operating_mode == OPMODE_MASTER) { manage_SAT(name, -0.1, 0, 0.0, 0);// reset Master record of temp etc.
     } else { app.callsat = 0; }	  					// Maintain local callsat status
     if (app.operating_mode == OPMODE_MASTER) { perform_logging(); }	// Maintain network status
     }
@@ -366,17 +366,17 @@ void	handle_app_msg(char *node_name, struct payload_pkt *payload, int payload_le
     case HEAT_CALL:
 	debug(DEBUG_INFO, "CALL from %s for heat %.01f:%.01f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
 
-	manage_CALL(node_name, payload->d.callsat.temp, payload->d.callsat.at_home);
+	manage_CALL(node_name, payload->d.callsat.temp, payload->d.callsat.at_home, payload->d.callsat.setpoint, payload->d.callsat.boost);
 	break;
 
     case HEAT_SAT:
 	debug(DEBUG_INFO, "Heat @ %s SATisfied %.01f:%0.1f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
-	manage_SAT(node_name, payload->d.callsat.temp, payload->d.callsat.at_home);
+	manage_SAT(node_name, payload->d.callsat.temp, payload->d.callsat.at_home, payload->d.callsat.setpoint, payload->d.callsat.boost);
 	break;
 
     case HEAT_TEMP:
 	debug(DEBUG_INFO, "Heat @ %s TEMPerature %.01f:%0.1f:%0.1f:%d\n", node_name, payload->d.callsat.temp, payload->d.callsat.setpoint, payload->d.callsat.hysteresis, payload->d.callsat.boost);
-	manage_TEMP(node_name, payload->d.callsat.temp, payload->d.callsat.at_home);
+	manage_TEMP(node_name, payload->d.callsat.temp, payload->d.callsat.at_home, payload->d.callsat.setpoint, payload->d.callsat.boost);
 	break;
 
     default:

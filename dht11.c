@@ -162,7 +162,7 @@ void	Button_interrupt() {
 	    system("shutdown -h now");
 
 	} else {				//  Non-effective combination
-	    debug(DEBUG_TRACE, "Button - No effect\n");
+	    debug(DEBUG_TRACE, "Button - No effect [%d]\n", button_press);
 	}
 	app.display = 1;			// In all cases ensure display active
 	add_timer(TIMER_DISPLAY, 30);		// and timeout after y seconds
@@ -179,12 +179,12 @@ ENDERROR;
 void	callsat(int zone, int callsat) {
    int	pin = zone_pin_map[zone];			// Obtain the GPIO Pin for this zone
 
-    if (((app.operating_mode == OPMODE_MASTER) && (zone >0)) ||
+    if (((app.operating_mode == OPMODE_MASTER) && (zone >=0)) ||
 	((app.operating_mode == OPMODE_HOTWATER) && (zone == 0))) {
 	pinMode( pin, OUTPUT );				// Signal to DHT11 read request
 	digitalWrite( pin, callsat );			// Write CALL (HIGH) or SAT (LOW)
     } else {
-	warn("Incorrect Zone Controls");
+	if(zone != 0) {warn("Incorrect Zone (%d) Control", zone);}
     }
 }
 
@@ -457,7 +457,8 @@ void monitor_process()	{
 
 	    if(app.operating_mode == OPMODE_HOTWATER) {	// Hotwater node - check via GPIO
 		digitalWrite(HOTWATER_WRITE_PIN, 1);	// Raise the write pin
-		app.temp = (digitalRead(HOTWATER_READ_PIN) ? 0.8 : 1.2); // set temperature if  signal found
+		delay(200);				// Allow signal to stabalise
+		app.temp = (digitalRead(HOTWATER_READ_PIN) ? 0.8 : 1.2); // set temperature if signal found
 		digitalWrite(HOTWATER_WRITE_PIN, 0);	// Lower the write pin
 
 	    } else {					// Temperature node - check via DHT11/22

@@ -300,7 +300,7 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		$boost	= array_column($csv,3);
 		$time2	= array_column($csv2,0);
 		if ($zone_id == 0) {
-		    $zoned = 0;
+		    $zoned = [0,0];
 		} else {
 		    $zoned  = expand_array($time, $time2, array_column($csv2,$zone_id+1));
 		}

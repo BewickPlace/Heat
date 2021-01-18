@@ -69,14 +69,6 @@ $opmode = getWiPiopmode();
 	    break;
 	}
     }
-    switch ($_POST["daapdenabled"]) {
-    case "TRUE":
-      enabledaapd(TRUE);
-	 break;
-    case "FALSE":
-      enabledaapd(FALSE);
-	 break;
-    }
   ?>
 
 

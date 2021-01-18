@@ -124,6 +124,7 @@ $submenu_mode="";
 #
     if ($opmode == '-m') {
 	for ($zone = 0; $zone < count($zones); $zone++) {
+	    if(in_array($zones[$zone], $nodezone)) {
 	    print("<h3>".$zones[$zone]."</h3>");
 	    for ($node = 0; $node < count($nodes); $node++) {
 		if($nodezone[$node] == $zones[$zone]) {
@@ -139,6 +140,7 @@ $submenu_mode="";
     </p>
 <?php
 		}
+	    }
 	    }
 	}
     } else {

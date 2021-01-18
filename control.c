@@ -158,7 +158,7 @@ int	check_any_signals() {
 //		Manage Call for heat (MASTER)
 //
 
-void 	manage_CALL(char *node_name, float temp, int at_home) {
+void 	manage_CALL(char *node_name, float temp, int at_home, float setpoint, int boost) {
     int	zone;
     int node;
     int this_time;
@@ -180,6 +180,8 @@ void 	manage_CALL(char *node_name, float temp, int at_home) {
 								// Valid Zone and node index
     last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].setpoint = setpoint;	// Save the current setpoint
+    network.zones[zone].nodes[node].boost = boost;		// Save the current boost
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current bluetooth status
     if (network.zones[zone].nodes[node].callsat) { goto Checks; } // if already in CALL skip to checks
 
@@ -208,7 +210,7 @@ Checks:
     }
     last_time = this_time;					// Save signals Bit mask for next time
     } else {							// Network Control OFF
-	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
+	manage_SAT(node_name, temp, at_home, setpoint, boost);	// Treat this as a SAT
     }
 
 ERRORBLOCK(NodeError);
@@ -220,7 +222,7 @@ ENDERROR;
 //		Manage SAT heat (MASTER)
 //
 
-void 	manage_SAT(char *node_name, float temp, int at_home) {
+void 	manage_SAT(char *node_name, float temp, int at_home, float setpoint, int boost) {
     int	zone;
     int node;
     int this_time;
@@ -234,6 +236,8 @@ void 	manage_SAT(char *node_name, float temp, int at_home) {
 								// Valid Zone and node index
     last_call = check_any_CALL();				// Check if anyone is already CALLing before we process
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].setpoint = setpoint;	// Save the current setpoint
+    network.zones[zone].nodes[node].boost = boost;		// Save the current boost
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current temperature
     if (!network.zones[zone].nodes[node].callsat) { goto Checks; } // if already SAT skip to end
     network.zones[zone].nodes[node].callsat = 0;		// Mark as SATisfied
@@ -287,7 +291,7 @@ void 	manage_CLOSE() {
 //		Manage TEMPerature advise (MASTER)
 //
 
-void 	manage_TEMP(char *node_name, float temp, int at_home) {
+void 	manage_TEMP(char *node_name, float temp, int at_home, float setpoint, int boost) {
     int	zone;
     int node;
     int this_time;
@@ -308,6 +312,8 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     if((time24 > network.on) && (time24 < network.off)) {	// Only handle CALL when Network control is ON
 
     network.zones[zone].nodes[node].temp = temp;		// Save the current temperature
+    network.zones[zone].nodes[node].setpoint = setpoint;	// Save the current setpoint
+    network.zones[zone].nodes[node].boost = boost;		// Save the current boost
     network.zones[zone].nodes[node].at_home = at_home;		// Save the current at home status
 
     this_time = check_any_signals();				// Check if anyone now CALLing
@@ -323,7 +329,7 @@ void 	manage_TEMP(char *node_name, float temp, int at_home) {
     }
     last_time = this_time;					// Save signals Bit mask for next time
     } else {
-	manage_SAT(node_name, temp, at_home);			// Treat this as a SAT
+	manage_SAT(node_name, temp, at_home, setpoint, boost);	// Treat this as a SAT
     }
 
 ENDERROR;

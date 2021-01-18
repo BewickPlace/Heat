@@ -98,13 +98,15 @@ Bluetooth At Home:
 
     <div class="container">
     <?php for($i = 0; $i < count($zones); $i++) { ?>
+    <?php if(in_array($zones[$i],$nodezone)) { ?>
     <?php if (get_logstate_zone($hostname, $date, $i) == 0) { ?>
 	<div id ="circle-plain" class="circle">
     <?php } else { ?>
-	<div id ="circle-border" class="circle"">
+	<div id ="circle-border" class="circle">
     <?php } ?>
 Zone: <?php echo $zones[$i] ?>
     </div>
+    <?php } ?>
     <?php } ?>
     </div>
 
