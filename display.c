@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "application.h"
 #include "errorcheck.h"
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
 //
 //		Icons defined in the Symbol font
 //

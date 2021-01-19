@@ -387,7 +387,7 @@ void 	setpoint_control_process(){
 		    network_id = get_active_node(network.zones[zone].nodes[node].name); //find if it is currently active
 		    if (network_id >= 0) {
 			app_data.type = HEAT_SETPOINT;			// Contruct SETPOINT packet to be sent to slave
-			app_data.d.setpoint.value  = timeblock_ptr->setpoint + network.zones[zone].nodes[node].delta - proximity_delta;
+			app_data.d.setpoint.value  = MAX(timeblock_ptr->setpoint + network.zones[zone].nodes[node].delta - proximity_delta, 0.0);
 			app_data.d.setpoint.hysteresis = network.zones[zone].nodes[node].hysteresis;
 			debug(DEBUG_TRACE, "Heat Setpoint packet %0.1f:%0.1f to %s\n", app_data.d.setpoint.value, app_data.d.setpoint.hysteresis, network.zones[zone].nodes[node].name);
 			send_to_node(network_id, (char *) &app_data, SIZE_SETPOINT);

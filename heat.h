@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include <bluetooth/bluetooth.h>
 #endif
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 #define	OPMODE_MASTER	0			// Application operating modes
 #define OPMODE_SLAVE	1			// Master (controller)/ Slave (Sensor)
 #define OPMODE_WATCH	2			// Watch (Sensor) - monitoring only

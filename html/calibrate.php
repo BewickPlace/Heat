@@ -104,7 +104,7 @@ function recommend_calibration($node_baseline, $node_calibrate, $selected_date) 
 #
 #	Generate Table for all Zones/Nodes
 #
-    for ($zone = 0; $zone < count($zones); $zone++) {
+    for ($zone = 1; $zone < count($zones); $zone++) {		// For each Zone excluding Hot Water
 	$first = -1;
 	print("<h3>".$zones[$zone]."</h3>");
 	print("<table style=\"width: 30%; text-align:center;\">");

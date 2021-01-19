@@ -86,7 +86,8 @@ void	boost_start() {
     app.boost = 1;				// Signal boost
     pinMode(BUTTON_WRITE_PIN, OUTPUT );		// & light Illuminated switch
     digitalWrite(BUTTON_WRITE_PIN, 1);
-    if (app.operating_mode == OPMODE_SLAVE) { add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after 2 hours (not MASTER)
+    if (app.operating_mode == OPMODE_SLAVE)	{ add_timer(TIMER_BOOST, (60*120)); } //  Boost timesout after 2 hours
+    if (app.operating_mode == OPMODE_HOTWATER)	{ add_timer(TIMER_BOOST, (60*60)); }  //  Boost timesout after 1 hours
 						// Watch node in basic boost will NOT timeout
 };
 
@@ -149,7 +150,8 @@ void	Button_interrupt() {
 	    }
 
 	} else if ((button_press < BUTTON_EXTRALONG_PRESS) &&	// Longer press - Extra boost (slave only)
-		   (app.operating_mode != OPMODE_MASTER) &&
+		   (app.operating_mode != OPMODE_MASTER)   &&
+		   (app.operating_mode != OPMODE_HOTWATER) &&
 		   (app.boost)) {			// when already boosting
 	    debug(DEBUG_TRACE, "Button - Longer Press\n");
 	    app.boost++;
