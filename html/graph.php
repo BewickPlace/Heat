@@ -299,12 +299,8 @@ function generate_graph($host, $zone_id, $node, $selected_date, $graph_type) {
 		$setpoint = array_column($csv,2);
 		$boost	= array_column($csv,3);
 		$time2	= array_column($csv2,0);
-		if ($zone_id == 0) {
-		    $zoned = [0,0];
-		} else {
-		    $zoned  = expand_array($time, $time2, array_column($csv2,$zone_id+1));
-		}
-		$athome = expand_array($time, $time2, array_column($csv2,4));
+		$zoned  = expand_array($time, $time2, array_column($csv2,$zone_id+2));
+		$athome = expand_array($time, $time2, array_column($csv2,5));
 		data_graph($node, $time, $temp, $setpoint, $boost, $zoned, $athome);
 		break;
 	    }

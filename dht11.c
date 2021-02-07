@@ -460,7 +460,7 @@ void monitor_process()	{
 	    if(app.operating_mode == OPMODE_HOTWATER) {	// Hotwater node - check via GPIO
 		digitalWrite(HOTWATER_WRITE_PIN, 1);	// Raise the write pin
 		delay(200);				// Allow signal to stabalise
-		app.temp = (digitalRead(HOTWATER_READ_PIN) ? 0.8 : 1.2); // set temperature if signal found
+		app.temp = (digitalRead(HOTWATER_READ_PIN) ? 0.2 : 1.2); // set temperature if signal found
 		digitalWrite(HOTWATER_WRITE_PIN, 0);	// Lower the write pin
 
 	    } else {					// Temperature node - check via DHT11/22

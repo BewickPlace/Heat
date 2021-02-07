@@ -216,7 +216,7 @@ void	load_run_clock() {
     time_t	seconds;
     struct tm	*info;
     FILE	*log;
-    int		zone, call, home, network;
+    int		hotwater, zone, call, home, network;
     time_t	hours, minutes;
 
     if ((app.operating_mode != OPMODE_MASTER) ||	// On MASTER only
@@ -230,8 +230,8 @@ void	load_run_clock() {
     if (log != NULL) {					// if file exists
 
 	fscanf(log, "%*[^\n]\n");			// Skip header
-	while (fscanf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d\n", &info->tm_hour, &info->tm_min,
-						&hours, &minutes, &zone, &call, &home, &network) >0) {
+	while (fscanf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d, %d\n", &info->tm_hour, &info->tm_min,
+						&hours, &minutes, &hotwater, &zone, &call, &home, &network) >0) {
 	}
 	app.run_time = (hours * 3600) + (minutes *60);	// update Run Time
 	debug(DEBUG_ESSENTIAL, "Run clock updated, %02ld:%02ld\n", hours, minutes);
@@ -304,9 +304,10 @@ void	perform_logging() {
     ERRORCHECK( (log == NULL) , "Error opening Tracking file", OpenError);
 
     if (app.operating_mode == OPMODE_MASTER) {		// Logfile format for MASTER or SLAVE/WATCH
-	if (exists == 0) { fprintf(log, "Time, Run Clock, Zone 1, Zone 2, At Home, Network\n"); }
-	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d\n", info->tm_hour, info->tm_min,
+	if (exists == 0) { fprintf(log, "Time, Run Clock, Hot Water, Zone 1, Zone 2, At Home, Network\n"); }
+	fprintf(log, "%02d:%02d,%02ld:%02ld, %d, %d, %d, %d, %d\n", info->tm_hour, info->tm_min,
 		get_run_clock()/3600, (get_run_clock()/60) % 60,
+		check_any_CALL_in_zone(0),
 		check_any_CALL_in_zone(1), check_any_CALL_in_zone(2), check_any_at_home(),
 		get_network_mask());
 

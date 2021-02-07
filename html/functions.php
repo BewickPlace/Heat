@@ -432,17 +432,13 @@ function get_logtime($node, $selected_date) {
     return(get_log_info($node, $selected_date,0));
 }
 function get_logstate_zone($node, $selected_date, $zone) {
-    if ($zone == 0) {
- 	return(0);
-    } else {
-	return(get_log_info($node, $selected_date,$zone+1));
-    }
+    return(get_log_info($node, $selected_date,$zone+2));
 }
 function get_logstate_at_home($node, $selected_date) {
-    return(get_log_info($node, $selected_date,4));
+    return(get_log_info($node, $selected_date,5));
 }
 function get_logstate_network($node, $selected_date) {
-    return(get_log_info($node, $selected_date,5));
+    return(get_log_info($node, $selected_date,6));
 }
 
 #
