@@ -175,7 +175,7 @@ require 'manage_menu.php';
    #  Only perform for the non-default networks
    if ($i > 0) {
    ?>
-      BSSID: <input tpe="text" name="networks[<?php (3*$i)+2 ?>]" value="<?php echo $networks[(3*$i)+2]?>" <?php echo $r ?> size=18 maxlength=17 pattern="^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$"  title="MAC address">
+      BSSID: <input type="text" name="networks[<?php (3*$i)+2 ?>]" value="<?php echo $networks[(3*$i)+2]?>" <?php echo $r ?> size=18 maxlength=17 pattern="^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$"  title="MAC address">
    <?php
    } else {
    ?>
