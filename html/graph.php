@@ -344,7 +344,7 @@ function data_graph($node, $time, $temp, $setpoint, $boost, $zone, $athome) {
     $graph = new Graph(1600,400);
     $graph->clearTheme();
     $graph->SetScale("textlin");
-    if ($setpoint[0] > 14) {
+    if ($setpoint[0] >= 14) {
 	$graph->yaxis->scale->SetAutoMin(14);
     } else {
 	$graph->yaxis->scale->SetAutoMax(1.5);
