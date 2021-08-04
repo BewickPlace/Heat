@@ -366,6 +366,47 @@ function get_names($primekey,$namekey) {
     }
     return $output;
 }
+
+#
+#	Update the Bluetooth Sction
+#
+function update_bluetooth_info($bluedev) {
+    $heatingfile = '/etc/heating.conf';
+    $primekey = "bluetooth {";
+    $end_block = "}";
+    $new_block = "";
+
+    $filedata = file_get_contents($heatingfile);
+    if ($filedata !== FALSE) {
+	$block_start = strpos($filedata, $primekey);
+	if ($block_start !== FALSE) {
+	    $block_end = strpos($filedata, $end_block, $block_start);
+	    if ($block_end !== FALSE) {
+		$block_start = $block_start + strlen($primekey);
+		$block_end = $block_end - strlen($end_block) - $block_start;
+
+		for($device = 1; $device < (count($bluedev)+1); $device++) {
+		    $new_block = $new_block."\n\tdevice\t= ".'"'.$bluedev[$device-1].'"';
+		}
+		$filedata = substr_replace($filedata, $new_block, $block_start, $block_end);
+		if (file_put_contents($heatingfile, $filedata) === FALSE) {
+	  	    echo "<font color='Red'>Write failed - check permissions<font color='Black'>", "<br><br>";
+		    return(FALSE);
+		}
+		return(TRUE);
+	    } else {
+		$output = "bluetooth block error";
+	    }
+	} else {
+	    $output = "no names";
+	}
+    } else {
+	$output = "no file";
+    }
+    echo $output;
+return(FALSE);
+}
+
 #
 #	Associated Get from... Heating Config file
 #
