@@ -190,9 +190,9 @@ void 	manage_CALL(char *node_name, float temp, int at_home, float setpoint, int 
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	start_run_clock();					// if starting up START the run clock
-	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %-12s (%d:%d) - Clock Start\n",node_name, zone, node);
+	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %-12s %4.1f >>> %4.1f %s - Clock Start\n", node_name, temp, setpoint+boost,(boost ? "Boost" : ""));
     } else {
-	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %-12s (%d:%d)\n",node_name, zone, node);
+	debug(DEBUG_ESSENTIAL, "CALL for heat  @ %-12s %4.1f >>> %4.1f %s\n", node_name, temp, setpoint+boost, (boost ? "Boost" : ""));
     }
     callsat(zone, 1);					    	// interface with DHT11 module to action
 
@@ -248,10 +248,10 @@ void 	manage_SAT(char *node_name, float temp, int at_home, float setpoint, int b
     this_call = check_any_CALL();				// Check if anyone now CALLing
     if (last_call != this_call) {
 	stop_run_clock();					// if starting up STOP the run clock
-	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %-12s (%d:%d) - Clock Stop\n",node_name, zone, node);
+	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %-12s %4.1f === %4.1f %s - Clock Stop\n", node_name, temp, setpoint+boost, (boost ? "Boost" : ""));
 
     } else {
-	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %-12s (%d:%d)\n",node_name, zone, node);
+	debug(DEBUG_ESSENTIAL, "Heat SATisfied @ %-12s %4.1f === %4.1f %s\n", node_name, temp, setpoint+boost, (boost ? "Boost" : ""));
     }
 
 Checks:
