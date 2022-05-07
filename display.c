@@ -49,8 +49,8 @@ static const alt_font symbol_font = { 10, 9, 8, 1, { // Font Header
 #define SENSOR_ICON     "\"" 	   	        // Sensor icon
 #define BLUETOOTH_ICON	"#"
 
-#define CENTRE(len)     (width-(6*len))/2       // Centre stringlength on screen
-#define RIGHT(len)      (width-(6*len))       // Right Align
+#define CENTRE(len)     (width+1-(6*len))/2	 // Centre stringlength on screen
+#define RIGHT(len)      (width-(6*len))   	// Right Align
 #define LEFT(len)       (0)                     // Left align
 
 //
@@ -63,7 +63,7 @@ void display_nodes() {
     float temp;
     int callsat;
 
-    line =  12;
+    line =  10;
     for (zone=1; zone < NUM_ZONES; zone++) {		// For all Zones
 	if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
 	    Display_clearline(line);
@@ -103,11 +103,11 @@ void display_zones() {
     int callsat;
     time_t run_time;
 
-    line = 12;
+    line = 10;
     horiz = 10;
     for (zone=1; zone < NUM_ZONES; zone++) {		// For all Zones
 	if (strcmp(network.zones[zone].name, "") != 0) { // if Zone defined - print details
-	    Print_text(network.zones[zone].name, normal, ((line == 12) ? LEFT() : RIGHT(strlen(network.zones[zone].name))), line, DarkGrey);	// Name
+	    Print_text(network.zones[zone].name, normal, ((line == 10) ? LEFT() : RIGHT(strlen(network.zones[zone].name))), line, DarkGrey);	// Name
 	    line = line +8;
 
 	    temp = 0.0;
@@ -127,15 +127,23 @@ void display_zones() {
 	    } //efor nodes in zones
 	    if (temp <= 0.0) { sprintf(string, " n/a"); }
 	    else { sprintf(string, "%.01f", temp); }
-	    Print_text(string, high, horiz, 32, (callsat ? Red : Cyan));
-	    horiz = horiz + 44;
+	    Print_text(string, high, horiz, 30, (callsat ? Red : Cyan));
+	    horiz = horiz + 50;
 	}
     } // efor Zones
 
+    if (strcmp(network.zones[0].name, "") != 0) { 				// if HW node defined - print details
+	Display_clearline(46);
+
+	Print_box(0, 27, width, 52,(network.zones[0].nodes[0].callsat ? Red : DarkGrey));
+
+	Print_text(network.zones[0].name, normal, CENTRE(strlen(network.zones[0].name)), 46, (network.zones[0].nodes[0].callsat ? Red : DarkGrey));
+    }
+
     run_time = get_run_clock();
     sprintf(string, "Run: %02ld:%02ld\n", run_time/3600, (run_time/60)%60);
-    Display_clearline(55);
-    Print_text(string, normal, CENTRE(strlen(string)), 55, White);
+    Display_clearline(57);
+    Print_text(string, normal, CENTRE(10), 57, White);
 }
 
 //
@@ -149,7 +157,7 @@ void display_bluetooth() {
     int	at_home, signal;
     char devname[2];
 
-    line = 12;
+    line = 10;
     Display_clearline(line);
     line = line + 8;
     for(i = 0; i < BLUETOOTH_CANDIDATES; i++){				// Look at each of the Bluetooth candidates
@@ -168,7 +176,7 @@ void display_bluetooth() {
     for (zone=0; zone < NUM_ZONES; zone++) {				// For all Zones
 	if (strcmp(network.zones[zone].name, "") != 0) { 		// if Zone defined - print details
 
-	    line = 12;
+	    line = 10;
 	    horiz = MAX(horiz, 40+(zone*12));
 	    devname[0] = network.zones[zone].name[0];
 	    Print_text(devname, normal, horiz+2, line, DarkGrey);	// Name
@@ -218,8 +226,8 @@ void display_slave(){
 	    sprintf(string, "Watch:%0.1f", app.setpoint);
 	}
     }
-    Display_clearline(56);
-    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
+    Display_clearline(57);
+    Print_text(string, normal, CENTRE(strlen(string)), 57, White);
 }
 
 //
@@ -229,7 +237,7 @@ void display_hotwater(char *name, float temp, int callsat, float setpoint, int b
     char string[20];
     int line;
 
-    line = 12;
+    line = 10;
     Print_text(name, normal, LEFT(), line, DarkGrey);
     line = line +16;
 
@@ -243,8 +251,8 @@ void display_hotwater(char *name, float temp, int callsat, float setpoint, int b
     if (setpoint == 1.0) {sprintf(string, "HW: ON");}
     if (boost)		 {sprintf(string, "H/W: Boost");}
 
-    Display_clearline(56);
-    Print_text(string, normal, CENTRE(strlen(string)), 56, White);
+    Display_clearline(57);
+    Print_text(string, normal, CENTRE(strlen(string)), 57, White);
 }
 
 //

@@ -49,6 +49,8 @@ typedef struct alt_font {
 		strftime(Time,40,"%H:%M %a", localtime(&seconds));	\
 		Print_text(Time, size, x, y, colour);\
 	   }
+#define Print_box(x1, y1, x2, y2, col)	\
+		SSD1331_rect(x1, y1,x2 ,y2, col)
 #define	Display_on()	\
 		SSD1331_on()
 #define	Display_off()	\
