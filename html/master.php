@@ -54,7 +54,7 @@ require 'manage_menu.php';
     echo "Daily total of Hours Run: ", $hours_run,"<br>";
 
     $hours_run = round(get_monthly_avg($hostname, $year, $month),1);
-    echo "Average daily usage this month: ", $hours_run, "Kwh<br><br>";
+    echo "Average daily usage this month: ", $hours_run, " Hours Run<br><br>";
 ?>
     </div>
     <div>
