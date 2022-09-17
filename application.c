@@ -412,7 +412,7 @@ void	handle_app_timer(int timer) {
 	} else {
 		// no actions yet"
 	}
-	add_timer(TIMER_CONTROL, AT_CONTROL); // wait for the next 15 minute boundry
+	add_timer(TIMER_CONTROL, AT_CONTROL); // wait for the next x minute boundry
 	break;
 
     case TIMER_SETPOINT:

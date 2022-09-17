@@ -35,7 +35,7 @@ THE SOFTWARE.
 #define TIMER_LOGGING 	10				// Logging timeout
 
 #define AT_STATS	(timeto1hour())			// at 0:00
-#define AT_CONTROL	(timeto15min())			// at 0:00
+#define AT_CONTROL	(timeto5min())			// at 0:00
 #define AT_PING		(timetosec(20)+4)		// at 0:04, 0:24, 0:44
 #define AT_SETPOINT	(timetosec(20)+8)		// at 0:08, 0:28, 0:48
 #define AT_BROADCAST	(((timeto1min()+51)%60)+1)	// at 0:52
