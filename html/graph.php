@@ -124,23 +124,17 @@ function generate_run_hours_monthly($node, $selected_date) {
 // Create the graph. These two calls are always required
     $graph = new Graph(1600,400);
     $graph->clearTheme();
-//    $graph->SetScale("datint");
     $graph->SetScale("intint", 0, 0, $xmin, $xmax );
     $graph->yaxis->scale->SetAutoMin(0);
-
-//    $graph->SetClipping(TRUE);
 
     $graph->SetShadow();
     $graph->img->SetMargin(60,30,20,40);
 
 // Create the bar plots
     $lplot = new LinePlot($run_hours, $dates);
-//    $lplot->SetBarCenter();
     $lplot->SetStepStyle();
     $lplot->SetColor("orange");
     $lplot->SetFillColor("orange");
-
-//    $lplot->SetWidth(1.0);
 
 // ...and add it to the graPH
     $graph->Add($lplot);
@@ -148,11 +142,8 @@ function generate_run_hours_monthly($node, $selected_date) {
     $title = "Average Run Hours per Month for 18 months";
     $graph->title->Set($title);
     $graph->xaxis->title->Set("Month");
-#    $graph->xaxis->scale->SetDateFormat('M');
-#    $graph->xaxis->scale->SetDateAlign(MONTHADJ_1, MONTHADJ_1);
     $graph->yaxis->title->Set("Hours");
     $graph->yaxis->SetTitleMargin(40);
-#
     $graph->xaxis->SetPos('min');
 
 // Now set the tic positions
@@ -164,8 +155,6 @@ function generate_run_hours_monthly($node, $selected_date) {
     $graph->xaxis->title->SetFont(FF_FONT1,FS_BOLD);
 
     $graph->SetTickDensity(TICKD_NORMAL, TICKD_VERYSPARSE);
-
-#    $graph->xaxis->scale->ticks->SupressFirst(True);
     $graph->xaxis->scale->ticks->SupressLast(True);
 
 // Display the graph to image file
@@ -191,12 +180,9 @@ function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, 
 
 // Create the bar plots
     $lplot = new LinePlot($run_hours, $dates);
-//    $lplot->SetBarCenter();
     $lplot->SetStepStyle();
     $lplot->SetColor("orange");
     $lplot->SetFillColor("orange");
-
-//    $lplot->SetWidth(1.0);
 
 // Create Controls Line plots
     $lplot2 = new LinePlot($status_ok, $dates);
@@ -212,7 +198,6 @@ function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, 
     $lplot1->SetFillColor("blue");
 
     $lplot0 = new LinePlot($status_nod, $dates);
-//    $lplot0->SetBarCenter();
     $lplot0->SetStepStyle();
     $lplot0->SetColor("red");
     $lplot0->SetFillColor("red");
@@ -236,9 +221,7 @@ function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, 
     $graph->xaxis->title->Set("Days");
     $graph->xaxis->scale->SetDateFormat('d-M');
     $graph->xaxis->scale->SetDateAlign(DAYADJ_1);
-#    $graph->xaxis->SetLabelAngle(90);
     $graph->yaxis->title->Set("Hours");
-//    $graph->yaxis->scale->SetDateFormat('H:i');
     $graph->yaxis->SetTitleMargin(40);
 
     $graph->title->SetFont(FF_FONT1,FS_BOLD);
@@ -247,11 +230,7 @@ function generate_run_hours($node, $dates, $run_hours, $status_ok, $status_inc, 
 
     $graph->SetTickDensity(TICKD_NORMAL, TICKD_VERYSPARSE);
 
-//    $graph->xaxis->SetTickLabels($dates);
-//    $graph->xaxis->SetTextTickInterval(1440);
-//    $graph->xaxis->SetTextLabelInterval(2400);
     $graph->xaxis->scale->ticks->SupressMinorTickMarks(True);
-//    $graph->xaxis->scale->ticks->SupressFirst(True);
     $graph->xaxis->scale->ticks->SupressLast(True);
 
 // Display the graph to image file
@@ -344,8 +323,10 @@ function data_graph($node, $time, $temp, $setpoint, $boost, $zone, $athome) {
     $graph = new Graph(1600,400);
     $graph->clearTheme();
     $graph->SetScale("textlin");
-    if ($setpoint[0] >= 14) {
-	$graph->yaxis->scale->SetAutoMin(14);
+    if (max($setpoint) >= 5) {
+	$graph->yaxis->scale->SetAutoMin(max($setpoint)*2/3);
+	$graph->yaxis->scale->SetAutoMax(max(max($setpoint),max($temp))+0.5);
+
     } else {
 	$graph->yaxis->scale->SetAutoMax(1.5);
 	$graph->yaxis->scale->SetAutoMin(0);
@@ -378,17 +359,15 @@ function data_graph($node, $time, $temp, $setpoint, $boost, $zone, $athome) {
     $lplot->mark->setFillColor("blue");
 
 // Create Controls Line plots
-    $lplot2 = new LinePlot($athome);
-    $lplot2->SetBarCenter();
-    $lplot2->SetStepStyle();
+    $lplot2 = new BarPlot($athome);
     $lplot2->SetColor("blue");
     $lplot2->SetFillColor("blue");
+    $lplot2->SetWidth(1.0);
 
-    $lplot3 = new LinePlot($zone);
-    $lplot3->SetBarCenter();
-    $lplot3->SetStepStyle();
+    $lplot3 = new BarPlot($zone);
     $lplot3->SetColor("red");
     $lplot3->SetFillColor("red");
+    $lplot3->SetWidth(1.0);
 
 // ...and add it to the graPH
     $graph->Add($gbplot);
@@ -443,7 +422,6 @@ function operating_graph($node, $time, $zone1, $zone2, $athome) {
     $graph->clearTheme();
 //    $graph->SetScale("textlin", 15, 23);
     $graph->SetScale("textlin", 0, 1);
-//$graph->SetScale('intlin');
     $graph->SetYScale(0,"lin", 0, 1.5);
     $graph->SetYScale(1,"lin", 0, 3);
     $graph->SetClipping(TRUE);

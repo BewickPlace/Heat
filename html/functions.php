@@ -513,7 +513,7 @@ function requestrestart($shut)
 
 function time_to_decimal($time) {
     $timeArr = explode(':', $time);
-    $decTime = (($timeArr[0]*60) + ($timeArr[1]))/60;
+    $decTime = (((int)$timeArr[0]*60) + ((int)$timeArr[1]))/60;
 
     return $decTime;
 }
